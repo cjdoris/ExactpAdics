@@ -6,6 +6,6 @@ The aim of this package is to provide the user with a higher-level interface to 
 
 The rationale for the design of the package and an overview of the internal structure can be found in [this article](http://arxiv.org/my-article).
 
-The package is [hosted here on GitHub](https://github.com/cjdoris/ExactpAdics) and can be [downloaded from here](https://github.com/cjdoris/ExactpAdics/releases).
+The package is [hosted here on GitHub](https://github.com/cjdoris/ExactpAdics) and can be [downloaded from here](https://github.com/cjdoris/ExactpAdics/releases). The [user manual is here](https://cjdoris.github.io/ExactpAdics).
 
 Please direct any comments, queries or complaints to [the GitHub issue tracker](https://github.com/cjdoris/ExactpAdics/issues).
