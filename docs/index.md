@@ -13,11 +13,21 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 ## Contents
 
+* Exact p-adic fields
+
 {% for page in site.pages %}
+{% if page.url contains "/pad-" %}
 
-* [{{page.title}} - {{page.url}}]({{site.baseurl}}{{page.url}})
-
+  * [{{page.title}}]({{site.baseurl}}{{page.url}})
+  
+{% endif %}
 {% endfor %}
+
+* Univariate polynomials
+
+* Multivariate polynomials
+
+* [New types](types)
 
 ## Overview
 
