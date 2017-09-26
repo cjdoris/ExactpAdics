@@ -11,6 +11,6 @@
 
   * [{{h}}]({{site.baseurl}}{{p.url}}#{{h | downcase | replace: " ", "-"}})
 
-{% endif %}
 {% endfor %}
+{% endif %}
 {% endfor %}
