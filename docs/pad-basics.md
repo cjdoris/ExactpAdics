@@ -15,7 +15,7 @@ headings:
 >
 > `-> BoolElt, ExtDataFldPadExact`
 
-True if `L` is an extension of `K`. If so, also returns an object representing this extension; any intrinsic which takes as input two fields expected to be in an extension can instead take this one object.
+True if `L` is an extension of `K`. If so, also returns an object of type `ExtDataFldPadExact` representing this extension; any intrinsic which takes as input two fields expected to be in an extension can instead take this one object.
 
 > **`IsPrimeField`**`(K :: FldPadExact)`
 >
