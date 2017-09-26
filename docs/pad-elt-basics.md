@@ -12,6 +12,8 @@ headings:
 
 # Basic operations on elements
 
+{% include jump-list.md %}
+
 ## Location
 
 > **`Parent`**`(x :: FldPadExactElt)`

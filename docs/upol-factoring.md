@@ -9,6 +9,8 @@ headings:
 
 # Roots and factorization
 
+{% include jump-list.md %}
+
 ## Hensel lifting
 
 > **`IsHenselLiftable`**`(f :: RngUPolElt_FldPadExact, x)`

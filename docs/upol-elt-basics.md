@@ -16,6 +16,8 @@ headings:
 
 # Basic operations on univariate polynomials
 
+{% include jump-list.md %}
+
 ## Distinguished polynomials
 
 > **`Zero`**`(R :: RngUPolElt_FldPadExact)`

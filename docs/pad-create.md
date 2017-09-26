@@ -12,6 +12,8 @@ headings:
 
 # Creation of p-adic fields
 
+{% include jump-list.md %}
+
 ## Prime fields
 
 > **`ExactpAdicField`**`(p :: RngIntElt)`

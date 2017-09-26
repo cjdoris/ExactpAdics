@@ -5,7 +5,6 @@ headings:
   - Extensions
   - Invariants
   - Ramification predicates
-title: Basic operations on fields
 ---
 
 # Basic operations on fields

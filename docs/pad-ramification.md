@@ -8,6 +8,8 @@ headings:
 
 # Ramification
 
+{% include jump-list.md %}
+
 ## Ramification polygons
 
 In this section, when $f(x)$ is an Eisenstein polynomial with root $pi$, then the *ramification polynomial* of $f$ is defined to be $rho(x):=f(x+pi)$. The key feature is that if $pi'$ is another root of $f(x)$ then $pi'-pi$ is a root of $rho(x)$, and hence the roots of $rho$ measure ramification. If $L/K$ is the extension defined by $f$ then the *ramification polygon* of $L/K$ is defined to be the Newton polygon of $rho$, which is independent of the choice of $f$. If $L/K$ is a more general extension, then its ramification polygon is that of its totally ramified part with an additional horizontal edge.

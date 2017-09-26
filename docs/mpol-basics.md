@@ -8,6 +8,8 @@ headings:
 
 # Basic operations on multivariate polynomial rings
 
+{% include jump-list.md %}
+
 ## Creation
 
 > **`PolynomialRing`**`(K :: FldPadExact, n :: RngIntElt)`

@@ -5,6 +5,8 @@ section: 5
 
 # Residue class fields
 
+{% include jump-list.md %}
+
 > **`ResidueClassField`**`(K :: FldPadExact)`
 >
 > `-> FldFin, Map, Map`
