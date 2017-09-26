@@ -13,13 +13,9 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 ## Contents
 
-* [New types defined by the package](types)
-
-* [p-adic Fields](pad-intro)
-
-* [Univariate polynomials](upol-intro)
-
-* [Multivariate polynomials](mpol-intro)
+{% for page in site.pages %}
+* [{{ page.title }} - {{ page.url }}]({{ page.url }})
+{% endfor %}
 
 ## Overview
 
