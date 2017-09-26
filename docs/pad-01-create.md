@@ -12,13 +12,8 @@ headings:
 
 ## Prime fields
 
-```intrinsic
-ExactpAdicField (p :: RngIntElt)
--> FldPadExact
-```
-
 > **`ExactpAdicField`**`(p :: RngIntElt)`
-
+>
 > `-> FldPadExact`
 
 Returns the field of `p`-adic numbers, where `p` is a positive prime.
