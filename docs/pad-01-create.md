@@ -1,4 +1,11 @@
 ---
+headings:
+  - Prime fields
+  - Unramified extensions
+  - Totally ramified extensions
+  - Completions
+  - From fixed precision fields
+  - Examples
 ---
 
 # Creation of p-adic fields
