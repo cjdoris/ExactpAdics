@@ -1,5 +1,3 @@
----
----
 
 {% assign ps = site.pages | where: "chapter", page.chapter | sort: "section" %}
 {% for p in ps %}
