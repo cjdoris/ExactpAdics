@@ -1,4 +1,5 @@
 title: Exact p-Adics
 description: A Magma package for exact p-adic computation
 permalink: pretty
-baseurl: "/ExactpAdics"
+baseurl: /ExactpAdics
+url: https://cjdoris.github.io/ExactpAdics
