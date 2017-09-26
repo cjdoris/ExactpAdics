@@ -15,7 +15,7 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 {% for page in site.pages %}
 
-* [{{ page.title }} - {{ page.url }}]({{ page.url }})
+* [{{page.title}} - {{page.url}}]({{site.baseurl}}{{page.url}})
 
 {% endfor %}
 
