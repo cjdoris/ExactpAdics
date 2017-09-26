@@ -1,4 +1,6 @@
 ---
+chapter: 12
+section: 2
 headings:
   - Distinguished polynomials
   - Creation

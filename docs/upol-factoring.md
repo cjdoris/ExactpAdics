@@ -1,4 +1,6 @@
 ---
+chapter: 12
+section: 3
 headings:
   - Hensel lifting
   - Roots
