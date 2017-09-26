@@ -1,0 +1,409 @@
+{
+    "docs": [
+        {
+            "location": "/",
+            "text": "Exact p-Adics\n\n\nThis is the User Manual for the Exact p-Adics package for the \nMagma computer algebra system\n. The aim of this package is to provide the user with a higher-level interface to computing with p-adics, making it easier to perform everyday computations and coding more complex algorithms.\n\n\nThe rationale for the design of the package and an overview of the internal structure can be found in \nthis article\n.\n\n\nThe package is \nhosted here on GitHub\n and can be \ndownloaded from here\n.\n\n\nPlease direct any comments, queries or complaints to \nthe GitHub issue tracker\n.\n\n\nOverview\n\n\nMagma's built-in types for p-adic computation (\nFldPad\n, \nRngPad\n, \nRngPadRes\n, etc) are all \napproximate\n in the sense that their elements are computed immediately to some precision, and therefore an element really corresponds to an equivalence class of genuine p-adic elements.\n\n\nIn this package, we provide a new representation of p-adics which is \nexact\n in the sense that a p-adic number is represented to infinite precision. This is achieved by having the representation be \nlazy\n in the sense that in addition to each element being represented by a finite-precision approximation, it carries around a function which allows it to update its approximation arbitrarily high.\n\n\nAdvantages of this approach are:\n\n\n\n\nThe user is freed from the burden of choosing a precision at the beginning of a computation; often this precision will be insufficient and the user must increase it manually until no precision errors occur.\n\n\nAll computations are performed to the minimal precision necessary to compute an output, sometimes giving a gain in speed.\n\n\n\n\nDisadvantages are:\n\n\n\n\nDependency tracking overhead: Elements now depend on each other, and tracking these dependencies can be computationally expensive.\n\n\nMemory overhead: Every (exact) intermediate value in a computation which the answer depends on will be kept in memory, so more memory is required.\n\n\n\n\nTherefore the main use-cases of this package are:\n\n\n\n\nPerforming computations interactively in Magma; the overheads will be unnoticed.\n\n\nImplementing high-level algorithms in Magma; that is, ones where the main operations are themselves expensive enough that the overheads are comparatively small.\n\n\n\n\nContents\n\n\n\n\n\n\nNew types defined by the package\n\n\n\n\n\n\np-adic Fields\n\n\n\n\n\n\nUnivariate polynomials\n\n\n\n\n\n\nMultivariate polynomials",
+            "title": "Introduction"
+        },
+        {
+            "location": "/#exact-p-adics",
+            "text": "This is the User Manual for the Exact p-Adics package for the  Magma computer algebra system . The aim of this package is to provide the user with a higher-level interface to computing with p-adics, making it easier to perform everyday computations and coding more complex algorithms.  The rationale for the design of the package and an overview of the internal structure can be found in  this article .  The package is  hosted here on GitHub  and can be  downloaded from here .  Please direct any comments, queries or complaints to  the GitHub issue tracker .",
+            "title": "Exact p-Adics"
+        },
+        {
+            "location": "/#overview",
+            "text": "Magma's built-in types for p-adic computation ( FldPad ,  RngPad ,  RngPadRes , etc) are all  approximate  in the sense that their elements are computed immediately to some precision, and therefore an element really corresponds to an equivalence class of genuine p-adic elements.  In this package, we provide a new representation of p-adics which is  exact  in the sense that a p-adic number is represented to infinite precision. This is achieved by having the representation be  lazy  in the sense that in addition to each element being represented by a finite-precision approximation, it carries around a function which allows it to update its approximation arbitrarily high.  Advantages of this approach are:   The user is freed from the burden of choosing a precision at the beginning of a computation; often this precision will be insufficient and the user must increase it manually until no precision errors occur.  All computations are performed to the minimal precision necessary to compute an output, sometimes giving a gain in speed.   Disadvantages are:   Dependency tracking overhead: Elements now depend on each other, and tracking these dependencies can be computationally expensive.  Memory overhead: Every (exact) intermediate value in a computation which the answer depends on will be kept in memory, so more memory is required.   Therefore the main use-cases of this package are:   Performing computations interactively in Magma; the overheads will be unnoticed.  Implementing high-level algorithms in Magma; that is, ones where the main operations are themselves expensive enough that the overheads are comparatively small.",
+            "title": "Overview"
+        },
+        {
+            "location": "/#contents",
+            "text": "New types defined by the package    p-adic Fields    Univariate polynomials    Multivariate polynomials",
+            "title": "Contents"
+        },
+        {
+            "location": "/types/",
+            "text": "New types\n\n\nFldPadExact, FldPadExactElt\n\n\nExact p-adic fields\n and their elements.\n\n\nVal_FldPadElt, PowVal_FldPadElt\n\n\nValuations of p-adic numbers\n, and the power structure of such things.\n\n\nRngUPol_FldPadExact, RngUPolElt_FldPadExact\n\n\nRings of univarate polynomials over exact p-adic fields\n (the exact analogue of \nRngUPol[FldPad]\n) and their elements.\n\n\nVal_RngUPolElt_FldPad, PowVal_RngUPolElt_FldPad\n\n\nValuations of univariate polynomials over p-adic fields\n, and the power structure of such things.\n\n\nRngMPol_FldPadExact, RngMPolElt_FldPadExact\n\n\nRings of multivariate polynomials over exact p-adic fields\n, and their elements.\n\n\nVal_RngMPolElt_FldPad, PowVal_RngMPolElt_FldPad\n\n\nValuations of multivariate polynomials over p-adic fields\n, and the power structure of such things.\n\n\nHasseHerbTransFunc\n\n\nHasse-Herbrand transition functions\n.\n\n\nExtDataFldPadExact\n\n\nExtensions of exact p-adic fields\n.\n\n\nHomFldPadExact\n\n\nHomomorphisms of exact p-adic fields.\n\n\nXPGettr\n\n\nComputations with lazy p-adic dependencies.\n\n\nExactpAdics_Getter_Store\n\n\nInternal book-keeping type.\n\n\nTmpFldPadExact, TmpFldPadExactElt\n\n\nExperimental/undocumented feature.\n Exact p-adic fields and their elements in a different format: instead of storing an approximation and updating it, recompute it to a desired precision each time. Possibly useful for preventing the storage of large numbers of intermediate variables at the expense of possibly more computation.\n\n\nRngPadExact, RngPadExactElt\n\n\nExperimental/undocumented feature.\n Rings of p-adic integers, and their elements.",
+            "title": "New types"
+        },
+        {
+            "location": "/types/#new-types",
+            "text": "",
+            "title": "New types"
+        },
+        {
+            "location": "/types/#fldpadexact-fldpadexactelt",
+            "text": "Exact p-adic fields  and their elements.",
+            "title": "FldPadExact, FldPadExactElt"
+        },
+        {
+            "location": "/types/#val_fldpadelt-powval_fldpadelt",
+            "text": "Valuations of p-adic numbers , and the power structure of such things.",
+            "title": "Val_FldPadElt, PowVal_FldPadElt"
+        },
+        {
+            "location": "/types/#rngupol_fldpadexact-rngupolelt_fldpadexact",
+            "text": "Rings of univarate polynomials over exact p-adic fields  (the exact analogue of  RngUPol[FldPad] ) and their elements.",
+            "title": "RngUPol_FldPadExact, RngUPolElt_FldPadExact"
+        },
+        {
+            "location": "/types/#val_rngupolelt_fldpad-powval_rngupolelt_fldpad",
+            "text": "Valuations of univariate polynomials over p-adic fields , and the power structure of such things.",
+            "title": "Val_RngUPolElt_FldPad, PowVal_RngUPolElt_FldPad"
+        },
+        {
+            "location": "/types/#rngmpol_fldpadexact-rngmpolelt_fldpadexact",
+            "text": "Rings of multivariate polynomials over exact p-adic fields , and their elements.",
+            "title": "RngMPol_FldPadExact, RngMPolElt_FldPadExact"
+        },
+        {
+            "location": "/types/#val_rngmpolelt_fldpad-powval_rngmpolelt_fldpad",
+            "text": "Valuations of multivariate polynomials over p-adic fields , and the power structure of such things.",
+            "title": "Val_RngMPolElt_FldPad, PowVal_RngMPolElt_FldPad"
+        },
+        {
+            "location": "/types/#hasseherbtransfunc",
+            "text": "Hasse-Herbrand transition functions .",
+            "title": "HasseHerbTransFunc"
+        },
+        {
+            "location": "/types/#extdatafldpadexact",
+            "text": "Extensions of exact p-adic fields .",
+            "title": "ExtDataFldPadExact"
+        },
+        {
+            "location": "/types/#homfldpadexact",
+            "text": "Homomorphisms of exact p-adic fields.",
+            "title": "HomFldPadExact"
+        },
+        {
+            "location": "/types/#xpgettr",
+            "text": "Computations with lazy p-adic dependencies.",
+            "title": "XPGettr"
+        },
+        {
+            "location": "/types/#exactpadics_getter_store",
+            "text": "Internal book-keeping type.",
+            "title": "ExactpAdics_Getter_Store"
+        },
+        {
+            "location": "/types/#tmpfldpadexact-tmpfldpadexactelt",
+            "text": "Experimental/undocumented feature.  Exact p-adic fields and their elements in a different format: instead of storing an approximation and updating it, recompute it to a desired precision each time. Possibly useful for preventing the storage of large numbers of intermediate variables at the expense of possibly more computation.",
+            "title": "TmpFldPadExact, TmpFldPadExactElt"
+        },
+        {
+            "location": "/types/#rngpadexact-rngpadexactelt",
+            "text": "Experimental/undocumented feature.  Rings of p-adic integers, and their elements.",
+            "title": "RngPadExact, RngPadExactElt"
+        },
+        {
+            "location": "/fld/intro/",
+            "text": "Exact p-adic fields\n\n\nContents\n\n\n\n\nCreation of fields\n\n\nBasic operations on fields\n\n\nCreation of elements\n\n\nBasic operations on elements\n\n\nResidue class fields\n\n\nRamification",
+            "title": "Introduction"
+        },
+        {
+            "location": "/fld/intro/#exact-p-adic-fields",
+            "text": "",
+            "title": "Exact p-adic fields"
+        },
+        {
+            "location": "/fld/intro/#contents",
+            "text": "Creation of fields  Basic operations on fields  Creation of elements  Basic operations on elements  Residue class fields  Ramification",
+            "title": "Contents"
+        },
+        {
+            "location": "/fld/create/",
+            "text": "Creation of p-adic fields\n\n\nPrime fields\n\n\n\n\nExactpAdicField\n(p :: RngIntElt)\n\n\n-\n FldPadExact\n\n\n\n\nReturns the field of \np\n-adic numbers, where \np\n is a positive prime.\n\n\nUnramified extensions\n\n\n\n\next\nK :: FldPadExact | f\n\n\nUnramifiedExtension\n(K :: FldPadExact, f)\n\n\nUnramifiedExtension\n(K :: FldPadExact, f :: RngUPolElt_FldPadExact)\n\n\nUnramifiedExtension\n(f :: RngUPolElt_FldPadExact)\n\n\n-\n FldPadExact\n\n\n\n\nReturns the unramified extension of \nK\n defined by the polynomial \nf\n (or anything coercible to a polynomial over \nK\n), which must be inertial (see \nIsInertial\n). The generator of the extension will be a root of \nf\n.\n\n\n\n\nUnramifiedExtension\n(K :: FldPadExact, n :: RngIntElt)\n\n\next\nK :: FldPadExact | n :: RngIntElt\n\n\n-\n FldPadExact\n\n\n\n\nReturns an unramified extension of \nK\n of degree \nn\n.\n\n\nTotally ramified extensions\n\n\n\n\nTotallyRamifiedExtension\n(K :: FldPadExact, f :: RngUPolElt_FldPadExact)\n\n\nTotallyRamifiedExtension\n(K :: FldPadExact, f :: RngUPolElt)\n\n\nTotallyRamifiedExtension\n(f :: RngUPolElt_FldPadExact)\n\n\next\nK :: FldPadExact | f\n\n\n-\n FldPadExact\n\n\n\n\nReturns a totally ramified extension of \nK\n defined by the polynomial \nf\n (or anything coercible to a polynomial over \nK\n), which must be Eisenstein (see \nIsEisenstein\n). The generator and uniformizing element of the extension will be a root of \nf\n.\n\n\n\n\nTotallyRamifiedExtension\n(K :: FldPadExact, n :: RngIntElt, pi)\n\n\nTotallyRamifiedExtension\n(K :: FldPadExact, n :: RngIntElt)\n\n\n-\n FldPadExact\n\n\n\n\nReturns the totally ramified extension of \nK\n defined by the \nn\nth root of \npi\n, which must coercible to a uniformizing element of \nK\n. If \npi\n is not specified, it defaults to \nUniformizingElement(K)\n.\n\n\nCompletions\n\n\n\n\nExactCompletion\n(K :: FldRat, p)\n\n\nExactCompletion\n(K :: FldNum, p)\n\n\n-\n FldPadExact, Map, Map\n\n\n\n\nReturns a completion of \nK\n at the prime \np\n. Also returns the embedding from \nK\n into the completion. Also returns the embedding from \nK\n into the approximation field of the completion, with a partial inverse taking an approximate element to a representative in \nK\n.\n\n\nFrom fixed precision fields\n\n\n\n\nExactpAdicField\n(L :: FldPad)\n\n\n-\n FldPadExact\n\n\n\n\nReturns an exact field isomorphic to \nL\n. Its defining polynomial will be equal to that of \nL\n up to precision.\n\n\n\n\nExactpAdicField\n(L :: FldPad, K :: FldPadExact)\n\n\n-\n FldPadExact\n\n\n\n\nReturns an exact field isomorphic to \nL\n as an extension of \nK\n. \nL\n must be an extension of the approximation field of \nK\n.\n\n\n\n\nExactpAdicField\n(L :: FldPad, m :: Map)\n\n\n-\n FldPadExact\n\n\n\n\nGiven \nm\n is a map from a subfield \nK\n of \nL\n into an approximation field of an exact field \nK2\n, returns an extension of \nK2\n isomorphic to \nL\n/\nK\n.\n\n\nExamples\n\n\n K := ExactpAdicField(2);\n\n U\nu\n := ext\nK | 3\n;\n\n L\npi\n := ext\nL | [2*u,0,1]\n;\n\n\n\n\nThis creates the 2-adic field \nK\n, an unramified extension \nU\nu\n of \nK\n of degree 3, and a totally ramified extension \nL\npi\n of \nU\n of degree \n2\n whose uniformizer \npi\n is the square root of \n-2*u\n.",
+            "title": "Creation of fields"
+        },
+        {
+            "location": "/fld/create/#creation-of-p-adic-fields",
+            "text": "",
+            "title": "Creation of p-adic fields"
+        },
+        {
+            "location": "/fld/create/#prime-fields",
+            "text": "ExactpAdicField (p :: RngIntElt)  -  FldPadExact   Returns the field of  p -adic numbers, where  p  is a positive prime.",
+            "title": "Prime fields"
+        },
+        {
+            "location": "/fld/create/#unramified-extensions",
+            "text": "ext K :: FldPadExact | f  UnramifiedExtension (K :: FldPadExact, f)  UnramifiedExtension (K :: FldPadExact, f :: RngUPolElt_FldPadExact)  UnramifiedExtension (f :: RngUPolElt_FldPadExact)  -  FldPadExact   Returns the unramified extension of  K  defined by the polynomial  f  (or anything coercible to a polynomial over  K ), which must be inertial (see  IsInertial ). The generator of the extension will be a root of  f .   UnramifiedExtension (K :: FldPadExact, n :: RngIntElt)  ext K :: FldPadExact | n :: RngIntElt  -  FldPadExact   Returns an unramified extension of  K  of degree  n .",
+            "title": "Unramified extensions"
+        },
+        {
+            "location": "/fld/create/#totally-ramified-extensions",
+            "text": "TotallyRamifiedExtension (K :: FldPadExact, f :: RngUPolElt_FldPadExact)  TotallyRamifiedExtension (K :: FldPadExact, f :: RngUPolElt)  TotallyRamifiedExtension (f :: RngUPolElt_FldPadExact)  ext K :: FldPadExact | f  -  FldPadExact   Returns a totally ramified extension of  K  defined by the polynomial  f  (or anything coercible to a polynomial over  K ), which must be Eisenstein (see  IsEisenstein ). The generator and uniformizing element of the extension will be a root of  f .   TotallyRamifiedExtension (K :: FldPadExact, n :: RngIntElt, pi)  TotallyRamifiedExtension (K :: FldPadExact, n :: RngIntElt)  -  FldPadExact   Returns the totally ramified extension of  K  defined by the  n th root of  pi , which must coercible to a uniformizing element of  K . If  pi  is not specified, it defaults to  UniformizingElement(K) .",
+            "title": "Totally ramified extensions"
+        },
+        {
+            "location": "/fld/create/#completions",
+            "text": "ExactCompletion (K :: FldRat, p)  ExactCompletion (K :: FldNum, p)  -  FldPadExact, Map, Map   Returns a completion of  K  at the prime  p . Also returns the embedding from  K  into the completion. Also returns the embedding from  K  into the approximation field of the completion, with a partial inverse taking an approximate element to a representative in  K .",
+            "title": "Completions"
+        },
+        {
+            "location": "/fld/create/#from-fixed-precision-fields",
+            "text": "ExactpAdicField (L :: FldPad)  -  FldPadExact   Returns an exact field isomorphic to  L . Its defining polynomial will be equal to that of  L  up to precision.   ExactpAdicField (L :: FldPad, K :: FldPadExact)  -  FldPadExact   Returns an exact field isomorphic to  L  as an extension of  K .  L  must be an extension of the approximation field of  K .   ExactpAdicField (L :: FldPad, m :: Map)  -  FldPadExact   Given  m  is a map from a subfield  K  of  L  into an approximation field of an exact field  K2 , returns an extension of  K2  isomorphic to  L / K .",
+            "title": "From fixed precision fields"
+        },
+        {
+            "location": "/fld/create/#examples",
+            "text": "K := ExactpAdicField(2);  U u  := ext K | 3 ;  L pi  := ext L | [2*u,0,1] ;  This creates the 2-adic field  K , an unramified extension  U u  of  K  of degree 3, and a totally ramified extension  L pi  of  U  of degree  2  whose uniformizer  pi  is the square root of  -2*u .",
+            "title": "Examples"
+        },
+        {
+            "location": "/fld/basics/",
+            "text": "Basic operations on fields\n\n\nExtensions\n\n\n\n\nIsExtensionOf\n(L :: FldPadExact, K :: FldPadExact)\n\n\n-\n BoolElt, ExtDataFldPadExact\n\n\n\n\nTrue if \nL\n is an extension of \nK\n. If so, also returns an object representing this extension; any intrinsic which takes as input two fields expected to be in an extension can instead take this one object.\n\n\n\n\nIsPrimeField\n(K :: FldPadExact)\n\n\n-\n BoolElt\n\n\n\n\nTrue if \nK\n is a prime field, i.e. a completion of the rationals.\n\n\n\n\nBaseField\n(K :: FldPadExact)\n\n\n-\n FldPadExact\n\n\n\n\nThe field over which \nK\n is defined as an extension.\n\n\n\n\nDefiningPolynomial\n(K :: FldPadExact)\n\n\n-\n RngUPolElt_FldPadExact\n\n\n\n\nThe polynomial defining \nK\n over its base field. \nGenerator(K)\n is a root of this.\n\n\nInvariants\n\n\n\n\nPrime\n(K :: FldPadExact)\n\n\n-\n RngIntElt\n\n\n\n\nThe rational prime under the prime ideal of \nK\n.\n\n\n\n\nDegree\n(L :: FldPadExact, [K :: FldPadExact])\n\n\nInertiaDegree\n(L :: FldPadExact, [K :: FldPadExact])\n\n\nRamificationDegree\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n RngIntElt\n\n\n\n\nThe degree, inertia degree or ramification degree of \nL\n over \nK\n.\n\n\n\n\nAbsoluteDegree\n(K :: FldPadExact)\n\n\nAbsoluteInertiaDegree\n(K :: FldPadExact)\n\n\nAbsoluteRamificationDegree\n(K :: FldPadExact)\n\n\n-\n RngIntElt\n\n\n\n\nThe degree, inertia degree or ramification degree of \nK\n over its prime subfield.\n\n\n\n\nDiscriminantValuation\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n RngIntElt\n\n\n\n\nThe valuation of the discriminant of \nL\n over \nK\n.\n\n\nRamification predicates\n\n\n\n\nIsUnramified\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n BoolElt\n\n\n\n\nTrue if \nRamificationDegree(L,K)\n is 1.\n\n\n\n\nIsTotallyRamified\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n BoolElt\n\n\n\n\nTrue if \nInertiaDegree(L,K)\n is 1.\n\n\n\n\nIsRamified\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n BoolElt\n\n\n\n\nTrue if \nRamificationDegree(L,K)\n is not 1.\n\n\n\n\nIsTotallyWildlyRamified\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n BoolElt\n\n\n\n\nTrue if \nInertiaDegree(L,K)\n is 1 and \nRamificationDegree(L,K)\n is a power of \nPrime(L)\n.\n\n\n\n\nIsWildlyRamified\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n BoolElt\n\n\n\n\nTrue if \nRamificationDegree(L,K)\n is divisible by \nPrime(L)\n.",
+            "title": "Basic operations on fields"
+        },
+        {
+            "location": "/fld/basics/#basic-operations-on-fields",
+            "text": "",
+            "title": "Basic operations on fields"
+        },
+        {
+            "location": "/fld/basics/#extensions",
+            "text": "IsExtensionOf (L :: FldPadExact, K :: FldPadExact)  -  BoolElt, ExtDataFldPadExact   True if  L  is an extension of  K . If so, also returns an object representing this extension; any intrinsic which takes as input two fields expected to be in an extension can instead take this one object.   IsPrimeField (K :: FldPadExact)  -  BoolElt   True if  K  is a prime field, i.e. a completion of the rationals.   BaseField (K :: FldPadExact)  -  FldPadExact   The field over which  K  is defined as an extension.   DefiningPolynomial (K :: FldPadExact)  -  RngUPolElt_FldPadExact   The polynomial defining  K  over its base field.  Generator(K)  is a root of this.",
+            "title": "Extensions"
+        },
+        {
+            "location": "/fld/basics/#invariants",
+            "text": "Prime (K :: FldPadExact)  -  RngIntElt   The rational prime under the prime ideal of  K .   Degree (L :: FldPadExact, [K :: FldPadExact])  InertiaDegree (L :: FldPadExact, [K :: FldPadExact])  RamificationDegree (L :: FldPadExact, [K :: FldPadExact])  -  RngIntElt   The degree, inertia degree or ramification degree of  L  over  K .   AbsoluteDegree (K :: FldPadExact)  AbsoluteInertiaDegree (K :: FldPadExact)  AbsoluteRamificationDegree (K :: FldPadExact)  -  RngIntElt   The degree, inertia degree or ramification degree of  K  over its prime subfield.   DiscriminantValuation (L :: FldPadExact, [K :: FldPadExact])  -  RngIntElt   The valuation of the discriminant of  L  over  K .",
+            "title": "Invariants"
+        },
+        {
+            "location": "/fld/basics/#ramification-predicates",
+            "text": "IsUnramified (L :: FldPadExact, [K :: FldPadExact])  -  BoolElt   True if  RamificationDegree(L,K)  is 1.   IsTotallyRamified (L :: FldPadExact, [K :: FldPadExact])  -  BoolElt   True if  InertiaDegree(L,K)  is 1.   IsRamified (L :: FldPadExact, [K :: FldPadExact])  -  BoolElt   True if  RamificationDegree(L,K)  is not 1.   IsTotallyWildlyRamified (L :: FldPadExact, [K :: FldPadExact])  -  BoolElt   True if  InertiaDegree(L,K)  is 1 and  RamificationDegree(L,K)  is a power of  Prime(L) .   IsWildlyRamified (L :: FldPadExact, [K :: FldPadExact])  -  BoolElt   True if  RamificationDegree(L,K)  is divisible by  Prime(L) .",
+            "title": "Ramification predicates"
+        },
+        {
+            "location": "/fld/elt-create/",
+            "text": "Creation of p-adic numbers\n\n\nDistinguished elements\n\n\n\n\nZero\n(K :: FldPadExact)\n\n\n-\n FldPadExactElt\n\n\n\n\nThe zero element of \nK\n.\n\n\n\n\nOne\n(K :: FldPadExact)\n\n\n-\n FldPadExactElt\n\n\n\n\nThe one element of \nK\n.\n\n\n\n\nUniformizingElement\n(K :: FldPadExact)\n\n\n-\n FldPadExactElt\n\n\n\n\nA uniformizing element of \nK\n. For prime fields, it is the prime. For totally ramified extensions, it is a root of the defining polynomial. For unramified extensions, it is the uniformizing element of the base field.\n\n\n\n\nInertiaGenerator\n(K :: FldPadExact)\n\n\n-\n FldPadExactElt\n\n\n\n\nA unit of \nK\n whose residue class generates the residue class field of \nK\n over its prime subfield.\n\n\n\n\nK.1\n\n\nGenerator\n(K :: FldPadExact)\n\n\n-\n FldPadExactElt\n\n\n\n\nA generator of \nK\n over its base field. \nK\n must be an extension. It is a root of the defining polynomial.\n\n\n\n\nPrimitiveElement\n(L :: FldPadExact, K :: FldPadExact)\n\n\n-\n FldPadExactElt\n\n\n\n\nA generator of \nL\n over \nK\n. If the extension is trivial, returns 1. If \nL\n is defined as a direct extension of \nK\n, returns \nGenerator(L)\n. If the extension is unramified, returns \nInertiaGenerator(L)\n. If the extension is totally ramified, returns \nUniformizingElement(L)\n. Otherwise, returns \nInertiaGenerator(L)+UniformizingElement(L)\n.\n\n\nFrom subfields\n\n\n\n\nK ! x\n\n\nelt\nK | x\n\n\n-\n FldPadExactElt\n\n\n\n\nCreates an element of \nK\n from \nx\n, which must be one of the following\n\n\n\n\nAn integer or rational.\n\n\nAn element of a subfield of \nK\n.\n\n\nIf \nK\n is a completion or an extension of a completion, an element of the global field.\n\n\n\n\nFrom vectors\n\n\n\n\nK ! [x1, ..., xn]\n\n\nelt\nK | x1, ..., xn\n\n\nelt\nK | [x1, ..., xn]\n\n\n-\n FldPadExactElt\n\n\n\n\nIf \nK\n is an extension of degree \nn\n, interprets \nx1, ..., xn\n as coefficients of an element of \nK\n considered as a vector in the basis generated by powers of \nK.1\n.\n\n\nRandom\n\n\n\n\nRandomUnit\n(K :: FldPadExact, [v :: RngIntElt])\n\n\n-\n FldPadExactElt\n\n\n\n\nA random element of \nK\n of valuation \nv\n (or 0 if not given).\n\n\n\n\nRandomInteger\n(K :: FldPadExact)\n\n\n-\n FldPadExactElt\n\n\n\n\nA random element of \nK\n of valuation at least 0.\n\n\n\n\nRandom\n(K :: FldPadExact, v :: RngIntElt)\n\n\n-\n FldPadExactElt\n\n\n\n\nA random element of \nK\n of valuation at least \nv\n.\n\n\nVia internal representation\n\n\n\n\nK ! \ninit :: FldPadElt, mkUpdate :: UserProgram\n\n\n-\n FldPadExactElt\n\n\n\n\nCreates an element of \nK\n by setting its internal representation directly. The initial approximation is \ninit\n. If \nx\n is the element being created, then \nmkUpdate\n is a \nfunction(x)\n which returns a \nfunction(apr :: Val_FldPadExactElt) -\n XPGetter\n whose return value, when evaluated, increases the absolute precision of \nx\n to \napr\n (which is usually achieved via the \nUpdate\n intrinsic, below).\n\n\n\n\nUpdate\n(x :: FldPadExactElt, xx :: FldPadElt)\n\n\n\n\nUpdates the current approximation of \nx\n to \nxx\n. Requires that \nxx\n and the current approximation of \nx\n be weakly equal.",
+            "title": "Creation of elements"
+        },
+        {
+            "location": "/fld/elt-create/#creation-of-p-adic-numbers",
+            "text": "",
+            "title": "Creation of p-adic numbers"
+        },
+        {
+            "location": "/fld/elt-create/#distinguished-elements",
+            "text": "Zero (K :: FldPadExact)  -  FldPadExactElt   The zero element of  K .   One (K :: FldPadExact)  -  FldPadExactElt   The one element of  K .   UniformizingElement (K :: FldPadExact)  -  FldPadExactElt   A uniformizing element of  K . For prime fields, it is the prime. For totally ramified extensions, it is a root of the defining polynomial. For unramified extensions, it is the uniformizing element of the base field.   InertiaGenerator (K :: FldPadExact)  -  FldPadExactElt   A unit of  K  whose residue class generates the residue class field of  K  over its prime subfield.   K.1  Generator (K :: FldPadExact)  -  FldPadExactElt   A generator of  K  over its base field.  K  must be an extension. It is a root of the defining polynomial.   PrimitiveElement (L :: FldPadExact, K :: FldPadExact)  -  FldPadExactElt   A generator of  L  over  K . If the extension is trivial, returns 1. If  L  is defined as a direct extension of  K , returns  Generator(L) . If the extension is unramified, returns  InertiaGenerator(L) . If the extension is totally ramified, returns  UniformizingElement(L) . Otherwise, returns  InertiaGenerator(L)+UniformizingElement(L) .",
+            "title": "Distinguished elements"
+        },
+        {
+            "location": "/fld/elt-create/#from-subfields",
+            "text": "K ! x  elt K | x  -  FldPadExactElt   Creates an element of  K  from  x , which must be one of the following   An integer or rational.  An element of a subfield of  K .  If  K  is a completion or an extension of a completion, an element of the global field.",
+            "title": "From subfields"
+        },
+        {
+            "location": "/fld/elt-create/#from-vectors",
+            "text": "K ! [x1, ..., xn]  elt K | x1, ..., xn  elt K | [x1, ..., xn]  -  FldPadExactElt   If  K  is an extension of degree  n , interprets  x1, ..., xn  as coefficients of an element of  K  considered as a vector in the basis generated by powers of  K.1 .",
+            "title": "From vectors"
+        },
+        {
+            "location": "/fld/elt-create/#random",
+            "text": "RandomUnit (K :: FldPadExact, [v :: RngIntElt])  -  FldPadExactElt   A random element of  K  of valuation  v  (or 0 if not given).   RandomInteger (K :: FldPadExact)  -  FldPadExactElt   A random element of  K  of valuation at least 0.   Random (K :: FldPadExact, v :: RngIntElt)  -  FldPadExactElt   A random element of  K  of valuation at least  v .",
+            "title": "Random"
+        },
+        {
+            "location": "/fld/elt-create/#via-internal-representation",
+            "text": "K !  init :: FldPadElt, mkUpdate :: UserProgram  -  FldPadExactElt   Creates an element of  K  by setting its internal representation directly. The initial approximation is  init . If  x  is the element being created, then  mkUpdate  is a  function(x)  which returns a  function(apr :: Val_FldPadExactElt) -  XPGetter  whose return value, when evaluated, increases the absolute precision of  x  to  apr  (which is usually achieved via the  Update  intrinsic, below).   Update (x :: FldPadExactElt, xx :: FldPadElt)   Updates the current approximation of  x  to  xx . Requires that  xx  and the current approximation of  x  be weakly equal.",
+            "title": "Via internal representation"
+        },
+        {
+            "location": "/fld/elt-basics/",
+            "text": "Basic operations on elements\n\n\nLocation\n\n\n\n\nParent\n(x :: FldPadExactElt)\n\n\n-\n FldPadExact\n\n\n\n\nThe field containing \nx\n.\n\n\nArithmetic\n\n\n\n\n'-'\n(x :: FldPadExactElt)\n\n\n'+'\n(x :: FldPadExactElt, y :: FldPadExactElt)\n\n\n'-'\n(x :: FldPadExactElt, y :: FldPadExactElt)\n\n\n'*'\n(x :: FldPadExactElt, y :: FldPadExactElt)\n\n\n'/'\n(x :: FldPadExactElt, y :: FldPadExactElt)\n\n\n'^'\n(x :: FldPadExactElt, n :: RngIntElt)\n\n\n'\n+'\n(xs :: [FldPadExactElt])\n\n\n'\n*'\n(xs :: [FldPadExactElt])\n\n\n-\n FldPadExactElt\n\n\n\n\nNegation, addition, subtraction, multiplication, division, powering, sum and product.\n\n\nParameters:\n\n\n\n\nStrategy\n (division and powering only): used to determine if the value being divided by is non-zero and its valuation. If this fails, a precision error will occur. (Default: \n\"default\"\n)\n\n\n\n\nApproximation\n\n\n\n\nAbsolutePrecision\n(x :: FldPadExactElt)\n\n\n-\n Val_FldPadElt\n\n\n\n\nThe absolute precision to which \nx\n is currently known.\n\n\n\n\nWeakValuation\n(x :: FldPadExactElt)\n\n\n-\n Val_FldPadElt\n\n\n\n\nThe valuation of \nx\n, if known, otherwise the best lower bound \nAbsolutePrecision(x)\n.\n\n\n\n\nIsWeaklyZero\n(x :: FldPadExactElt)\n\n\n-\n BoolElt\n\n\n\n\nTrue if \nx\n is zero to the current precision. That is, true if the valuation of \nx\n is at least the absolute precision.\n\n\n\n\nPrecision\n(x :: FldPadExactElt)\n\n\n-\n Val_FldPadElt\n\n\n\n\nThe relative precision to which \nx\n is known: \nAbsolutePrecision(x) - WeakValuation(x)\n. It is zero iff \nx\n is weakly zero.\n\n\n\n\nIsDefinitelyZero\n(x :: FldPadExactElt)\n\n\n-\n BoolElt\n\n\n\n\nTrue if \nx\n is definitely zero: it is weakly zero and has infinite absolute precision.\n\n\n\n\nBaselineValuation\n(x :: FldPadExactElt)\n\n\n-\n Val_FldPadElt\n\n\n\n\nA fixed lower bound on the valuation of \nx\n; usually the weak valuation of the initial approximation of \nx\n.\n\n\n\n\nBaselinePrecision\n(x :: FldPadExactElt)\n\n\n-\n Val_FldPadElt\n\n\n\n\nThe precision of \nx\n relative to the baseline: \nAbsolutePrecision(x)-BaselineValuation(x)\n.\n\n\nValuation\n\n\n\n\nValuation\n(x :: FldPadExactElt)\n\n\n-\n Val_FldPadElt\n\n\n\n\nThe valuation of \nx\n.\n\n\nParemeters.\n\n\n\n\nStrategy\n: Used to increase the precision of \nx\n until it is not weakly zero. If this fails, then a precision error occurs. (Default: \n\"default\"\n);\n\n\n\n\n\n\nValuationEq\n(x :: FldPadExactElt, n)\n\n\nValuationNe\n(x :: FldPadExactElt, n)\n\n\nValuationLe\n(x :: FldPadExactElt, n)\n\n\nValuationLt\n(x :: FldPadExactElt, n)\n\n\nValuationGe\n(x :: FldPadExactElt, n)\n\n\nValuationGt\n(x :: FldPadExactElt, n)\n\n\n-\n BoolElt\n\n\n\n\nCompares the valuation of \nx\n with \nn\n. Avoids precision errors compared to doing for example \nValuation(x) lt 0\n because the precise valuation of \nx\n is not required.\n\n\nMay increase the absolute precision of \nx\n to \nn\n or \nn+1\n.\n\n\n\n\nIsUnit\n(x :: FldPadExactElt)\n\n\n-\n BoolElt\n\n\n\n\nTrue if the valuation of \nx\n is 0.\n\n\n\n\nIsIntegral\n(x :: FldPadExactElt)\n\n\n-\n BoolElt\n\n\n\n\nTrue if the valuation of \nx\n is at least 0.\n\n\nVal_FldPadElt\n\n\nValuations of p-adic numbers are represented by objects of type \nVal_FldPadElt\n, which are a simple wrapper type for integers, rationals and infinity. They are returned by intrinsics such as \nValuation\n and \nAbsolutePrecision\n.\n\n\n\n\nVal_FldPadElt_Make\n(v)\n\n\n-\n Val_FldPadElt\n\n\n\n\nMakes a valuation with the value \nv\n which must be an integer \nRngIntElt\n, rational \nFldRatElt\n or infinity \nInfty\n.\n\n\n\n\nValue\n(v :: Val_FldPadElt)\n\n\n-\n .\n\n\n\n\nThe value of the valuation, either an integer \nRngIntElt\n, rational \nFldRatElt\n or infinity \nInfty\n.\n\n\n\n\nIntegerValue\n(v :: Val_FldPadElt)\n\n\n-\n RngIntElt\n\n\n\n\nThe value of the valuation coerced to an integer. The value must be an integer or a rational with denominator 1.\n\n\n\n\n'+'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'-'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'*'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'\n+'\n(vs :: [Val_FldPadElt])\n\n\n'\n*'\n(vs :: [Val_FldPadElt])\n\n\n-\n Val_FldPadElt\n\n\n\n\nAdd, subtract, multiply, sum, product.\n\n\n\n\nCeiling\n(v :: Val_FldPadElt)\n\n\n-\n Val_FldPadElt\n\n\n\n\nThe valuation rounded up to the next integer.\n\n\n\n\n'meet'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'join'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n\n\nMinimum and maximum. We use \nmeet\n and \njoin\n because more general valuations, such as those for polynomials, are only partially ordered.\n\n\n\n\n'eq'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'ne'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'le'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'lt'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'ge'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n'gt'\n(v :: Val_FldPadElt, w :: Val_FldPadElt)\n\n\n-\n BoolElt\n\n\n\n\nComparisons.\n\n\nPrinting\n\n\nBy default, \nFldPadExactElt\ns are printed to relative precision 1, so we see its (weak) valuation and the first p-adic coefficient thereafter. At print level \nMagma\n, they are printed to their full absolute precision. The user can get more control using the \nFormat\n intrinsic.\n\n\n\n\nFormat\n(x :: FldPadExactElt)\n\n\n-\n MonStgElt\n\n\n\n\nReturns a string representation of \nx\n according to the parameters.\n\n\nParameters.\n\n\n\n\nAPr\n: The absolute precision to print to. (Default: \nAbsolutePrecision(x) meet (WeakValuation(x) + 1)\n)",
+            "title": "Basic operations on elements"
+        },
+        {
+            "location": "/fld/elt-basics/#basic-operations-on-elements",
+            "text": "",
+            "title": "Basic operations on elements"
+        },
+        {
+            "location": "/fld/elt-basics/#location",
+            "text": "Parent (x :: FldPadExactElt)  -  FldPadExact   The field containing  x .",
+            "title": "Location"
+        },
+        {
+            "location": "/fld/elt-basics/#arithmetic",
+            "text": "'-' (x :: FldPadExactElt)  '+' (x :: FldPadExactElt, y :: FldPadExactElt)  '-' (x :: FldPadExactElt, y :: FldPadExactElt)  '*' (x :: FldPadExactElt, y :: FldPadExactElt)  '/' (x :: FldPadExactElt, y :: FldPadExactElt)  '^' (x :: FldPadExactElt, n :: RngIntElt)  ' +' (xs :: [FldPadExactElt])  ' *' (xs :: [FldPadExactElt])  -  FldPadExactElt   Negation, addition, subtraction, multiplication, division, powering, sum and product.  Parameters:   Strategy  (division and powering only): used to determine if the value being divided by is non-zero and its valuation. If this fails, a precision error will occur. (Default:  \"default\" )",
+            "title": "Arithmetic"
+        },
+        {
+            "location": "/fld/elt-basics/#approximation",
+            "text": "AbsolutePrecision (x :: FldPadExactElt)  -  Val_FldPadElt   The absolute precision to which  x  is currently known.   WeakValuation (x :: FldPadExactElt)  -  Val_FldPadElt   The valuation of  x , if known, otherwise the best lower bound  AbsolutePrecision(x) .   IsWeaklyZero (x :: FldPadExactElt)  -  BoolElt   True if  x  is zero to the current precision. That is, true if the valuation of  x  is at least the absolute precision.   Precision (x :: FldPadExactElt)  -  Val_FldPadElt   The relative precision to which  x  is known:  AbsolutePrecision(x) - WeakValuation(x) . It is zero iff  x  is weakly zero.   IsDefinitelyZero (x :: FldPadExactElt)  -  BoolElt   True if  x  is definitely zero: it is weakly zero and has infinite absolute precision.   BaselineValuation (x :: FldPadExactElt)  -  Val_FldPadElt   A fixed lower bound on the valuation of  x ; usually the weak valuation of the initial approximation of  x .   BaselinePrecision (x :: FldPadExactElt)  -  Val_FldPadElt   The precision of  x  relative to the baseline:  AbsolutePrecision(x)-BaselineValuation(x) .",
+            "title": "Approximation"
+        },
+        {
+            "location": "/fld/elt-basics/#valuation",
+            "text": "Valuation (x :: FldPadExactElt)  -  Val_FldPadElt   The valuation of  x .  Paremeters.   Strategy : Used to increase the precision of  x  until it is not weakly zero. If this fails, then a precision error occurs. (Default:  \"default\" );    ValuationEq (x :: FldPadExactElt, n)  ValuationNe (x :: FldPadExactElt, n)  ValuationLe (x :: FldPadExactElt, n)  ValuationLt (x :: FldPadExactElt, n)  ValuationGe (x :: FldPadExactElt, n)  ValuationGt (x :: FldPadExactElt, n)  -  BoolElt   Compares the valuation of  x  with  n . Avoids precision errors compared to doing for example  Valuation(x) lt 0  because the precise valuation of  x  is not required.  May increase the absolute precision of  x  to  n  or  n+1 .   IsUnit (x :: FldPadExactElt)  -  BoolElt   True if the valuation of  x  is 0.   IsIntegral (x :: FldPadExactElt)  -  BoolElt   True if the valuation of  x  is at least 0.",
+            "title": "Valuation"
+        },
+        {
+            "location": "/fld/elt-basics/#val_fldpadelt",
+            "text": "Valuations of p-adic numbers are represented by objects of type  Val_FldPadElt , which are a simple wrapper type for integers, rationals and infinity. They are returned by intrinsics such as  Valuation  and  AbsolutePrecision .   Val_FldPadElt_Make (v)  -  Val_FldPadElt   Makes a valuation with the value  v  which must be an integer  RngIntElt , rational  FldRatElt  or infinity  Infty .   Value (v :: Val_FldPadElt)  -  .   The value of the valuation, either an integer  RngIntElt , rational  FldRatElt  or infinity  Infty .   IntegerValue (v :: Val_FldPadElt)  -  RngIntElt   The value of the valuation coerced to an integer. The value must be an integer or a rational with denominator 1.   '+' (v :: Val_FldPadElt, w :: Val_FldPadElt)  '-' (v :: Val_FldPadElt, w :: Val_FldPadElt)  '*' (v :: Val_FldPadElt, w :: Val_FldPadElt)  ' +' (vs :: [Val_FldPadElt])  ' *' (vs :: [Val_FldPadElt])  -  Val_FldPadElt   Add, subtract, multiply, sum, product.   Ceiling (v :: Val_FldPadElt)  -  Val_FldPadElt   The valuation rounded up to the next integer.   'meet' (v :: Val_FldPadElt, w :: Val_FldPadElt)  'join' (v :: Val_FldPadElt, w :: Val_FldPadElt)   Minimum and maximum. We use  meet  and  join  because more general valuations, such as those for polynomials, are only partially ordered.   'eq' (v :: Val_FldPadElt, w :: Val_FldPadElt)  'ne' (v :: Val_FldPadElt, w :: Val_FldPadElt)  'le' (v :: Val_FldPadElt, w :: Val_FldPadElt)  'lt' (v :: Val_FldPadElt, w :: Val_FldPadElt)  'ge' (v :: Val_FldPadElt, w :: Val_FldPadElt)  'gt' (v :: Val_FldPadElt, w :: Val_FldPadElt)  -  BoolElt   Comparisons.",
+            "title": "Val_FldPadElt"
+        },
+        {
+            "location": "/fld/elt-basics/#printing",
+            "text": "By default,  FldPadExactElt s are printed to relative precision 1, so we see its (weak) valuation and the first p-adic coefficient thereafter. At print level  Magma , they are printed to their full absolute precision. The user can get more control using the  Format  intrinsic.   Format (x :: FldPadExactElt)  -  MonStgElt   Returns a string representation of  x  according to the parameters.  Parameters.   APr : The absolute precision to print to. (Default:  AbsolutePrecision(x) meet (WeakValuation(x) + 1) )",
+            "title": "Printing"
+        },
+        {
+            "location": "/fld/residue/",
+            "text": "Residue class fields\n\n\n\n\nResidueClassField\n(K :: FldPadExact)\n\n\n-\n FldFin, Map, Map\n\n\n\n\nThe residue class field of \nK\n.\n\n\nIt is guaranteed to be an extension of the residue class field of any subfield of \nK\n, and is also equal to the residue class field of the approximation field of \nK\n.\n\n\nAlso returns the quotient map from \nK\n into the residue class field. The inverse is defined and returns elements to absolute precision 1 which cannot have their precision increased further. Also returns the quotient map from the approximation field of \nK\n into the residue class field.\n\n\n\n\nResidueClass\n(K :: FldPadExact\n\n\n-\n FldFinElt\n\n\n\n\nThe residue class of \nx\n, an element of \nResidueClassField(Parent(x))\n.",
+            "title": "Residue class fields"
+        },
+        {
+            "location": "/fld/residue/#residue-class-fields",
+            "text": "ResidueClassField (K :: FldPadExact)  -  FldFin, Map, Map   The residue class field of  K .  It is guaranteed to be an extension of the residue class field of any subfield of  K , and is also equal to the residue class field of the approximation field of  K .  Also returns the quotient map from  K  into the residue class field. The inverse is defined and returns elements to absolute precision 1 which cannot have their precision increased further. Also returns the quotient map from the approximation field of  K  into the residue class field.   ResidueClass (K :: FldPadExact  -  FldFinElt   The residue class of  x , an element of  ResidueClassField(Parent(x)) .",
+            "title": "Residue class fields"
+        },
+        {
+            "location": "/fld/ramification/",
+            "text": "Ramification\n\n\nRamification polygons\n\n\nIn this section, when $f(x)$ is an Eisenstein polynomial with root $pi$, then the \nramification polynomial\n of $f$ is defined to be $rho(x):=f(x+pi)$. The key feature is that if $pi'$ is another root of $f(x)$ then $pi'-pi$ is a root of $rho(x)$, and hence the roots of $rho$ measure ramification. If $L/K$ is the extension defined by $f$ then the \nramification polygon\n of $L/K$ is defined to be the Newton polygon of $rho$, which is independent of the choice of $f$. If $L/K$ is a more general extension, then its ramification polygon is that of its totally ramified part with an additional horizontal edge.\n\n\n\n\nRamificationPolynomial\n(K :: FldPadExact)\n\n\n-\n RngUPolElt_FldPadExact\n\n\n\n\nThe ramification polynomial of the defining polynomial of \nK\n. Hence, \nK\n must be a totally ramified extension.\n\n\n\n\nRamificationPolygon\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n NwtnPgon\n\n\n\n\nThe ramification polygon of \nL\n over \nK\n. Since the ramification polynomial always has 0 as a root, the x co-ordinates of the vertices of the polygon range from 1 to \nDegree(L,K)\n.\n\n\n\n\nRamificationPolygon\n(f :: RngUPolElt_FldPadExact)\n\n\n-\n NwtnPgon\n\n\n\n\nThe ramification polygon of the Eisenstein polynomial \nf\n.\n\n\nHasse-Herbrand transition functions\n\n\nThe Hasse-Herbrand transition function is an invariant of an extension of local fields. It converts ramification breaks from the \"lower numbering\" (relative to the top field) to the \"upper numbering\" (relative to the base field). This module introduces a new type \nHasseHerbTransFunc\n to represent these. For convenience, we can create them from \nFldPad\ns as well as \nFldPadExact\ns.\n\n\n\n\nTransitionFunction\n(L :: FldPad, [K :: FldPad])\n\n\nTransitionFunction\n(L :: FldPadExact, [K :: FldPadExact])\n\n\n-\n HasseHerbTransFunc\n\n\n\n\nThe transition function of \nL\n over \nK\n.\n\n\n\n\nRamificationPolygon\n(h :: HasseHerbTransFunc)\n\n\n-\n NwtnPgon\n\n\n\n\nThe ramification polygon of a totally ramified extension with the given transition function.\n\n\n\n\nRamificationDegree\n(h :: HasseHerbTransFunc)\n\n\n-\n RngIntElt\n\n\n\n\nThe ramification degree of an extension with this transition function.\n\n\n\n\nVertices\n(h :: HasseHerbTransFunc)\n\n\n-\n []\n\n\n\n\nThe vertices of the transition function.\n\n\n\n\n'@'\n(v, h :: HasseHerbTransFunc)\n\n\n-\n .\n\n\n\n\nEvaluates \nh\n at \nv\n.\n\n\n\n\n'@@'\n(u, h :: HasseHerbTransFunc)\n\n\n-\n .\n\n\n\n\nEvaluates the inverse of \nh\n at \nu\n.\n\n\n\n\n'eq'\n(h1 :: HasseHerbTransFunc, h2 :: HasseHerbTransFunc)\n\n\n-\n BoolElt\n\n\n\n\nTest for equality.\n\n\n\n\nLowerBreaks\n(h :: HasseHerbTransFunc)\n\n\n-\n []\n\n\n\n\nThe ramification breaks in lower numbering; that is, the x co-ordinate of the vertices.\n\n\n\n\nUpperBreaks\n(h :: HasseHerbTransFunc)\n\n\n-\n []\n\n\n\n\nThe ramification breaks in upper numbering; that is, the y co-ordinate of the vertices.",
+            "title": "Ramification"
+        },
+        {
+            "location": "/fld/ramification/#ramification",
+            "text": "",
+            "title": "Ramification"
+        },
+        {
+            "location": "/fld/ramification/#ramification-polygons",
+            "text": "In this section, when $f(x)$ is an Eisenstein polynomial with root $pi$, then the  ramification polynomial  of $f$ is defined to be $rho(x):=f(x+pi)$. The key feature is that if $pi'$ is another root of $f(x)$ then $pi'-pi$ is a root of $rho(x)$, and hence the roots of $rho$ measure ramification. If $L/K$ is the extension defined by $f$ then the  ramification polygon  of $L/K$ is defined to be the Newton polygon of $rho$, which is independent of the choice of $f$. If $L/K$ is a more general extension, then its ramification polygon is that of its totally ramified part with an additional horizontal edge.   RamificationPolynomial (K :: FldPadExact)  -  RngUPolElt_FldPadExact   The ramification polynomial of the defining polynomial of  K . Hence,  K  must be a totally ramified extension.   RamificationPolygon (L :: FldPadExact, [K :: FldPadExact])  -  NwtnPgon   The ramification polygon of  L  over  K . Since the ramification polynomial always has 0 as a root, the x co-ordinates of the vertices of the polygon range from 1 to  Degree(L,K) .   RamificationPolygon (f :: RngUPolElt_FldPadExact)  -  NwtnPgon   The ramification polygon of the Eisenstein polynomial  f .",
+            "title": "Ramification polygons"
+        },
+        {
+            "location": "/fld/ramification/#hasse-herbrand-transition-functions",
+            "text": "The Hasse-Herbrand transition function is an invariant of an extension of local fields. It converts ramification breaks from the \"lower numbering\" (relative to the top field) to the \"upper numbering\" (relative to the base field). This module introduces a new type  HasseHerbTransFunc  to represent these. For convenience, we can create them from  FldPad s as well as  FldPadExact s.   TransitionFunction (L :: FldPad, [K :: FldPad])  TransitionFunction (L :: FldPadExact, [K :: FldPadExact])  -  HasseHerbTransFunc   The transition function of  L  over  K .   RamificationPolygon (h :: HasseHerbTransFunc)  -  NwtnPgon   The ramification polygon of a totally ramified extension with the given transition function.   RamificationDegree (h :: HasseHerbTransFunc)  -  RngIntElt   The ramification degree of an extension with this transition function.   Vertices (h :: HasseHerbTransFunc)  -  []   The vertices of the transition function.   '@' (v, h :: HasseHerbTransFunc)  -  .   Evaluates  h  at  v .   '@@' (u, h :: HasseHerbTransFunc)  -  .   Evaluates the inverse of  h  at  u .   'eq' (h1 :: HasseHerbTransFunc, h2 :: HasseHerbTransFunc)  -  BoolElt   Test for equality.   LowerBreaks (h :: HasseHerbTransFunc)  -  []   The ramification breaks in lower numbering; that is, the x co-ordinate of the vertices.   UpperBreaks (h :: HasseHerbTransFunc)  -  []   The ramification breaks in upper numbering; that is, the y co-ordinate of the vertices.",
+            "title": "Hasse-Herbrand transition functions"
+        },
+        {
+            "location": "/upol/intro/",
+            "text": "",
+            "title": "Introduction"
+        },
+        {
+            "location": "/upol/basics/",
+            "text": "Basic operations on univariate polynomial rings\n\n\nCreation\n\n\n\n\nPolynomialRing(K :: FldPadExact) -\n RngUPol_FldPadExact\n\n\n\n\nThe ring of univariate polynomials over \nK\n.\n\n\nBasic properties\n\n\n\n\nBaseRing(R :: RngUPol_FldPadExact) -\n FldPadExact\n\n\n\n\nThe field of coefficients of \nR\n.",
+            "title": "Basic operations on  polynomial rings"
+        },
+        {
+            "location": "/upol/basics/#basic-operations-on-univariate-polynomial-rings",
+            "text": "",
+            "title": "Basic operations on univariate polynomial rings"
+        },
+        {
+            "location": "/upol/basics/#creation",
+            "text": "PolynomialRing(K :: FldPadExact) -  RngUPol_FldPadExact   The ring of univariate polynomials over  K .",
+            "title": "Creation"
+        },
+        {
+            "location": "/upol/basics/#basic-properties",
+            "text": "BaseRing(R :: RngUPol_FldPadExact) -  FldPadExact   The field of coefficients of  R .",
+            "title": "Basic properties"
+        },
+        {
+            "location": "/upol/elt-basics/",
+            "text": "Basic operations on univariate polynomials\n\n\nDistinguished polynomials\n\n\n\n\nZero(R :: RngUPolElt_FldPadExact) -\n RngUPolElt_FldPadExact\n\n\n\n\nThe zero polynomial in \nR\n,\n\n\n\n\nOne(R :: RngUPolElt_FldPadExact) -\n RngUPolElt_FldPadExact\n\n\n\n\nThe one polynomial in \nR\n.\n\n\n\n\nR.1\n\n\n\n\nThe indeterminate of \nR\n.\n\n\nCreation\n\n\n\n\nR ! f\n\n\n\n\nCoerces \nf\n to a polynomial in \nR :: RngUPol_FldPadExact\n where \nf\n is one of:\n\n\n\n\n\n\nA \nRngUPol_FldPadExact\n or \nRngUPol\n whose coefficients can be coerced to the base ring of \nR\n\n\n\n\n\n\nA sequence of coefficients which can be coerced to the base ring of \nR\n\n\n\n\n\n\n\n\nPolynomial(coeffs :: [FldPadExactElt])\n\n\n\n\nThe polynomial with the given coefficients. Equivalent to \nPolynomialRing(Universe(coeffs)) ! coeffs\n.\n\n\n\n\nPolynomial(K :: FldPadExact, coeffs :: [])\n\n\n\n\nThe polynomial over \nK\n with the given coefficients. Equivalent to \nPolynomialRing(K) ! coeffs\n.\n\n\nBasic properties\n\n\n\n\nParent(f :: RngUPolElt_FldPadExact) -\n RngUPol_FldPadExact\n\n\n\n\nThe polynomial ring containing \nf\n.\n\n\n\n\nBaseRing(f :: RngUPolElt_FldPadExact) -\n FldPadExact\n\n\n\n\nThe field containing the coefficients of \nf\n. Equivalent to \nBaseRing(Parent(f))\n.\n\n\n\n\nWeakDegree(f :: RngUPolElt_FldPadExact) -\n RngIntElt\n\n\n\n\nThe number of stored coefficients of \nf\n minus 1. It is possible that the top stored coefficient is actually zero, so this is an upper bound on the actual degree.\n\n\n\n\nDegree(f :: RngUPolElt_FldPadExact) -\n RngIntElt\n\n\n\n\nThe degree of \nf\n.\n\n\nParemeters.\n\n\n\n\nStrategy\n: Used to determine if the top coefficient is non-zero. Will raise a precision error if not. (Default: \n\"default\"\n)\n\n\n\n\n\n\nWeakCoefficients(f :: RngUPolElt_FldPadExact) -\n []\n\n\n\n\nThe stored coefficients of \nf\n. It is possible that the top coefficient is actually zero.\n\n\n\n\nCoefficients(f :: RngUPolElt_FldPadExact) -\n []\n\n\n\n\nThe coefficients of \nf\n.\n\n\nParemeters.\n As for \nDegree(f)\n.\n\n\n\n\nWeakLeadingCoefficient(f :: RngUPolElt_FldPadExact) -\n FldPadExactElt\n\n\n\n\nThe \nWeakDegree(f)\nth coefficient of \nf\n.\n\n\n\n\nLeadingCoefficient(f :: RngUPolElt_FldPadExact) -\n FldPadExactElt\n\n\n\n\nParameters.\n As for \nDegree(f)\n.\n\n\n\n\nCoefficient(f :: RngUPolElt_FldPadExact, i :: RngIntElt) -\n FldPadExactElt\n\n\n\n\nThe \ni\nth coefficient of \nf\n. \ni\n must not be negative.\n\n\nApproximation\n\n\n\n\nAbsolutePrecision(f :: RngUPolElt_FldPadExact) -\n Val_RngUPolElt_FldPadExact\n\n\n\n\nThe absolute precisions of the coefficients of the current approximation of \nf\n.\n\n\n\n\nWeakValuation(f :: RngUPolElt_FldPadExact) -\n Val_RngUPolElt_FldPadExact\n\n\n\n\nThe weak valuations of the coefficients of the current approximation of \nf\n.\n\n\n\n\nIsWeaklyZero(f :: RngUPolElt_FldPadExact) -\n BoolElt\n\n\n\n\nTrue if the current approximation of \nf\n is zero up to precision.\n\n\n\n\nBaselineValuation(f :: RngUPolElt_FldPadExact) -\n Val_RngUPolElt_FldPadExact\n\n\n\n\nA fixed lower bound on the valuation of \nf\n; usually the weak valuation of the initial approximation of \nf\n.\n\n\n\n\nBaselinePrecision(f :: RngUPolElt_FldPadExact) -\n Val_RngUPolElt_FldPadExact\n\n\n\n\nThe precision of \nf\n relative to the baseline: \nAbsolutePrecision(f)-BaselineValuation(f)\n.\n\n\nValuation\n\n\n\n\nWeakMinValuation(f :: RngUPolElt_FldPadExact) -\n Val_FldPadExactElt\n\n\n\n\nThe smallest weak valuation of the coefficients of the current approximation of \nf\n.\n\n\n\n\nValuation(f :: RngUPolElt_FldPadExact) -\n Val_RngUPolElt_FldPadExact\n\n\n\n\nThe valuations of the coefficients of \nf\n\n\nParameters.\n\n\n\n\nStrategy\n: Used to determine if each coefficient of \nf\n is nonzero.\n\n\n\n\n\n\nMinValuation(f :: RngUPolElt_FldPadExact) -\n Val_FldPadExactElt\n\n\n\n\nThe smallest valuation of the coefficients of \nf\n.\n\n\nParameters.\n\n\n\n\nStrategy\n: Used to determine if \nf\n is nonzero. (Default: \n\"default\"\n)\n\n\nSlope\n: Adds \nSlope*i\n to the valuation of the \ni\nth coefficient. (Default: \n0\n)\n\n\nPivot\n: Adds \n-Slope*Pivot\n to each valuation. (Default: \n0\n)\n\n\n\n\nArithmetic\n\n\n\n\n'-'(f :: RngUPolElt_FldPadExact) -\n RngUPolElt_FldPadExact\n\n\n'+'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -\n RngUPolElt_FldPadExact\n\n\n'-'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -\n RngUPolElt_FldPadExact\n\n\n'*'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -\n RngUPolElt_FldPadExact\n\n\n'^'(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -\n RngUPolElt_FldPadExact\n\n\n'div'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -\n RngUPolElt_FldPadExact\n\n\n'\n+'(fs :: [RngUPolElt_FldPadExact]) -\n RngUPolElt_FldPadExact\n\n\n'\n*'(fs :: [RngUPolElt_FldPadExact]) -\n RngUPolElt_FldPadExact\n\n\n\n\nNegate, add, subtract, multiply, power, exact divide, sum, product.\n\n\nParameters.\n\n\n\n\nStrategy\n (\n'div'\n only): Used to check that \ng\n is non-zero. (Default: \n\"default\"\n)\n\n\n\n\nRelated polynomials\n\n\n\n\nDerivative(f :: RngUPolElt_FldPadExact) -\n RngUPolElt_FldPadExact\n\n\n\n\nThe derivarive of \nf\n.\n\n\n\n\nDerivative(f :: RngUPolElt_FldPadExact, k :: RngIntElt) -\n RngUPolElt_FldPadExact\n\n\n\n\nThe \nk\nth derivative of \nf\n.\n\n\n\n\nShiftValuation(f :: RngUPolElt_FldPadExact, v) -\n RngUPolElt_FldPadExact\n\n\n\n\nShifts the valuation of the coefficients of \nf\n by \nv\n. \nv\n must be a \nVal_RngUPolElt_FldPadExact\n, \n[RngIntElt]\n, \nRngIntElt\n, \nVal_FldPadExact\n, or anything else coercible to \nVal_RngUPolElt_FldPadExact\n.\n\n\n\n\nShiftSlope(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -\n RngUPolElt_FldPadExact\n\n\n\n\nShifts the valuation of the \ni\nth coefficient of \nf\n by \ni*n\n.\n\n\nParameters.\n\n\n\n\nPivot\n: Additionally shifts the polynomial by \n-Pivot*n\n so that the \nPivot\nth coefficient is unchanged. (Default: \n0\n)\n\n\n\n\nResultant and discriminant\n\n\n\n\nWeakResultant(fs :: [RngUPolElt_FldPadExact]) -\n FldPadExactElt\n\n\n\n\nThe resultant of the polynomials \nfs\n assuming that their weak degrees are correct.\n\n\n\n\nWeakResultant(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -\n FldPadExactElt\n\n\n\n\nThe resultant of \nf\n and \ng\n assuming that their weak degrees are correct.\n\n\n\n\nResultant(fs :: [RngUPolElt_FldPadExact]) -\n FldPadExactElt\n\n\n\n\nThe resultant of the polynomials \nfs\n.\n\n\nParameters.\n\n\n\n\nStrategy\n: (Default: \n\"default\"\n)\n\n\nStrategies\n: A sequence or list of strategies corresponding to \nfs\n used to check the degree of each polynomial. (Default: \n[Strategy: f in fs]\n)\n\n\n\n\n\n\nResultant(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -\n FldPadExactElt\n\n\n\n\nThe resultant of \nf\n and \ng\n.\n\n\nParameters.\n\n\n\n\nStrategy\n: (Default: \n\"default\"\n)\n\n\nfStrategy\n: The strategy to check the degree of \nf\n. (Default: \nStrategy\n)\n\n\ngStrategy\n: The strategy to check the degree of \ng\n. (Default: \nStrategy\n)\n\n\n\n\n\n\nDiscriminant(f :: RngUPolElt_FldPadExact) -\n FldPadExactElt\n\n\n\n\nThe discriminant of \nf\n.\n\n\nParameters.\n\n\n\n\nStrategy\n: The strategy to check the degree of \nf\n. (Default: \nStrategy\n)\n\n\n\n\nEvaluation\n\n\n\n\nEvaluate(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -\n FldPadExact\n\n\n\n\nf\n evaluated at \nx\n.\n\n\nPredicates for special polynomials\n\n\n\n\nIsEisenstein(f :: RngUPolElt_FldPadExact) -\n BoolElt\n\n\n\n\nTrue if \nf\n is Eisenstein. That is, the leading coefficient has valuation 0, the constant coefficient has valuation 1 and all others have valuation at least 1. Such a polynomial is irreducible and its roots are uniformizers defining a totally ramified extension.\n\n\n\n\nIsInertial(f :: RngUPolElt_FldPadExact) -\n BoolElt\n\n\n\n\nTrue if \nf\n is inertial. That is, each coefficient is integral, the leading coefficient has valuation 0, and the polynomial reduced to the residue class field is irreducible. Such a polynomial is irreducible and its roots define an unramified extension.",
+            "title": "Basic operations on polynomials"
+        },
+        {
+            "location": "/upol/elt-basics/#basic-operations-on-univariate-polynomials",
+            "text": "",
+            "title": "Basic operations on univariate polynomials"
+        },
+        {
+            "location": "/upol/elt-basics/#distinguished-polynomials",
+            "text": "Zero(R :: RngUPolElt_FldPadExact) -  RngUPolElt_FldPadExact   The zero polynomial in  R ,   One(R :: RngUPolElt_FldPadExact) -  RngUPolElt_FldPadExact   The one polynomial in  R .   R.1   The indeterminate of  R .",
+            "title": "Distinguished polynomials"
+        },
+        {
+            "location": "/upol/elt-basics/#creation",
+            "text": "R ! f   Coerces  f  to a polynomial in  R :: RngUPol_FldPadExact  where  f  is one of:    A  RngUPol_FldPadExact  or  RngUPol  whose coefficients can be coerced to the base ring of  R    A sequence of coefficients which can be coerced to the base ring of  R     Polynomial(coeffs :: [FldPadExactElt])   The polynomial with the given coefficients. Equivalent to  PolynomialRing(Universe(coeffs)) ! coeffs .   Polynomial(K :: FldPadExact, coeffs :: [])   The polynomial over  K  with the given coefficients. Equivalent to  PolynomialRing(K) ! coeffs .",
+            "title": "Creation"
+        },
+        {
+            "location": "/upol/elt-basics/#basic-properties",
+            "text": "Parent(f :: RngUPolElt_FldPadExact) -  RngUPol_FldPadExact   The polynomial ring containing  f .   BaseRing(f :: RngUPolElt_FldPadExact) -  FldPadExact   The field containing the coefficients of  f . Equivalent to  BaseRing(Parent(f)) .   WeakDegree(f :: RngUPolElt_FldPadExact) -  RngIntElt   The number of stored coefficients of  f  minus 1. It is possible that the top stored coefficient is actually zero, so this is an upper bound on the actual degree.   Degree(f :: RngUPolElt_FldPadExact) -  RngIntElt   The degree of  f .  Paremeters.   Strategy : Used to determine if the top coefficient is non-zero. Will raise a precision error if not. (Default:  \"default\" )    WeakCoefficients(f :: RngUPolElt_FldPadExact) -  []   The stored coefficients of  f . It is possible that the top coefficient is actually zero.   Coefficients(f :: RngUPolElt_FldPadExact) -  []   The coefficients of  f .  Paremeters.  As for  Degree(f) .   WeakLeadingCoefficient(f :: RngUPolElt_FldPadExact) -  FldPadExactElt   The  WeakDegree(f) th coefficient of  f .   LeadingCoefficient(f :: RngUPolElt_FldPadExact) -  FldPadExactElt   Parameters.  As for  Degree(f) .   Coefficient(f :: RngUPolElt_FldPadExact, i :: RngIntElt) -  FldPadExactElt   The  i th coefficient of  f .  i  must not be negative.",
+            "title": "Basic properties"
+        },
+        {
+            "location": "/upol/elt-basics/#approximation",
+            "text": "AbsolutePrecision(f :: RngUPolElt_FldPadExact) -  Val_RngUPolElt_FldPadExact   The absolute precisions of the coefficients of the current approximation of  f .   WeakValuation(f :: RngUPolElt_FldPadExact) -  Val_RngUPolElt_FldPadExact   The weak valuations of the coefficients of the current approximation of  f .   IsWeaklyZero(f :: RngUPolElt_FldPadExact) -  BoolElt   True if the current approximation of  f  is zero up to precision.   BaselineValuation(f :: RngUPolElt_FldPadExact) -  Val_RngUPolElt_FldPadExact   A fixed lower bound on the valuation of  f ; usually the weak valuation of the initial approximation of  f .   BaselinePrecision(f :: RngUPolElt_FldPadExact) -  Val_RngUPolElt_FldPadExact   The precision of  f  relative to the baseline:  AbsolutePrecision(f)-BaselineValuation(f) .",
+            "title": "Approximation"
+        },
+        {
+            "location": "/upol/elt-basics/#valuation",
+            "text": "WeakMinValuation(f :: RngUPolElt_FldPadExact) -  Val_FldPadExactElt   The smallest weak valuation of the coefficients of the current approximation of  f .   Valuation(f :: RngUPolElt_FldPadExact) -  Val_RngUPolElt_FldPadExact   The valuations of the coefficients of  f  Parameters.   Strategy : Used to determine if each coefficient of  f  is nonzero.    MinValuation(f :: RngUPolElt_FldPadExact) -  Val_FldPadExactElt   The smallest valuation of the coefficients of  f .  Parameters.   Strategy : Used to determine if  f  is nonzero. (Default:  \"default\" )  Slope : Adds  Slope*i  to the valuation of the  i th coefficient. (Default:  0 )  Pivot : Adds  -Slope*Pivot  to each valuation. (Default:  0 )",
+            "title": "Valuation"
+        },
+        {
+            "location": "/upol/elt-basics/#arithmetic",
+            "text": "'-'(f :: RngUPolElt_FldPadExact) -  RngUPolElt_FldPadExact  '+'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -  RngUPolElt_FldPadExact  '-'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -  RngUPolElt_FldPadExact  '*'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -  RngUPolElt_FldPadExact  '^'(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -  RngUPolElt_FldPadExact  'div'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -  RngUPolElt_FldPadExact  ' +'(fs :: [RngUPolElt_FldPadExact]) -  RngUPolElt_FldPadExact  ' *'(fs :: [RngUPolElt_FldPadExact]) -  RngUPolElt_FldPadExact   Negate, add, subtract, multiply, power, exact divide, sum, product.  Parameters.   Strategy  ( 'div'  only): Used to check that  g  is non-zero. (Default:  \"default\" )",
+            "title": "Arithmetic"
+        },
+        {
+            "location": "/upol/elt-basics/#related-polynomials",
+            "text": "Derivative(f :: RngUPolElt_FldPadExact) -  RngUPolElt_FldPadExact   The derivarive of  f .   Derivative(f :: RngUPolElt_FldPadExact, k :: RngIntElt) -  RngUPolElt_FldPadExact   The  k th derivative of  f .   ShiftValuation(f :: RngUPolElt_FldPadExact, v) -  RngUPolElt_FldPadExact   Shifts the valuation of the coefficients of  f  by  v .  v  must be a  Val_RngUPolElt_FldPadExact ,  [RngIntElt] ,  RngIntElt ,  Val_FldPadExact , or anything else coercible to  Val_RngUPolElt_FldPadExact .   ShiftSlope(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -  RngUPolElt_FldPadExact   Shifts the valuation of the  i th coefficient of  f  by  i*n .  Parameters.   Pivot : Additionally shifts the polynomial by  -Pivot*n  so that the  Pivot th coefficient is unchanged. (Default:  0 )",
+            "title": "Related polynomials"
+        },
+        {
+            "location": "/upol/elt-basics/#resultant-and-discriminant",
+            "text": "WeakResultant(fs :: [RngUPolElt_FldPadExact]) -  FldPadExactElt   The resultant of the polynomials  fs  assuming that their weak degrees are correct.   WeakResultant(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -  FldPadExactElt   The resultant of  f  and  g  assuming that their weak degrees are correct.   Resultant(fs :: [RngUPolElt_FldPadExact]) -  FldPadExactElt   The resultant of the polynomials  fs .  Parameters.   Strategy : (Default:  \"default\" )  Strategies : A sequence or list of strategies corresponding to  fs  used to check the degree of each polynomial. (Default:  [Strategy: f in fs] )    Resultant(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -  FldPadExactElt   The resultant of  f  and  g .  Parameters.   Strategy : (Default:  \"default\" )  fStrategy : The strategy to check the degree of  f . (Default:  Strategy )  gStrategy : The strategy to check the degree of  g . (Default:  Strategy )    Discriminant(f :: RngUPolElt_FldPadExact) -  FldPadExactElt   The discriminant of  f .  Parameters.   Strategy : The strategy to check the degree of  f . (Default:  Strategy )",
+            "title": "Resultant and discriminant"
+        },
+        {
+            "location": "/upol/elt-basics/#evaluation",
+            "text": "Evaluate(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -  FldPadExact   f  evaluated at  x .",
+            "title": "Evaluation"
+        },
+        {
+            "location": "/upol/elt-basics/#predicates-for-special-polynomials",
+            "text": "IsEisenstein(f :: RngUPolElt_FldPadExact) -  BoolElt   True if  f  is Eisenstein. That is, the leading coefficient has valuation 0, the constant coefficient has valuation 1 and all others have valuation at least 1. Such a polynomial is irreducible and its roots are uniformizers defining a totally ramified extension.   IsInertial(f :: RngUPolElt_FldPadExact) -  BoolElt   True if  f  is inertial. That is, each coefficient is integral, the leading coefficient has valuation 0, and the polynomial reduced to the residue class field is irreducible. Such a polynomial is irreducible and its roots define an unramified extension.",
+            "title": "Predicates for special polynomials"
+        },
+        {
+            "location": "/upol/factoring/",
+            "text": "Roots and factorization\n\n\nHensel lifting\n\n\n\n\nIsHenselLiftable\n(f :: RngUPolElt_FldPadExact, x)\n\n\nIsHenselLiftable\n(f :: RngUPolElt, x :: FldPadExact)\n\n\n-\n BoolElt, FldPadExactElt\n\n\n\n\nTrue if \nf\n and \nx\n satisfy Hensel's lemma. That is, \nf\n and \nx\n are both integral and v(\nf\n(\nx\n)) \n 2 v(\nf\n'(x)).\n\n\nIf so, Hensel's lemma tells us there is a unique root of \nf\n within a certain distance of \nx\n. The second return value is the Hensel-lifted root.\n\n\nParameters.\n\n\n\n\nStrategy\n: Used at various points to avoid precision errors. (Default: \n\"default\"\n)\n\n\nShiftSlope\n: If \nfalse\n, ignored. If \ntrue\n, shift the valuation of \nx\n by the negative of its valuation and shift the slope of \nf\n the corresponding amount. If \n\"weak\"\n then do the same but using the weak valuation of \nx\n. (Default: \n\"false\"\n)\n\n\nShiftValuation\n: If \nfalse\n, ignored. If \ntrue\n, shift the valuation of \nf\n by the negative of the minimum valuation of its coefficients. If \n\"Weak\"\n then do the same but using the weak valuation of \nf\n. (Default: \n\"false\"\n)\n\n\n\n\n\n\nHenselLift\n(f :: RngUPolElt_FldPadExact, x)\n\n\nHenselLift\n(f :: RngUPolElt, x :: FldPadExact)\n\n\n-\n FldPadExactElt\n\n\n\n\nHensel lifts an approximation to a root of \nf\n.\n\n\nEquivalent to calling \nIsHenselLiftable(f,x)\n, raising an error if it returns false, and then returning the second value.\n\n\nParameters.\n As for \nIsHenselLiftable(f,x)\n.\n\n\n\n\nIsHenselLiftable\n(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)\n\n\n-\n BoolElt, RngUPolElt_FldPadExact\n\n\n\n\nTrue if \nf\n and \ng\n satisfy Hensel's lemma for factors of univariate polynomials. That is, \nf\n and \ng\n are both integral and v(\nf - g * (f div g)\n) \n 2 * v(\nResultant(g, f div g)\n).\n\n\nIf so, Hensel's lemma tells us there is a unique factor of \nf\n within a certain distance of \ng\n. The second return value is the Hensel-lifted factor.\n\n\nParameters.\n\n\n\n\nStrategy\n: Used at various points to avoid precision errors. (Default: \n\"default\"\n)\n\n\nShiftSlope\n: If \nfalse\n, ignored. If \ntrue\n, shift the slopes of \nf\n and \ng\n by the negative of the maximal slope of \ng\n. If an integer, shift the slopes of \nf\n and \ng\n by this. (Default: \nfalse\n)\n\n\nShiftValuation\n: If \nfalse\n, ignored. If \ntrue\n, shift the valuations of \nf\n and \ng\n by the minimum valuations of their coefficients. If \n\"Weak\"\n then do the same but using weak valuations. (Default: \nfalse\n)\n\n\nWeakResultant\n: If \ntrue\n, use the weak resultant instead of the resultant in the Hensel condition. (Default: \nfalse\n)\n\n\n\n\n\n\nHenselLift\n(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)\n\n\n-\n RngUPolElt_FldPadExact\n\n\n\n\nHensel lifts an approximation to a factor of \nf\n.\n\n\nEquivalent to calling \nIsHenselLiftable(f,g)\n, raising an error if it returns false, and then returning the second value.\n\n\nParameters.\n As for \nIsHenselLiftable(f,g)\n.\n\n\nRoots\n\n\n\n\nRoots\n(f :: RngUPolElt_FldPadExact, [K :: FldPadExact])\n\n\nRoots\n(f :: RngUPolElt, K :: FldPadExact)\n\n\n-\n []\n\n\n\n\nThe roots of \nf\n as a polynomial over \nK\n. Each root is represented by a pair \nr,m\n where \nr\n is the root itself, an element of \nK\n, and \nm\n is the multiplicity.\n\n\nThe nature of finite-precision p-adic arithmetic means it is not possible to prove that a pair of roots which are very close are actually equal, and hence it is only possible to find simple roots. Therefore \nf\n must not have repeated roots in \nK\n. If a precision error occurs it is likely that \nf\n has roots very close together and so using a larger \nStrategy\n would help.\n\n\nParameters.\n\n\n\n\nStrategy\n. (Default: \n\"default\"\n)\n\n\nMainStrategy\n. We increase the precision of \nf\n according to the strategy until calling \nRoots\n on its approximation succeeds. (Default: \nStrategy\n)\n\n\n\n\nFactorization\n\n\n\n\nFactorization\n(f :: RngUPolElt_FldPadExact)\n\n\n-\n [], FldPadExactElt, []\n\n\n\n\nThe monic irreducible factors of \nf\n over its base ring. Each factor is represented by a pair \ng,m\n where \ng\n is the factor itself and \nm\n is the multiplicity.\n\n\nAlso returns the leading coefficient of \nf\n and a sequence of certificates, if requested.\n\n\nThe certificates are a sequence of records corresponding to the factors of \nf\n and they contain additional information about the factors. At a minimum, they prove that the factor is irreducible and different from the other factors. The fields are:\n\n\n\n\nF\n: the inertia degree.\n\n\nRho\n: a polynomial which, evaluated at a root of the factor, has valuation 0 and whose residue class generates an extension of degree \nF\n of the residue class field of the base field of \nf\n. Hence this proves that the factor defines an extension of inertia degree a multiple of \nF\n.\n\n\nE\n: the ramification degree.\n\n\nPi\n: a polynomial which, evaluated at a root of the factor, has valuation \n1/E\n. This proves that the factor defines an extension of ramification degree a multiple of \nE\n.\n\n\nIdealGen1\n, \nIdealGen2\n (when \nIdeals:=true\n): polynomials???\n\n\nExtension\n (when \nExtensions:=true\n): an extension of the base field of \nf\n of degree \nE*F\n containing a root of the factor.\n\n\n\n\nAs with the \nRoots\n intrinsic above, \nf\n must be squarefree.\n\n\nParameters.\n\n\n\n\nStrategy\n: (Default: \n\"default\"\n)\n\n\nMainStrategy\n: We increase the precison of \nf\n according to this strategy until calling \nFactorization\n on its approximation succeeds. (Default: \nStrategy\n)\n\n\nProof\n: Forces the factorization to be proven. If false, the factorization may only be correct up to some precision. In particular, this option allows multiplicities greater than 1. (Default: \ntrue\n)\n\n\nCertificates\n: Returns a third value, a sequence of certificates corresponding to the factors. Implies \nProof:=true\n. (Default: \nfalse\n)\n\n\nExtensions\n: Includes extensions in the sequence of certificates. Implies \nCertificates:=true\n. (Default: \nfalse\n)\n\n\nIdeals\n: Includes ideals in the sequence of certificates. Implies \nIdeals:=true\n. (Default: \nfalse\n)",
+            "title": "Roots and factorization"
+        },
+        {
+            "location": "/upol/factoring/#roots-and-factorization",
+            "text": "",
+            "title": "Roots and factorization"
+        },
+        {
+            "location": "/upol/factoring/#hensel-lifting",
+            "text": "IsHenselLiftable (f :: RngUPolElt_FldPadExact, x)  IsHenselLiftable (f :: RngUPolElt, x :: FldPadExact)  -  BoolElt, FldPadExactElt   True if  f  and  x  satisfy Hensel's lemma. That is,  f  and  x  are both integral and v( f ( x ))   2 v( f '(x)).  If so, Hensel's lemma tells us there is a unique root of  f  within a certain distance of  x . The second return value is the Hensel-lifted root.  Parameters.   Strategy : Used at various points to avoid precision errors. (Default:  \"default\" )  ShiftSlope : If  false , ignored. If  true , shift the valuation of  x  by the negative of its valuation and shift the slope of  f  the corresponding amount. If  \"weak\"  then do the same but using the weak valuation of  x . (Default:  \"false\" )  ShiftValuation : If  false , ignored. If  true , shift the valuation of  f  by the negative of the minimum valuation of its coefficients. If  \"Weak\"  then do the same but using the weak valuation of  f . (Default:  \"false\" )    HenselLift (f :: RngUPolElt_FldPadExact, x)  HenselLift (f :: RngUPolElt, x :: FldPadExact)  -  FldPadExactElt   Hensel lifts an approximation to a root of  f .  Equivalent to calling  IsHenselLiftable(f,x) , raising an error if it returns false, and then returning the second value.  Parameters.  As for  IsHenselLiftable(f,x) .   IsHenselLiftable (f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)  -  BoolElt, RngUPolElt_FldPadExact   True if  f  and  g  satisfy Hensel's lemma for factors of univariate polynomials. That is,  f  and  g  are both integral and v( f - g * (f div g) )   2 * v( Resultant(g, f div g) ).  If so, Hensel's lemma tells us there is a unique factor of  f  within a certain distance of  g . The second return value is the Hensel-lifted factor.  Parameters.   Strategy : Used at various points to avoid precision errors. (Default:  \"default\" )  ShiftSlope : If  false , ignored. If  true , shift the slopes of  f  and  g  by the negative of the maximal slope of  g . If an integer, shift the slopes of  f  and  g  by this. (Default:  false )  ShiftValuation : If  false , ignored. If  true , shift the valuations of  f  and  g  by the minimum valuations of their coefficients. If  \"Weak\"  then do the same but using weak valuations. (Default:  false )  WeakResultant : If  true , use the weak resultant instead of the resultant in the Hensel condition. (Default:  false )    HenselLift (f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)  -  RngUPolElt_FldPadExact   Hensel lifts an approximation to a factor of  f .  Equivalent to calling  IsHenselLiftable(f,g) , raising an error if it returns false, and then returning the second value.  Parameters.  As for  IsHenselLiftable(f,g) .",
+            "title": "Hensel lifting"
+        },
+        {
+            "location": "/upol/factoring/#roots",
+            "text": "Roots (f :: RngUPolElt_FldPadExact, [K :: FldPadExact])  Roots (f :: RngUPolElt, K :: FldPadExact)  -  []   The roots of  f  as a polynomial over  K . Each root is represented by a pair  r,m  where  r  is the root itself, an element of  K , and  m  is the multiplicity.  The nature of finite-precision p-adic arithmetic means it is not possible to prove that a pair of roots which are very close are actually equal, and hence it is only possible to find simple roots. Therefore  f  must not have repeated roots in  K . If a precision error occurs it is likely that  f  has roots very close together and so using a larger  Strategy  would help.  Parameters.   Strategy . (Default:  \"default\" )  MainStrategy . We increase the precision of  f  according to the strategy until calling  Roots  on its approximation succeeds. (Default:  Strategy )",
+            "title": "Roots"
+        },
+        {
+            "location": "/upol/factoring/#factorization",
+            "text": "Factorization (f :: RngUPolElt_FldPadExact)  -  [], FldPadExactElt, []   The monic irreducible factors of  f  over its base ring. Each factor is represented by a pair  g,m  where  g  is the factor itself and  m  is the multiplicity.  Also returns the leading coefficient of  f  and a sequence of certificates, if requested.  The certificates are a sequence of records corresponding to the factors of  f  and they contain additional information about the factors. At a minimum, they prove that the factor is irreducible and different from the other factors. The fields are:   F : the inertia degree.  Rho : a polynomial which, evaluated at a root of the factor, has valuation 0 and whose residue class generates an extension of degree  F  of the residue class field of the base field of  f . Hence this proves that the factor defines an extension of inertia degree a multiple of  F .  E : the ramification degree.  Pi : a polynomial which, evaluated at a root of the factor, has valuation  1/E . This proves that the factor defines an extension of ramification degree a multiple of  E .  IdealGen1 ,  IdealGen2  (when  Ideals:=true ): polynomials???  Extension  (when  Extensions:=true ): an extension of the base field of  f  of degree  E*F  containing a root of the factor.   As with the  Roots  intrinsic above,  f  must be squarefree.  Parameters.   Strategy : (Default:  \"default\" )  MainStrategy : We increase the precison of  f  according to this strategy until calling  Factorization  on its approximation succeeds. (Default:  Strategy )  Proof : Forces the factorization to be proven. If false, the factorization may only be correct up to some precision. In particular, this option allows multiplicities greater than 1. (Default:  true )  Certificates : Returns a third value, a sequence of certificates corresponding to the factors. Implies  Proof:=true . (Default:  false )  Extensions : Includes extensions in the sequence of certificates. Implies  Certificates:=true . (Default:  false )  Ideals : Includes ideals in the sequence of certificates. Implies  Ideals:=true . (Default:  false )",
+            "title": "Factorization"
+        },
+        {
+            "location": "/mpol/intro/",
+            "text": "",
+            "title": "Introduction"
+        },
+        {
+            "location": "/mpol/basics/",
+            "text": "",
+            "title": "Basic operations on  polynomial rings"
+        },
+        {
+            "location": "/mpol/elt-basics/",
+            "text": "",
+            "title": "Basic operations on polynomials"
+        }
+    ]
+}

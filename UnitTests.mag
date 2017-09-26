@@ -1,0 +1,67 @@
+// freeze;
+
+tests := [*
+
+<"fld/create/prime", procedure ()
+  for p in [2,5,101,0,-1,-3,4,100] do
+    if p gt 0 and IsPrime(p) then
+      K := ExactpAdicField(p);
+      assert Prime(K) eq p;
+    else
+      ok := true;
+      try
+        K := ExactpAdicField(p);
+      catch err
+        ok := false;
+      end try;
+      assert not ok;
+    end if;
+  end for;
+end procedure>
+
+*];
+
+RESULT := recformat<test, pass, err>;
+
+intrinsic ExactpAdics_RunUnitTests(:Prefix:="", Verbosity:=1, StopOnFirstFail:=false, NoCatch:=false) -> .
+  {Runs the unit tests for the ExactpAdics module. Prefix: only run tests whose name starts with this. Verbosity: 0 for no printing, 1 for basic reporting, 2 for detailed reporting. StopOnFirstFail: stops after the first test fails. NoCatch: Does not catch errors in tests, allows them to propagate so that you can use Magma debugging tools.}
+  results := [];
+  for test in tests do
+    if test[1][1..#Prefix] ne Prefix then
+      continue;
+    end if;
+    if Verbosity ge 1 then
+      printf "%o...", test[1];
+    end if;
+    r := rec<RESULT | test := test[1], pass := true>;
+    if NoCatch then
+      test[2]();
+    else
+      try
+        test[2]();
+      catch err
+        r`pass := false;
+        r`err := err;
+      end try;
+    end if;
+    if Verbosity ge 1 then
+      printf " %o\n", r`pass select "PASS" else "FAIL";
+    end if;
+    if (not r`pass) and Verbosity ge 2 then
+      print "ERROR MESSAGE:";
+      IndentPush();
+      print r`err;
+      IndentPop();
+    end if;
+    Append(~results, r);
+  end for;
+  nfail := #[r : r in results | not r`pass];
+  if Verbosity ge 1 then
+    if nfail eq 0 then
+      printf "ALL %o TESTS PASSED\n", #results;
+    else
+      printf "%o OF %o TESTS FAILED\n", nfail, #results;
+    end if;
+  end if;
+  return results;
+end intrinsic;

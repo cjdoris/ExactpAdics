@@ -1,0 +1,775 @@
+// freeze;
+
+Z := Integers();
+LIST := _ExactpAdics_List;
+
+// TODO: lock all updates while resolving dependencies
+
+declare verbose ExactpAdics_Update, 2;
+
+/////////////////////////////////////////////////////////////////////////////////
+// global state
+
+declare type ExactpAdics_Getter_Store;
+declare attributes ExactpAdics_Getter_Store
+  : lock
+  , profile       // when true, populate the 'updates' field
+  , updates       // list of information about each update which occurs
+  ;
+STORE := New(ExactpAdics_Getter_Store);
+STORE`profile := false;
+STORE`updates := [];
+
+PROFILE_UPDATE := recformat<id, initial_apr, apr>;
+
+intrinsic ExactpAdics_SetProfile(doProfile :: BoolElt : Reset:=false)
+  {Starts or stops profiling the exact p-adics updates.}
+  s := STORE;
+  s`profile := doProfile;
+  if Reset then
+    ExactpAdics_ResetProfile();
+  end if;
+end intrinsic;
+
+intrinsic ExactpAdics_ResetProfile()
+  {Resets the profiling data for the exact p-adics updates.}
+  s := STORE;
+  s`updates := [];
+end intrinsic;
+
+intrinsic ExactpAdics_GetProfileUpdates() -> []
+  {Gets a list of records, one per update, with fields recording the element, the initial precision, the target precision, and the time to perform the update.}
+  return STORE`updates;
+end intrinsic;
+
+/////////////////////////////////////////////////////////////////////////////////
+// absolute precision manipulations
+
+_apr := AbsolutePrecision;
+
+intrinsic _apr_isValid(x, n) -> BoolElt, .
+  {True if n is a valid apr for x.}
+  return false, "wrong type";
+end intrinsic;
+
+intrinsic _apr_isValid(x :: FldPadExactElt, n) -> BoolElt, .
+  {"}
+  return IsCoercible(PowVal_FldPadElt_Make(), n);
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n) -> BoolElt, .
+  {"}
+  return false, "wrong type";
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: Val_RngUPolElt_FldPad) -> BoolElt, .
+  {"}
+  return true, n;
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: RngIntElt) -> BoolElt, .
+  {"}
+  return true, Val_RngUPolElt_FldPad_Make([0..WeakDegree(x)], [n : i in [0..WeakDegree(x)]]);
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: Infty) -> BoolElt, .
+  {"}
+  return Val_RngUPolElt_FldPad_Make([0..WeakDegree(x)], [n : i in [0..WeakDegree(x)]]);
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: ExtReElt) -> BoolElt, .
+  {"}
+  return Val_RngUPolElt_FldPad_Make([0..WeakDegree(x)], [n : i in [0..WeakDegree(x)]]);
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: [RngIntElt]) -> BoolElt, .
+  {"}
+  d := WeakDegree(x);
+  if #n ge d+1 then
+    return true, Val_RngUPolElt_FldPad_Make([0..d], n[1..d+1]);
+  end if;
+  return false, "too short";
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: [Infty]) -> BoolElt, .
+  {"}
+  d := WeakDegree(x);
+  if #n ge d+1 then
+    return true, Val_RngUPolElt_FldPad_Make([0..d], n[1..d+1]);
+  end if;
+  return false, "too short";
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: [ExtReElt]) -> BoolElt, .
+  {"}
+  d := WeakDegree(x);
+  if #n ge d+1 then
+    return true, Val_RngUPolElt_FldPad_Make([0..d], n[1..d+1]);
+  end if;
+  return false, "too short";
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngMPolElt_FldPadExact, n :: RngIntElt) -> BoolElt, .
+  {"}
+  return true, n;
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngMPolElt_FldPadExact, n :: Infty) -> BoolElt, .
+  {"}
+  return true, n;
+end intrinsic;
+
+intrinsic _apr_isValid(x :: RngMPolElt_FldPadExact, n :: ExtReElt) -> BoolElt, .
+  {"}
+  return true, n;
+end intrinsic;
+
+function _apr_normalize(x, n)
+  ok, n := _apr_isValid(x,n);
+  if ok then
+    return n;
+  else
+    error "invalid precision:", n;
+  end if;
+end function;
+
+intrinsic _apr_le(x :: FldPadExactElt, a, b) -> BoolElt
+  {True if (normalized) absolute precision a is less than or equal to b.}
+  return a le b;
+end intrinsic;
+
+intrinsic _apr_le(x :: RngUPolElt_FldPadExact, a, b) -> BoolElt
+  {"}
+  return a le b;
+end intrinsic;
+
+intrinsic _apr_le(x :: RngMPolElt_FldPadExact, a, b) -> BoolElt
+  {"}
+  return a le b;
+end intrinsic;
+
+intrinsic _apr_sup(x :: FldPadExactElt, a, b) -> .
+  {A supremum for the (normalized) absolute precisions a and b.}
+  return a join b;
+end intrinsic;
+
+intrinsic _apr_sup(x :: RngUPolElt_FldPadExact, a, b) -> .
+  {"}
+  return a join b;
+end intrinsic;
+
+intrinsic _apr_sup(x :: RngMPolElt_FldPadExact, a, b) -> .
+  {"}
+  return Max(a, b);
+end intrinsic;
+
+// the Update() intrinsics now merge the old and new approximations to get the best possible, so the precision passed to the x`update(apr) function can be less than the final apr we are aiming for; the following assume that _apr_isValid(a) and not _apr_le(a,_apr(x))
+
+intrinsic _apr_required(x :: FldPadExactElt, a) -> .
+  {The apr required to update x to at least a.}
+  return a;
+end intrinsic;
+
+intrinsic _apr_required(x :: RngUPolElt_FldPadExact, a) -> .
+  {The apr needed to update x to at least a.}
+  return a diff _apr(x);
+end intrinsic;
+
+intrinsic _apr_required(x :: RngMPolElt_FldPadExact, a) -> .
+  {"}
+  return a;
+end intrinsic;
+
+//////////////////////////////////////////////////////////////////////////////////
+// dependencies
+
+DEP := recformat<id, x, apr, st, g, childids>;
+
+function dep_new(x, apr)
+  apr := _apr_normalize(x, apr);
+  return rec<DEP | id:=x`id, x:=x, apr:=apr, childids:={Integers()|}>;
+end function;
+
+procedure dep_start(~d)
+  if assigned d`g then
+    delete d`g;
+  end if;
+end procedure;
+
+procedure dep_set_apr(~d, apr)
+  d`apr := apr;
+  dep_start(~d);
+end procedure;
+
+procedure dep_getDeps(~d, ~deps)
+  if not assigned d`g then
+    d`g := d`x`update(_apr_required(d`x, d`apr));
+    case Type(d`g):
+    when XPGettr:
+      ;
+    when BoolElt:
+      d`g := ConstXPGetter(d`g);
+    else
+      error "update function should return a getter or true";
+    end case;
+    d`st := d`g`state;
+  end if;
+  deps := [**];
+  d`g`getDeps(~d`st, ~deps);
+end procedure;
+
+procedure dep_doUpdate(~d, ~done)
+  d`g`getValue(~d`st, ~val);
+  done := assigned val;
+end procedure;
+
+function dep_isDone(d)
+  return _apr_le(d`x, d`apr, _apr(d`x));
+end function;
+
+function deps_new()
+  return AssociativeArray(Integers());
+end function;
+
+procedure deps_remove(~deps, d)
+  Remove(~deps, d`id);
+end procedure;
+
+function deps_keys(deps)
+  return Sort(SetToSequence(Keys(deps)));
+end function;
+
+deps_has := IsDefined;
+
+forward deps_add_list;
+
+procedure deps_set(~deps, d)
+  dep_getDeps(~d, ~ds);
+  for t in ds do
+    Include(~d`childids, t[1]`id);
+  end for;
+  deps[d`id] := d;
+  deps_add_list(~deps, ds, d`id);
+end procedure;
+
+procedure deps_add(~deps, d, maxid)
+  assert d`id lt maxid;
+  // compare the target and current apr
+  apr := _apr(d`x);
+  if _apr_le(d`x, d`apr, apr) then
+    return;
+  elif _apr_le(d`x, apr, d`apr) then
+    ;
+  else
+    dep_set_apr(~d, _apr_sup(d`x, d`apr, apr));
+  end if;
+  // see if a dependency for this already exists, and compare aprs
+  ok, d2 := IsDefined(deps, d`id);
+  if ok then
+    if _apr_le(d`x, d`apr, d2`apr) then
+      return;
+    elif _apr_le(d`x, d2`apr, d`apr) then
+      ;
+    else
+      dep_set_apr(~d, _apr_sup(d`x, d`apr, d2`apr));
+    end if;
+  end if;
+  // now actually set the dependency
+  deps_set(~deps, d);
+end procedure;
+
+procedure deps_add_list(~deps, ds, maxid)
+  for d in ds do
+    deps_add(~deps, dep_new(d[1], d[2]), maxid);
+  end for;
+end procedure;
+
+procedure deps_satisfy(~deps)
+  while true do
+    keys := deps_keys(deps);
+    if #keys eq 0 then
+      return;
+    end if;
+    for i in keys do
+      d := deps[i];
+      vprint ExactpAdics_Update, 2: d`id, "has children", d`childids;
+      if exists{j : j in d`childids | deps_has(deps, j)} then
+        vprint ExactpAdics_Update, 2: d`id, "has dependencies outstanding";
+      else
+        vprint ExactpAdics_Update: d`id, "updating to", d`apr;
+        dep_doUpdate(~d, ~done);
+        if done then
+          // as soon as the update worked, remove it from the dependency tree
+          error if not dep_isDone(d), "update did not increase precision enough";
+          vprint ExactpAdics_Update, 2: "  done";
+          deps_remove(~deps, d);
+        else
+          vprint ExactpAdics_Update: "  not done yet";
+          deps_set(~deps, d);
+          // break i;
+        end if;
+      end if;
+    end for;
+  end while;
+end procedure;
+
+procedure satisfy_deps_list(ds, maxid)
+  deps := deps_new();
+  deps_add_list(~deps, ds, maxid);
+  deps_satisfy(~deps);
+end procedure;
+
+procedure satisfy_dep(x, apr)
+  satisfy_deps_list([*[*x,apr*]*], Infinity());
+end procedure;
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// the getter
+// 
+// a dependency is a pair <x,a> where x`id is a dependency-ordered integer, _apr_isValid(x,a) is true, x`update(a) is a getter whose value we ignore.
+
+declare type XPGettr;
+declare attributes XPGettr: state, getDeps, getValue, explode;
+
+// WRAPPED_FUNCTION := recformat<func, inputs, outputs, numInputs, numOutputs>;
+
+// function wrappedFunction(data)
+//   w := rec<WRAPPED_FUNCTION | func := data[1]>;
+//   if #data lt 2 then
+//     w`numInputs := 1;
+//   else
+//     inputs := data[2];
+//     case Type(inputs):
+//     when RngIntElt:
+//       w`numInputs := inputs;
+//     else
+//       error "bad inputs specifier";
+//     end case;
+//   end if;
+//   if #data lt 3 then
+//     w`numOutputs := 1;
+//   else
+//     outputs := data[3];
+//     case Type(outputs):
+//     when RngIntElt:
+//       w`numOutputs := outputs;
+//     else
+//       error "bad outputs specifier";
+//     end case;
+//   end if;
+//   return w;
+// end function;
+
+// function callWrappedFunction_InList(w, x)
+//   case w`numInputs:
+//   when 0:
+//     return w`func();
+//   when 1:
+//     return w`func(x);
+//   when 2:
+//     return w`func(x[1], x[2]);
+//   when 3:
+//     return w`func(x[1], x[2], x[3]);
+//   when 4:
+//     return w`func(x[1], x[2], x[3], x[4]);
+//   else
+//     error "not implemented for this many inputs";
+//   end case;
+// end function;
+
+// function callWrappedProcedure_InList(w, x)
+//   case w`numInputs:
+//   when 0:
+//     w`func();
+//   when 1:
+//     w`func(x);
+//   when 2:
+//     w`func(x[1], x[2]);
+//   when 3:
+//     w`func(x[1], x[2], x[3]);
+//   when 4:
+//     w`func(x[1], x[2], x[3], x[4]);
+//   else
+//     error "not implemented for this many inputs";
+//   end case;
+// end function;
+
+// function callWrappedFunction_InList_OutList(w, x)
+//   case w`numOutputs:
+//   when 0:
+//     callWrappedProcedure_InList(w, x);
+//     return [**];
+//   when 1:
+//     a := callWrappedFunction_InList(w, x);
+//     return a;
+//   when 2:
+//     a, b := callWrappedFunction_InList(w, x);
+//     return [* a, b *];
+//   when 3:
+//     a, b, c := callWrappedFunction_InList(w, x);
+//     return [* a, b, c *];
+//   when 4:
+//     a, b, c, d := callWrappedFunction_InList(w, x);
+//     return [* a, b, c, d *];
+//   else
+//     error "not implemented for this many outputs";
+//   end case;
+// end function;
+
+intrinsic Evaluate(g :: XPGettr) -> .
+  {Evaluates the getter and retuns its value.}
+  st := g`state;
+  repeat
+    ds := [**];
+    g`getDeps(~st, ~ds);
+    satisfy_deps_list(ds, Infinity());
+    g`getValue(~st, ~val);
+  until assigned val;
+  if assigned g`explode then
+    return Explode(val);
+  else
+    return val;
+  end if;
+end intrinsic;
+
+intrinsic Print(g :: XPGettr)
+  {Prints g.}
+  printf "Getter";
+end intrinsic;
+
+intrinsic MakeXPGetter(state, getDeps, getValue) -> XPGettr
+  {Makes a new XPGettr.}
+  g := New(XPGettr);
+  g`state := state;
+  g`getDeps := getDeps;
+  g`getValue := getValue;
+  return g;
+end intrinsic;
+
+intrinsic ConstXPGetter(X) -> XPGettr
+  {The getter returning X.}
+  return MakeXPGetter(
+    false,
+    procedure (~st, ~deps)
+      ;
+    end procedure,
+    procedure (~st, ~val)
+      val := X;
+    end procedure);
+end intrinsic;
+
+CALL_LIST :=
+  [ func<f, x | f()>
+  , func<f, x | f(x[1])>
+  , func<f, x | f(x[1], x[2])>
+  , func<f, x | f(x[1], x[2], x[3])>
+  , func<f, x | f(x[1], x[2], x[3], x[4])>
+  , func<f, x | f(x[1], x[2], x[3], x[4], x[5])>
+  , func<f, x | f(x[1], x[2], x[3], x[4], x[5], x[6])>
+  ];
+
+function callList(f, x, n)
+  error if #x lt n, "x too short";
+  error if n lt 0, "n negative";
+  error if n+1 gt #CALL_LIST, "only implemented for n up to", #CALL_LIST+1, "arguments";
+  return CALL_LIST[n+1](f, x);
+end function;
+
+intrinsic Apply(f, g :: XPGettr) -> XPGettr
+  {Applies f to the output of g.}
+  return MakeXPGetter(g`state, g`getDeps, procedure (~st, ~val)
+    g`getValue(~st, ~val);
+    if assigned val then
+      if assigned g`explode then
+        val := callList(f, val, g`explode);
+      else
+        val := f(val);
+      end if;
+    end if;
+  end procedure);
+end intrinsic;
+
+// intrinsic Apply(f :: Tup, g :: XPGettr) -> XPGettr
+//   {"}
+//   f := wrappedFunction(f);
+//   return MakeXPGetter(g`state, g`getDeps, procedure (~st, ~val)
+//     g`getValue(~st, ~val);
+//     if assigned val then
+//       val := callWrappedFunction_InList(f, val);
+//     end if;
+//   end procedure);
+// end intrinsic;
+
+intrinsic Compose(g :: XPGettr, f) -> XPGettr
+  {"}
+  return Apply(f, g);
+end intrinsic;
+
+intrinsic ApplyProcedure(f, g :: XPGettr : Value:=true) -> XPGettr
+  {Applies the procedure f to the output of g, and sets the output to the given value.}
+  return MakeXPGetter(g`state, g`getDeps, procedure (~st, ~val)
+    g`getValue(~st, ~val);
+    if assigned val then
+      f(val);
+      val := Value;
+    end if;
+  end procedure);
+end intrinsic;
+
+intrinsic ComposeProcedure(g :: XPGettr, f : Value:=true) -> XPGettr
+  {"}
+  return ApplyProcedure(f, g : Value:=Value);
+end intrinsic;
+
+intrinsic ApplyGetter(f, g :: XPGettr : AllowConst:=false) -> XPGettr
+  {The getter which returns the return value of f(return value of g).}
+  return MakeXPGetter([*false, g`state, false*], procedure (~st, ~deps)
+    if st[1] then
+      st[2]`getDeps(~st[3], ~deps);
+    else
+      g`getDeps(~st[2], ~deps);
+    end if;
+  end procedure,
+  procedure (~st, ~val)
+    if st[1] then
+      st[2]`getValue(~st[3], ~val);
+    else
+      g`getValue(~st[2], ~v);
+      if assigned v then
+        if assigned g`explode then
+          fv := callList(f, v, g`explode);
+        else
+          fv := f(v);
+        end if;
+        if Type(fv) eq XPGettr then
+          st[1] := true;
+          st[2] := f(v);
+          st[3] := st[2]`state;
+        elif AllowConst then
+          val := fv;
+        else
+          error "did not return a Getter";
+        end if;
+      end if;
+    end if;
+  end procedure);
+end intrinsic;
+
+intrinsic 'mod'(g :: XPGettr, f) -> XPGettr
+  {"}
+  return ApplyGetter(f, g : AllowConst);
+end intrinsic;
+
+intrinsic ApplyGetter(f, gs :: [XPGettr] : AllowConst:=false) -> XPGettr
+  {The getter which returns the return value of f(return value of gs[1], ...).}
+  return Apply(f, Flatten(gs) / #gs);
+end intrinsic;
+
+intrinsic 'mod'(gs :: [XPGettr], f) -> XPGettr
+  {"}
+  return ApplyGetter(f, gs);
+end intrinsic;
+
+intrinsic ComposeGetter(g :: XPGettr, f) -> XPGettr
+  {"}
+  return ApplyGetter(f, g);
+end intrinsic;
+
+intrinsic Flatten(gs :: [XPGettr] : Sequence:=false, Universe:=false) -> XPGettr
+  {The XPGettr whose value is the list of values of the given gettrs.}
+  if #gs eq 0 then
+    return ConstXPGetter([**]);
+  elif #gs eq 1 then
+    return gs[1] mod function (val)
+      if Universe cmpne false then
+        return [Universe | val];
+      elif Sequence then
+        return [val];
+      else
+        return [*val*];
+      end if;
+    end function;
+  else
+    return MakeXPGetter([*[*g`state, false, false*] : g in gs*],
+      procedure (~st, ~deps)
+        for i in [1..#gs] do
+          if not st[i][2] then
+            ds := [**];
+            gs[i]`getDeps(~st[i][1], ~ds);
+            deps cat:= LIST(ds);
+          end if;
+        end for;
+      end procedure,
+      procedure (~st, ~val)
+        done := true;
+        for i in [1..#gs] do
+          if not st[i][2] then
+            gs[i]`getValue(~st[i][1], ~v);
+            if assigned v then
+              st[i][2] := true;
+              st[i][3] := v;
+              delete v;
+            else
+              done := false;
+            end if;
+          end if;
+        end for;
+        if done then
+          if Universe cmpne false then
+            val := [Universe| s[3] : s in st];
+          elif Sequence then
+            val := [s[3] : s in st];
+          else
+            val := [*s[3] : s in st*];
+          end if;
+        end if;
+      end procedure);
+  end if;
+end intrinsic;
+
+intrinsic '&cat'(gs :: [XPGettr]) -> XPGettr
+  {The getter whose value is the sequence of values of gs.}
+  return Flatten(gs : Sequence);
+end intrinsic;
+
+intrinsic MakeGeneralXPGetter(state, getGetter, getValue) -> XPGettr
+  {Alternative getter where getGetter(~st,~g) gets a getter g which is evaluated to gval before calling getValue(gval,~st,~val).}
+  return MakeXPGetter(rec<recformat<gg,st,g,gst>|gg:=true,st:=state,g:=false,gst:=false>,
+    procedure (~st, ~deps)
+      if st`gg then
+        getGetter(~st`st, ~st`g);
+        st`gst := st`g`state;
+        st`gg := false;
+      end if;
+      st`g`getDeps(~st`gst, ~deps);
+    end procedure,
+    procedure (~st, ~val)
+      st`g`getValue(~st`gst, ~gval);
+      if assigned gval then
+        getValue(gval, ~st`st, ~val);
+        st`gg := true;
+      end if;
+    end procedure);
+end intrinsic;
+
+intrinsic '/'(g :: XPGettr, n :: RngIntElt) -> XPGettr
+  {Modifies g so that it returns the first n values of its return value.}
+  g`explode := n;
+  return g;
+end intrinsic;
+
+// TODO: more general getter, consisting only of
+//       (a) an initial state; and
+//       (b) a procedure(~state, ~deps, ~value)
+//       where the procedure either
+//       (a) assigns a value (the output); or
+//       (b) assigns deps (a list of <x,n> pairs or other getters) and
+//           value (a procedure(~st, depvals) called on the result
+//           of the dependencies)
+//           
+// e.g. Getter(false, procedure(~st, ~deps, ~val)
+//        if st then
+//          val := true;
+//        else
+//          deps := [* [* x, n *] *];
+//          val := procedure (~st, dvs)
+//            st := true;
+//          end procedure;
+//        end if;
+//      end procedure);
+//      
+// e.g. Getter([* false, 10, false *], procedure (~st, ~deps, ~val)
+//        if st[1] then
+//          ... compute something ...
+//          if done then
+//            ~val := ...;
+//            return;
+//          else
+//            st[2] +:= ...;
+//          end if;
+//        end if;
+//        deps := [* ... *];
+//        val := procedure (~st, vals)
+//          st[1] := true;
+//        end procedure;
+//      end procedure);
+
+// TODO: A getter consisting of an initial state, and a function taking state and returning either a value or a list of dependencies and a function taking the results of the dependencies and updating the state and a new getter function
+//       
+// e.g. Getter([
+//        procedure (~g)
+//          g`state := pr;
+//        end procedure,
+//        procedure (~g)
+//          g`deps := Approximation_Lazy(F, ~g`state);
+//        end procedure,
+//        procedure (~g)
+//          xF, Ftox := Explode(g`depvalues);
+//          g`deps := [Ftox(x), ...];
+//        end procedure,
+//        procedure (~g)
+//          ...
+//          if done then
+//            g`value := ...;
+//          else
+//            g`state +:= ...;
+//            g`jumpto := 2;
+//          end if;
+//        end procedure
+//      ]);
+//      
+// e.g. Getter([
+//        procedure (~st)
+//          
+//        end procedure
+//      ])
+
+// GETTER_STATE := recformat<value, deps, depvalues, jumpto>;
+
+// intrinsic Evaluate(g :: XPGettr) -> .
+//   {Evaluates g.}
+//   st := rec<GETTER_STATE |>;
+//   i := 1;
+//   while true do
+//     // call the relevant procedure
+//     g`procs[i](~st);
+//     // done?
+//     if assigned st`value then
+//       return st`value;
+//     end if;
+//     // dependencies?    
+//     if assigned st`deps then
+//       st`depvalues := evaluateDependencies(st`deps);
+//       delete st`deps;
+//     end if;
+//     // next index
+//     if assigned st`jumpto then
+//       i := st`jumpto;
+//       delete st`jumpto;
+//     else
+//       i := i + 1;
+//     end if;
+//   end while;
+// end intrinsic;
+
+// In the following, g`evaluate is a magic function which, to the user, simply evaluates the given getter and returns its value. In fact, it is a hook which can then go and call the function of another getter, if required, and so on recursively, giving the impression of concurrency. This allows for the dependencies to be accumulated and evaluated at once.
+// 
+// Getter(function (g)
+//   xF, Ftox := Approximation_Lazy(F, pr) @ g`evaluate @ Explode;
+//   xx, xy := &cat[Ftox(x : Lazy), Ftox(y : Lazy)] @ g`evaluate @ Explode;
+//   Update(z, xx/xy);
+//   return true;
+// end function);
+// 
+// For example, suppose we have two getter functions a and b and we want to evaluate them:
+// 
+// st`count := 0;
+// st`ag := rec<...| evaluate := function (x)
+//   st`adeps := depsFor(x);
+//   st`count +:= 1;
+//   
+// end function>;
+// st`aval := a`func(st`ag);
+// 
+// Ummmmmm I don't think this is possible in Magma right now (it requires something like Python's yield). You probably need to have separate functions for each section of code between the evaluations, like with the version above where a getter is a sequence of procedures.

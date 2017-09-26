@@ -1,0 +1,2 @@
+174,0
+S,ExactpAdics_RunUnitTests,"Runs the unit tests for the ExactpAdics module. Prefix: only run tests whose name starts with this. Verbosity: 0 for no printing, 1 for basic reporting, 2 for detailed reporting. StopOnFirstFail: stops after the first test fails. NoCatch: Does not catch errors in tests, allows them to propagate so that you can use Magma debugging tools",0,0,0,0,0,0,0,-1,-38,-38,-38,-38,-38

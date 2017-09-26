@@ -1,0 +1,146 @@
+STATE := recformat<cb, prec, limit, result, randomize>;
+
+declare verbose ExactpAdics_ExecutePrecisionStrategy, 1;
+
+function execute(state, strat)
+  // limit breached
+  if state`prec ge state`limit then
+    return true, false, state;
+  end if;
+
+  case Type(strat):
+
+  // LIST/SEQUENCE: each entry is a strategy; try each in turn until successful
+  when List, SeqEnum:
+    for s in strat do
+      done, ok, state := execute(state, s);
+      if done or ok then
+        return true, ok, state;
+      end if;
+    end for;
+    return false, false, state;
+    
+  // STRING: use the corresponding global named strategy
+  when MonStgElt:
+    s := GetGlobalExactpAdicPrecisionStrategy(strat);
+    return execute(state, s);
+
+  // INTEGER: set this as the precision, and run the callback on it
+  when RngIntElt:
+    if strat le state`prec then
+      error "precision did not increase";
+    end if;
+    state`prec := Min(state`randomize select Random(state`prec+1, strat) else strat, state`limit);
+    vprint ExactpAdics_ExecutePrecisionStrategy: "ExecutePrecisionStrategy:", Cputime(), "pr =", state`prec;
+    ok, result := state`cb(state`prec);
+    if ok then
+      if assigned result then
+        state`result := result;
+      end if;
+      return true, true, state;
+    else
+      return false, false, state;
+    end if;
+
+  // FUNCTION: keep calling the function, if it returns false then stop, else it returned true and a new strategy, run the strategy and return true if it was successful
+  when UserProgram:
+    repeat
+      ok, s := strat(state`prec);
+      if ok then
+        done, ok, state := execute(state, s);
+        if done or ok then
+          return true, ok, state;
+        end if;
+      else
+        return false, false, state;
+      end if;
+    until false;
+
+  // TUPLE: special instructions
+  when Tup:
+    if #strat ge 1 and Type(strat[1]) eq MonStgElt then
+      case strat[1]:
+      when "limit":
+        if (#strat eq 2)
+        and IsInstance(strat[2], <RngIntElt,Infty,FldRatElt,FldReElt>) then
+          state`limit := strat[2];
+          return false, false, state;
+        end if;
+      when "randomize":
+        if #strat eq 1 then
+          state`randomize := true;
+          return false, false, state;
+        elif #strat eq 2 and IsInstance(strat[2], BoolElt) then
+          state`randomize := strat[2];
+          return false, false, state;
+        end if;
+      when "exp":
+        if (#strat ge 2)
+        and (#strat le 3)
+        and IsInstance(strat[2], <RngIntElt,FldRatElt,FldReElt>)
+        and strat[2] gt 1
+        and ((#strat lt 3) or IsInstance(strat[3], RngIntElt)) then
+          m := strat[2];
+          base := (#strat lt 3) select 0 else strat[3];
+          return execute(state, func<pr | true, base + Max(1, Ceiling((pr-base)*m))>);
+        end if;
+      when "double":
+        return execute(state, <"exp", 2>);
+      end case;
+    end if;
+
+  // ERROR: raise it
+  when Err:
+    error strat;
+
+  end case;
+
+  error "bad strategy:", strat;
+end function;
+
+intrinsic ExactpAdics_ExecutePrecisionStrategy(cb :: UserProgram, strategy, prec :: RngIntElt) -> BoolElt, RngIntElt, .
+  {Executes the given precision strategy.}
+  done, ok, state := execute(rec<STATE|cb:=cb, prec:=prec, limit:=Infinity(), randomize:=false>, strategy);
+  if ok and assigned state`result then
+    return ok, state`prec, state`result;
+  else
+    return ok, state`prec, _;
+  end if;
+end intrinsic;
+
+intrinsic ExactpAdics_ExecutePrecisionStrategy(cb :: UserProgram, strategy) -> BoolElt, RngIntElt, .
+  {"}
+  return ExactpAdics_ExecutePrecisionStrategy(cb, strategy, 0);
+end intrinsic;
+
+intrinsic ExactpAdics_PrecisionStrategyHasNext(strategy, prec :: RngIntElt) -> BoolElt, RngIntElt
+  {True if the precision strategy has a next element, and if so, also returns that.}
+  ok, _, pr := ExactpAdics_ExecutePrecisionStrategy(func<pr | true, pr>, strategy, prec);
+  if ok then
+    return true, pr;
+  else
+    return false, _;
+  end if;
+end intrinsic;
+
+STRATS := NewStore();
+StoreSet(STRATS, "defaultLimit", <"limit",100>);
+StoreSet(STRATS, "unlimitedDefault", [* 10, <"randomize">, <"double"> *]);
+StoreSet(STRATS, "default", ["defaultLimit", "unlimitedDefault"]);
+
+intrinsic ExactpAdics_IsGlobalPrecisionStrategyDefined(name :: MonStgElt) -> BoolElt, .
+  {Returns true if there is a global strategy with the given name, and if so, returns the strategy itself.}
+  return StoreIsDefined(STRATS, name);
+end intrinsic;
+
+intrinsic ExactpAdics_SetGlobalPrecisionStrategy(name :: MonStgElt, strat)
+  {Defines the global strategy with the given name to the given strategy.}
+  StoreSet(STRATS, name, strat);
+end intrinsic;
+
+intrinsic ExactpAdics_GetGlobalPrecisionStrategy(name :: MonStgElt) -> .
+  {Returns the global strategy with the given name.}
+  ok, s := ExactpAdics_IsGlobalPrecisionStrategyDefined(name);
+  error if not ok, "global exact p-adic precision strategy not defined:", name;
+  return s;
+end intrinsic;
