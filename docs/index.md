@@ -25,7 +25,23 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 * Univariate polynomials
 
+{% for page in site.pages %}
+{% if page.url contains "/upol-" %}
+
+  * [{{page.title}}]({{site.baseurl}}{{page.url}})
+  
+{% endif %}
+{% endfor %}
+
 * Multivariate polynomials
+
+{% for page in site.pages %}
+{% if page.url contains "/mpol-" %}
+
+  * [{{page.title}}]({{site.baseurl}}{{page.url}})
+  
+{% endif %}
+{% endfor %}
 
 * [New types](types)
 
