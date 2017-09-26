@@ -1,9 +1,9 @@
 ---
 ---
 
-{% assign ps = site.pages | where: "chapter", page.chapter | sort: "page" %}
+{% assign ps = site.pages | where: "chapter", page.chapter | sort: "section" %}
 {% for p in ps %}
-{% if p.page > 1 %}
+{% if p.section > 1 %}
 
 * [{{p.title}}]({{site.baseurl}}{{p.url}})
 

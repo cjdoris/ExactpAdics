@@ -1,6 +1,6 @@
 ---
 chapter: 11
-page: 4
+section: 4
 headings:
   - Location
   - Arithmetic

@@ -1,6 +1,6 @@
 ---
 chapter: 11
-page: 6
+section: 6
 headings:
   - Ramification polygons
   - Hasse-Herbrand transition functions

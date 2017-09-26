@@ -13,11 +13,11 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 ## Contents
 
-{% assign ps = site.pages | sort:"page" | sort:"chapter" %}
+{% assign ps = site.pages | sort:"section" | sort:"chapter" %}
 
 {% for p in ps %}
 {% if p.chapter > 0 %}
-{% if p.page > 0 %}
+{% if p.section > 0 %}
 {% else %}
 
 * [{{p.title}}]({{site.baseurl}}{{p.url}})

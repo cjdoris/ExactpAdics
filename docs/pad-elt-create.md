@@ -1,6 +1,6 @@
 ---
 chapter: 11
-page: 2
+section: 2
 headings:
   - Distinguished elements
   - From subfields

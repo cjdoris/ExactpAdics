@@ -1,6 +1,6 @@
 ---
 chapter: 11
-page: 1
+section: 1
 headings:
   - Prime fields
   - Unramified extensions

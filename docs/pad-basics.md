@@ -1,6 +1,6 @@
 ---
 chapter: 11
-page: 3
+section: 3
 headings:
   - Extensions
   - Invariants
