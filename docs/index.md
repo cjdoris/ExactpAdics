@@ -13,30 +13,38 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 ## Contents
 
-* Exact p-adic fields
+* [Getting started](getting-started)
 
 {% for page in site.pages %}
-{% if page.url contains "/pad-" %}
+{% if page.url contains "/pad-00-" %}
+
+* [{{page.title}}]({{site.baseurl}}{{page.url}})
+
+{% elsif page.url contains "/pad-" %}
 
   * [{{page.title}}]({{site.baseurl}}{{page.url}})
   
 {% endif %}
 {% endfor %}
 
-* Univariate polynomials
-
 {% for page in site.pages %}
-{% if page.url contains "/upol-" %}
+{% if page.url contains "/upol-00-" %}
+
+* [{{page.title}}]({{site.baseurl}}{{page.url}})
+  
+{% elsif page.url contains "/upol-" %}
 
   * [{{page.title}}]({{site.baseurl}}{{page.url}})
   
 {% endif %}
 {% endfor %}
 
-* Multivariate polynomials
-
 {% for page in site.pages %}
-{% if page.url contains "/mpol-" %}
+{% if page.url contains "/mpol-00-" %}
+
+* [{{page.title}}]({{site.baseurl}}{{page.url}})
+  
+{% elsif page.url contains "/mpol-" %}
 
   * [{{page.title}}]({{site.baseurl}}{{page.url}})
   
