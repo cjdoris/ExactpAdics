@@ -11,6 +11,40 @@ The package is [hosted here on GitHub](https://github.com/cjdoris/ExactpAdics) a
 
 Please direct any comments, queries or complaints to [the GitHub issue tracker](https://github.com/cjdoris/ExactpAdics/issues).
 
+## Contents
+
+* Exact p-adic fields
+
+{% for page in site.pages %}
+{% if page.url contains "/pad-" %}
+
+  * [{{page.title}}]({{site.baseurl}}{{page.url}})
+  
+{% endif %}
+{% endfor %}
+
+* Univariate polynomials
+
+{% for page in site.pages %}
+{% if page.url contains "/upol-" %}
+
+  * [{{page.title}}]({{site.baseurl}}{{page.url}})
+  
+{% endif %}
+{% endfor %}
+
+* Multivariate polynomials
+
+{% for page in site.pages %}
+{% if page.url contains "/mpol-" %}
+
+  * [{{page.title}}]({{site.baseurl}}{{page.url}})
+  
+{% endif %}
+{% endfor %}
+
+* [New types](types)
+
 ## Overview
 
 Magma's built-in types for p-adic computation (`FldPad`, `RngPad`, `RngPadRes`, etc) are all *approximate* in the sense that their elements are computed immediately to some precision, and therefore an element really corresponds to an equivalence class of genuine p-adic elements.
@@ -32,12 +66,3 @@ Therefore the main use-cases of this package are:
 * Performing computations interactively in Magma; the overheads will be unnoticed.
 * Implementing high-level algorithms in Magma; that is, ones where the main operations are themselves expensive enough that the overheads are comparatively small.
 
-## Contents
-
-* [New types defined by the package](types.md)
-
-* [p-adic Fields](fld/intro.md)
-
-* [Univariate polynomials](upol/intro.md)
-
-* [Multivariate polynomials](mpol/intro.md)

@@ -5,9 +5,9 @@
 
 ## Contents
 
-* [Creation of fields](create.md)
-* [Basic operations on fields](basics.md)
-* [Creation of elements](elt-create.md)
-* [Basic operations on elements](elt-basics.md)
-* [Residue class fields](residue.md)
-* [Ramification](ramification.md)
+* [Creation of fields](pad-create)
+* [Basic operations on fields](pad-basics)
+* [Creation of elements](pad-elt-create)
+* [Basic operations on elements](pad-elt-basics)
+* [Residue class fields](pad-residue)
+* [Ramification](pad-ramification)
