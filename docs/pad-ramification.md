@@ -87,5 +87,3 @@ The ramification breaks in lower numbering; that is, the x co-ordinate of the ve
 > `-> []`
 
 The ramification breaks in upper numbering; that is, the y co-ordinate of the vertices.
-
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>

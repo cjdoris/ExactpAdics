@@ -13,14 +13,12 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 ## Contents
 
-* [Overview](overview)
+{% assign ps = site.pages | sort:"page" | sort:"chapter" %}
 
-* [Getting started](getting-started)
+{% for p in ps %}
+{% unless p.page > 0 %}
 
-* [Exact p-adic fields](pad-00-intro)
+* [p.title][{{site.baseurl}}{{p.url}}]
 
-* [Univariate polynomials](upol-00-intro)
-
-* [Multivariate polynomials](mpol-00-intro)
-
-* [Index: New types](types)
+{% endunless %}
+{% endfor %}

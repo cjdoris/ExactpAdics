@@ -1,4 +1,5 @@
 ---
+chapter: 2
 ---
 
 # Getting started
