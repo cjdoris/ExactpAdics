@@ -17,40 +17,10 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 * [Getting started](getting-started)
 
-{% for page in site.pages %}
-{% if page.url contains "/pad-00-" %}
+* [Exact p-adic fields](pad-00-intro)
 
-* [{{page.title}}]({{site.baseurl}}{{page.url}})
+* [Univariate polynomials](upol-00-intro)
 
-{% elsif page.url contains "/pad-" %}
+* [Multivariate polynomials](mpol-00-intro)
 
-  * [{{page.title}}]({{site.baseurl}}{{page.url}})
-  
-{% endif %}
-{% endfor %}
-
-{% for page in site.pages %}
-{% if page.url contains "/upol-00-" %}
-
-* [{{page.title}}]({{site.baseurl}}{{page.url}})
-  
-{% elsif page.url contains "/upol-" %}
-
-  * [{{page.title}}]({{site.baseurl}}{{page.url}})
-  
-{% endif %}
-{% endfor %}
-
-{% for page in site.pages %}
-{% if page.url contains "/mpol-00-" %}
-
-* [{{page.title}}]({{site.baseurl}}{{page.url}})
-  
-{% elsif page.url contains "/mpol-" %}
-
-  * [{{page.title}}]({{site.baseurl}}{{page.url}})
-  
-{% endif %}
-{% endfor %}
-
-* [New types](types)
+* [Index: New types](types)
