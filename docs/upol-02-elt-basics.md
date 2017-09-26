@@ -16,11 +16,15 @@ headings:
 
 ## Distinguished polynomials
 
-> `Zero(R :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact`
+> **`Zero`**`(R :: RngUPolElt_FldPadExact)`
+>
+> `-> RngUPolElt_FldPadExact`
 
 The zero polynomial in `R`,
 
-> `One(R :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact`
+> **`One`**`(R :: RngUPolElt_FldPadExact)`
+>
+> `-> RngUPolElt_FldPadExact`
 
 The one polynomial in `R`.
 
@@ -38,29 +42,37 @@ Coerces `f` to a polynomial in `R :: RngUPol_FldPadExact` where `f` is one of:
 
 * A sequence of coefficients which can be coerced to the base ring of `R`
 
-> `Polynomial(coeffs :: [FldPadExactElt])`
+> **`Polynomial`**`(coeffs :: [FldPadExactElt])`
 
 The polynomial with the given coefficients. Equivalent to `PolynomialRing(Universe(coeffs)) ! coeffs`.
 
-> `Polynomial(K :: FldPadExact, coeffs :: [])`
+> **`Polynomial`**`(K :: FldPadExact, coeffs :: [])`
 
 The polynomial over `K` with the given coefficients. Equivalent to `PolynomialRing(K) ! coeffs`.
 
 ## Basic properties
 
-> `Parent(f :: RngUPolElt_FldPadExact) -> RngUPol_FldPadExact`
+> **`Parent`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> RngUPol_FldPadExact`
 
 The polynomial ring containing `f`.
 
-> `BaseRing(f :: RngUPolElt_FldPadExact) -> FldPadExact`
+> **`BaseRing`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> FldPadExact`
 
 The field containing the coefficients of `f`. Equivalent to `BaseRing(Parent(f))`.
 
-> `WeakDegree(f :: RngUPolElt_FldPadExact) -> RngIntElt`
+> **`WeakDegree`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> RngIntElt`
 
 The number of stored coefficients of `f` minus 1. It is possible that the top stored coefficient is actually zero, so this is an upper bound on the actual degree.
 
-> `Degree(f :: RngUPolElt_FldPadExact) -> RngIntElt`
+> **`Degree`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> RngIntElt`
 
 The degree of `f`.
 
@@ -68,57 +80,81 @@ The degree of `f`.
 
 * `Strategy`: Used to determine if the top coefficient is non-zero. Will raise a precision error if not. (Default: `"default"`)
 
-> `WeakCoefficients(f :: RngUPolElt_FldPadExact) -> []`
+> **`WeakCoefficients`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> []`
 
 The stored coefficients of `f`. It is possible that the top coefficient is actually zero.
 
-> `Coefficients(f :: RngUPolElt_FldPadExact) -> []`
+> **`Coefficients`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> []`
 
 The coefficients of `f`.
 
 **Paremeters.** As for `Degree(f)`.
 
-> `WeakLeadingCoefficient(f :: RngUPolElt_FldPadExact) -> FldPadExactElt`
+> **`WeakLeadingCoefficient`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> FldPadExactElt`
 
 The `WeakDegree(f)`th coefficient of `f`.
 
-> `LeadingCoefficient(f :: RngUPolElt_FldPadExact) -> FldPadExactElt`
+> **`LeadingCoefficient`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> FldPadExactElt`
 
 **Parameters.** As for `Degree(f)`.
 
-> `Coefficient(f :: RngUPolElt_FldPadExact, i :: RngIntElt) -> FldPadExactElt`
+> **`Coefficient`**`(f :: RngUPolElt_FldPadExact, i :: RngIntElt)`
+>
+> `-> FldPadExactElt`
 
 The `i`th coefficient of `f`. `i` must not be negative.
 
 ## Approximation
 
-> `AbsolutePrecision(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPadExact`
+> **`AbsolutePrecision`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> Val_RngUPolElt_FldPadExact`
 
 The absolute precisions of the coefficients of the current approximation of `f`.
 
-> `WeakValuation(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPadExact`
+> **`WeakValuation`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> Val_RngUPolElt_FldPadExact`
 
 The weak valuations of the coefficients of the current approximation of `f`.
 
-> `IsWeaklyZero(f :: RngUPolElt_FldPadExact) -> BoolElt`
+> **`IsWeaklyZero`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> BoolElt`
 
 True if the current approximation of `f` is zero up to precision.
 
-> `BaselineValuation(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPadExact`
+> **`BaselineValuation`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> Val_RngUPolElt_FldPadExact`
 
 A fixed lower bound on the valuation of `f`; usually the weak valuation of the initial approximation of `f`.
 
-> `BaselinePrecision(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPadExact`
+> **`BaselinePrecision`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> Val_RngUPolElt_FldPadExact`
 
 The precision of `f` relative to the baseline: `AbsolutePrecision(f)-BaselineValuation(f)`.
 
 ## Valuation
 
-> `WeakMinValuation(f :: RngUPolElt_FldPadExact) -> Val_FldPadExactElt`
+> **`WeakMinValuation`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> Val_FldPadExactElt`
 
 The smallest weak valuation of the coefficients of the current approximation of `f`.
 
-> `Valuation(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPadExact`
+> **`Valuation`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> Val_RngUPolElt_FldPadExact`
 
 The valuations of the coefficients of `f`
 
@@ -126,7 +162,9 @@ The valuations of the coefficients of `f`
 
 * `Strategy`: Used to determine if each coefficient of `f` is nonzero.
 
-> `MinValuation(f :: RngUPolElt_FldPadExact) -> Val_FldPadExactElt`
+> **`MinValuation`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> Val_FldPadExactElt`
 
 The smallest valuation of the coefficients of `f`.
 
@@ -138,14 +176,23 @@ The smallest valuation of the coefficients of `f`.
 
 ## Arithmetic
 
-> `'-'(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact`
-> `'+'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact`
-> `'-'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact`
-> `'*'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact`
-> `'^'(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -> RngUPolElt_FldPadExact`
-> `'div'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact`
-> `'&+'(fs :: [RngUPolElt_FldPadExact]) -> RngUPolElt_FldPadExact`
-> `'&*'(fs :: [RngUPolElt_FldPadExact]) -> RngUPolElt_FldPadExact`
+> **`'-'`**`(f :: RngUPolElt_FldPadExact)`
+>
+> **`'+'`**`(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)`
+>
+> **`'-'`**`(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)`
+>
+> **`'*'`**`(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)`
+>
+> **`'^'`**`(f :: RngUPolElt_FldPadExact, n :: RngIntElt)`
+>
+> **`'div'`**`(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)`
+>
+> **`'&+'`**`(fs :: [RngUPolElt_FldPadExact])`
+>
+> **`'&*'`**`(fs :: [RngUPolElt_FldPadExact])`
+>
+> `-> RngUPolElt_FldPadExact`
 
 Negate, add, subtract, multiply, power, exact divide, sum, product.
 
@@ -155,19 +202,27 @@ Negate, add, subtract, multiply, power, exact divide, sum, product.
 
 ## Related polynomials
 
-> `Derivative(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact`
+> **`Derivative`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> RngUPolElt_FldPadExact`
 
 The derivarive of `f`.
 
-> `Derivative(f :: RngUPolElt_FldPadExact, k :: RngIntElt) -> RngUPolElt_FldPadExact`
+> **`Derivative`**`(f :: RngUPolElt_FldPadExact, k :: RngIntElt)`
+>
+> `-> RngUPolElt_FldPadExact`
 
 The `k`th derivative of `f`.
 
-> `ShiftValuation(f :: RngUPolElt_FldPadExact, v) -> RngUPolElt_FldPadExact`
+> **`ShiftValuation`**`(f :: RngUPolElt_FldPadExact, v)`
+>
+> `-> RngUPolElt_FldPadExact`
 
 Shifts the valuation of the coefficients of `f` by `v`. `v` must be a `Val_RngUPolElt_FldPadExact`, `[RngIntElt]`, `RngIntElt`, `Val_FldPadExact`, or anything else coercible to `Val_RngUPolElt_FldPadExact`.
 
-> `ShiftSlope(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -> RngUPolElt_FldPadExact`
+> **`ShiftSlope`**`(f :: RngUPolElt_FldPadExact, n :: RngIntElt)`
+>
+> `-> RngUPolElt_FldPadExact`
 
 Shifts the valuation of the `i`th coefficient of `f` by `i*n`.
 
@@ -177,15 +232,21 @@ Shifts the valuation of the `i`th coefficient of `f` by `i*n`.
 
 ## Resultant and discriminant
 
-> `WeakResultant(fs :: [RngUPolElt_FldPadExact]) -> FldPadExactElt`
+> **`WeakResultant`**`(fs :: [RngUPolElt_FldPadExact])`
+>
+> `-> FldPadExactElt`
 
 The resultant of the polynomials `fs` assuming that their weak degrees are correct.
 
-> `WeakResultant(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> FldPadExactElt`
+> **`WeakResultant`**`(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)`
+>
+> `-> FldPadExactElt`
 
 The resultant of `f` and `g` assuming that their weak degrees are correct.
 
-> `Resultant(fs :: [RngUPolElt_FldPadExact]) -> FldPadExactElt`
+> **`Resultant`**`(fs :: [RngUPolElt_FldPadExact])`
+>
+> `-> FldPadExactElt`
 
 The resultant of the polynomials `fs`.
 
@@ -194,7 +255,9 @@ The resultant of the polynomials `fs`.
 * `Strategy`: (Default: `"default"`)
 * `Strategies`: A sequence or list of strategies corresponding to `fs` used to check the degree of each polynomial. (Default: `[Strategy: f in fs]`)
 
-> `Resultant(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> FldPadExactElt`
+> **`Resultant`**`(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)`
+>
+> `-> FldPadExactElt`
 
 The resultant of `f` and `g`.
 
@@ -204,7 +267,9 @@ The resultant of `f` and `g`.
 * `fStrategy`: The strategy to check the degree of `f`. (Default: `Strategy`)
 * `gStrategy`: The strategy to check the degree of `g`. (Default: `Strategy`)
 
-> `Discriminant(f :: RngUPolElt_FldPadExact) -> FldPadExactElt`
+> **`Discriminant`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> FldPadExactElt`
 
 The discriminant of `f`.
 
@@ -214,16 +279,22 @@ The discriminant of `f`.
 
 ## Evaluation
 
-> `Evaluate(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> FldPadExact`
+> **`Evaluate`**`(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt)`
+>
+> `-> FldPadExact`
 
 `f` evaluated at `x`.
 
 ## Predicates for special polynomials
 
-> `IsEisenstein(f :: RngUPolElt_FldPadExact) -> BoolElt`
+> **`IsEisenstein`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> BoolElt`
 
 True if `f` is Eisenstein. That is, the leading coefficient has valuation 0, the constant coefficient has valuation 1 and all others have valuation at least 1. Such a polynomial is irreducible and its roots are uniformizers defining a totally ramified extension.
 
-> `IsInertial(f :: RngUPolElt_FldPadExact) -> BoolElt`
+> **`IsInertial`**`(f :: RngUPolElt_FldPadExact)`
+>
+> `-> BoolElt`
 
 True if `f` is inertial. That is, each coefficient is integral, the leading coefficient has valuation 0, and the polynomial reduced to the residue class field is irreducible. Such a polynomial is irreducible and its roots define an unramified extension.
