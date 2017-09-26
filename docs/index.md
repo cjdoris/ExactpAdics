@@ -16,9 +16,12 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 {% assign ps = site.pages | sort:"page" | sort:"chapter" %}
 
 {% for p in ps %}
-{% unless p.page > 0 %}
+{% if p.chapter > 0 %}
+{% if p.page > 0 %}
+{% else %}
 
 * [{{p.title}}]({{site.baseurl}}{{p.url}})
 
-{% endunless %}
+{% endif %}
+{% endif %}
 {% endfor %}
