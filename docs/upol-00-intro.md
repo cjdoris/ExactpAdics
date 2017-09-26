@@ -13,7 +13,7 @@
 
 {% for h in p.headings %}
 
-  * [{{h}}]({{site.baseurl}}{{p.url}}#{{h | replace " ", "-" | downcase}})
+  * [{{h}}]({{site.baseurl}}{{p.url}}#{{h | replace: " ", "-" | downcase}})
 
 {% endfor %}
 {% endunless %}
