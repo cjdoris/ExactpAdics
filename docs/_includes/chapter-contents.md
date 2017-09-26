@@ -5,7 +5,7 @@
 {% for p in ps %}
 {% if p.section > 0 %}
 
-* [{{p.title}}]({{site.baseurl}}{{p.url}})
+* **[{{p.title}}]({{site.baseurl}}{{p.url}})**
 
 {% for h in p.headings %}
 
