@@ -1,6 +1,9 @@
 ---
 chapter: 13
 section: 1
+headings:
+  - Creation
+  - Basic properties
 ---
 
 # Basic operations on multivariate polynomial rings
