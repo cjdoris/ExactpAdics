@@ -5,35 +5,35 @@
 
 ## FldPadExact, FldPadExactElt
 
-[Exact p-adic fields](fld/intro.md) and their elements.
+[Exact p-adic fields](pad-00-intro) and their elements.
 
 ## Val_FldPadElt, PowVal_FldPadElt
 
-[Valuations of p-adic numbers](fld/elt-basics.md#val_fldpadelt), and the power structure of such things.
+[Valuations of p-adic numbers](pad-04-elt-basics#val_fldpadelt), and the power structure of such things.
 
 ## RngUPol_FldPadExact, RngUPolElt_FldPadExact
 
-[Rings of univarate polynomials over exact p-adic fields](upol/intro.md) (the exact analogue of `RngUPol[FldPad]`) and their elements.
+[Rings of univarate polynomials over exact p-adic fields](upol-00-intro) (the exact analogue of `RngUPol[FldPad]`) and their elements.
 
 ## Val_RngUPolElt_FldPad, PowVal_RngUPolElt_FldPad
 
-[Valuations of univariate polynomials over p-adic fields](upol/elt-basics.md#val_rngupolelt_fldpad), and the power structure of such things.
+[Valuations of univariate polynomials over p-adic fields](upol-02-elt-basics#val_rngupolelt_fldpad), and the power structure of such things.
 
 ## RngMPol_FldPadExact, RngMPolElt_FldPadExact
 
-[Rings of multivariate polynomials over exact p-adic fields](mpol/intro.md), and their elements.
+[Rings of multivariate polynomials over exact p-adic fields](mpol-00-intro), and their elements.
 
 ## Val_RngMPolElt_FldPad, PowVal_RngMPolElt_FldPad
 
-[Valuations of multivariate polynomials over p-adic fields](mpol/elt-basics.md#val_rngmpolelt_fldpad), and the power structure of such things.
+[Valuations of multivariate polynomials over p-adic fields](mpol-02-elt-basics#val_rngmpolelt_fldpad), and the power structure of such things.
 
 ## HasseHerbTransFunc
 
-[Hasse-Herbrand transition functions](fld/ramification.md#hasse-herbrand-transition-functions).
+[Hasse-Herbrand transition functions](pad-06-ramification#hasse-herbrand-transition-functions).
 
 ## ExtDataFldPadExact
 
-[Extensions of exact p-adic fields](fld/basics.md#extensions).
+[Extensions of exact p-adic fields](pad-03-basics#extensions).
 
 ## HomFldPadExact
 
