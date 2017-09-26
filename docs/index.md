@@ -18,7 +18,7 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 {% for p in ps %}
 {% unless p.page > 0 %}
 
-* [p.title][{{site.baseurl}}{{p.url}}]
+* [{{p.title}}]({{site.baseurl}}{{p.url}})
 
 {% endunless %}
 {% endfor %}
