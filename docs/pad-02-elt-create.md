@@ -1,4 +1,10 @@
 ---
+headings:
+  - Distinguished elements
+  - From subfields
+  - From vectors
+  - Random
+  - Via internal representation
 ---
 
 # Creation of p-adic numbers

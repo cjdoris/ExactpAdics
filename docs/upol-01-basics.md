@@ -1,4 +1,7 @@
 ---
+headings:
+  - Creation
+  - Basic properties
 ---
 
 # Basic operations on univariate polynomial rings

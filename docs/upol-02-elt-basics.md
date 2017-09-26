@@ -1,4 +1,15 @@
 ---
+headings:
+  - Distinguished polynomials
+  - Creation
+  - Basic properties
+  - Approximation
+  - Valuation
+  - Arithmetic
+  - Related polynomials
+  - Resultant and discriminant
+  - Evaluation
+  - Predicates for special polynomials
 ---
 
 # Basic operations on univariate polynomials

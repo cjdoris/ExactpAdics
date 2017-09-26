@@ -1,4 +1,7 @@
 ---
+headings:
+  - Ramification polygons
+  - Hasse-Herbrand transition functions
 ---
 
 # Ramification

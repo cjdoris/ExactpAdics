@@ -1,4 +1,8 @@
 ---
+headings:
+  - Hensel lifting
+  - Roots
+  - Factorization
 ---
 
 # Roots and factorization

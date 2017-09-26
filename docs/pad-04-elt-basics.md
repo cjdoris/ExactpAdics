@@ -1,4 +1,11 @@
 ---
+headings:
+  - Location
+  - Arithmetic
+  - Approximation
+  - Valuation
+  - Val_FldPadElt
+  - Printing
 ---
 
 # Basic operations on elements

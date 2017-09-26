@@ -1,4 +1,8 @@
 ---
+headings:
+  - Extensions
+  - Invariants
+  - Ramification predicates
 ---
 
 # Basic operations on fields
