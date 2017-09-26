@@ -1,6 +1,6 @@
 # ExactpAdics
 
-A Magma package for exact p-adic computation.
+A package for exact p-adic computation for the [Magma computer algebra system](http://magma.maths.usyd.edu.au/magma).
 
 The aim of this package is to provide the user with a higher-level interface to computing with p-adics, making it easier to perform everyday computations and coding more complex algorithms.
 
