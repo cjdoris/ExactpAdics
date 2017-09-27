@@ -13,11 +13,13 @@ headings:
 
 ## Hensel lifting
 
-> **`IsHenselLiftable`**`(f :: RngUPolElt_FldPadExact, x)`
+> **IsHenselLiftable** (f :: *RngUPolElt_FldPadExact*, x)
 >
-> **`IsHenselLiftable`**`(f :: RngUPolElt, x :: FldPadExact)`
+> **IsHenselLiftable** (f :: *RngUPolElt*, x :: *FldPadExact*)
 >
-> `-> BoolElt, FldPadExactElt`
+> -> *BoolElt*, *FldPadExactElt*
+> {:.ret}
+{:.intrinsic}
 
 True if `f` and `x` satisfy Hensel's lemma. That is, `f` and `x` are both integral and v(`f`(`x`)) > 2 v(`f`'(x)).
 
@@ -29,11 +31,13 @@ If so, Hensel's lemma tells us there is a unique root of `f` within a certain di
 * `ShiftSlope`: If `false`, ignored. If `true`, shift the valuation of `x` by the negative of its valuation and shift the slope of `f` the corresponding amount. If `"weak"` then do the same but using the weak valuation of `x`. (Default: `"false"`)
 * `ShiftValuation`: If `false`, ignored. If `true`, shift the valuation of `f` by the negative of the minimum valuation of its coefficients. If `"Weak"` then do the same but using the weak valuation of `f`. (Default: `"false"`)
 
-> **`HenselLift`**`(f :: RngUPolElt_FldPadExact, x)`
+> **HenselLift** (f :: *RngUPolElt_FldPadExact*, x)
 >
-> **`HenselLift`**`(f :: RngUPolElt, x :: FldPadExact)`
+> **HenselLift** (f :: *RngUPolElt*, x :: *FldPadExact*)
 >
-> `-> FldPadExactElt`
+> -> *FldPadExactElt*
+> {:.ret}
+{:.intrinsic}
 
 Hensel lifts an approximation to a root of `f`.
 
@@ -41,9 +45,9 @@ Equivalent to calling `IsHenselLiftable(f,x)`, raising an error if it returns fa
 
 **Parameters.** As for `IsHenselLiftable(f,x)`.
 
-> **`IsHenselLiftable`**`(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)`
+> **IsHenselLiftable** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 >
-> `-> BoolElt, RngUPolElt_FldPadExact`
+> -> *BoolElt*, *RngUPolElt_FldPadExact*
 
 True if `f` and `g` satisfy Hensel's lemma for factors of univariate polynomials. That is, `f` and `g` are both integral and v(`f - g * (f div g)`) > 2 * v(`Resultant(g, f div g)`).
 
@@ -56,9 +60,11 @@ If so, Hensel's lemma tells us there is a unique factor of `f` within a certain 
 * `ShiftValuation`: If `false`, ignored. If `true`, shift the valuations of `f` and `g` by the minimum valuations of their coefficients. If `"Weak"` then do the same but using weak valuations. (Default: `false`)
 * `WeakResultant`: If `true`, use the weak resultant instead of the resultant in the Hensel condition. (Default: `false`)
 
-> **`HenselLift`**`(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)`
+> **HenselLift** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 >
-> `-> RngUPolElt_FldPadExact`
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 Hensel lifts an approximation to a factor of `f`.
 
@@ -68,11 +74,13 @@ Equivalent to calling `IsHenselLiftable(f,g)`, raising an error if it returns fa
 
 ## Roots
 
-> **`Roots`**`(f :: RngUPolElt_FldPadExact, [K :: FldPadExact])`
+> **Roots** (f :: *RngUPolElt_FldPadExact*, [K :: *FldPadExact*])
 >
-> **`Roots`**`(f :: RngUPolElt, K :: FldPadExact)`
+> **Roots** (f :: *RngUPolElt*, K :: *FldPadExact*)
 >
-> `-> []`
+> -> []
+> {:.ret}
+{:.intrinsic}
 
 The roots of `f` as a polynomial over `K`. Each root is represented by a pair `<r,m>` where `r` is the root itself, an element of `K`, and `m` is the multiplicity.
 
@@ -85,9 +93,11 @@ The nature of finite-precision p-adic arithmetic means it is not possible to pro
 
 ## Factorization
 
-> **`Factorization`**`(f :: RngUPolElt_FldPadExact)`
+> **Factorization** (f :: *RngUPolElt_FldPadExact*)
 >
-> `-> [], FldPadExactElt, []`
+> -> [], *FldPadExactElt*, []
+> {:.ret}
+{:.intrinsic}
 
 The monic irreducible factors of `f` over its base ring. Each factor is represented by a pair `<g,m>` where `g` is the factor itself and `m` is the multiplicity.
 

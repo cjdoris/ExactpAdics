@@ -12,16 +12,20 @@ headings:
 
 ## Creation
 
-> **`PolynomialRing`**`(K :: FldPadExact)`
+> **PolynomialRing** (K :: *FldPadExact*)
 >
-> `-> RngUPol_FldPadExact`
+> -> *RngUPol_FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 The ring of univariate polynomials over `K`.
 
 ## Basic properties
 
-> **`BaseRing`**`(R :: RngUPol_FldPadExact)`
+> **BaseRing** (R :: *RngUPol_FldPadExact*)
 >
-> `-> FldPadExact`
+> -> *FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 The field of coefficients of `R`.

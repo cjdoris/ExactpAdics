@@ -12,22 +12,28 @@ headings:
 
 ## Creation
 
-> **`PolynomialRing`**`(K :: FldPadExact, n :: RngIntElt)`
+> **PolynomialRing** (K :: *FldPadExact*, n :: *RngIntElt*)
 >
-> `-> RngMPol_FldPadExact`
+> -> *RngMPol_FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 The ring of polynomials in `n` indeterminates with coefficients in `K`.
 
 ## Basic properties
 
-> **`BaseRing`**`(R :: RngMPol_FldPadExact)`
+> **BaseRing** (R :: *RngMPol_FldPadExact*)
 >
-> `-> FldPadExact`
+> -> *FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 The ring of coefficients of `R`.
 
-> **`Rank`**`(R :: RngMPol_FldPadExact)`
+> **Rank** (R :: *RngMPol_FldPadExact*)
 >
-> `-> RngIntElt`
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
 
 The rank of `R`: the number of indeterminates.
