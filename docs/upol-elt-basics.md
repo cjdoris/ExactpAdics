@@ -352,7 +352,6 @@ The resultant of `f` and `g`.
 The discriminant of `f`.
 
 **Parameters.**
-
 * `Strategy`: The strategy to check the degree of `f`. (Default: `Strategy`)
 
 ## Evaluation
