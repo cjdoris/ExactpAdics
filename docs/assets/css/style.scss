@@ -12,7 +12,6 @@ blockquote.intrinsic {
   background-color: #fafafa !important;
   font-family: "SFMono-Regular","Consolas","Liberation Mono","Menlo","Courier",monospace !important;
   overflow-x: scroll !important;
-  -ms-overflow-style: -ms-autohiding-scrollbar;
   p {
     margin-bottom: 4px !important;
     white-space: nowrap !important;
@@ -23,10 +22,4 @@ blockquote.intrinsic {
   // code {
   //   background: transparent !important;
   // }
-}
-
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  background: transparent;
 }
