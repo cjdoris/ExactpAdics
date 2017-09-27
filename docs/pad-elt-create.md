@@ -106,6 +106,8 @@ A random element of `K` of valuation `v` (or 0 if not given).
 > **RandomInteger** (K :: *FldPadExact*)
 >
 > -> *FldPadExactElt*
+> {:.ret}
+{:.intrinsic}
 
 A random element of `K` of valuation at least 0.
 
@@ -128,5 +130,6 @@ A random element of `K` of valuation at least `v`.
 Creates an element of `K` by setting its internal representation directly. The initial approximation is `init`. If `x` is the element being created, then `mkUpdate` is a `function(x)` which returns a `function(apr :: Val_FldPadExactElt) -> XPGetter` whose return value, when evaluated, increases the absolute precision of `x` to `apr` (which is usually achieved via the `Update` intrinsic, below).
 
 > **Update** (x :: *FldPadExactElt*, xx :: *FldPadElt*)
+{:.intrinsic}
 
 Updates the current approximation of `x` to `xx`. Requires that `xx` and the current approximation of `x` be weakly equal.

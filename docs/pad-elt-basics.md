@@ -6,7 +6,7 @@ headings:
   - Arithmetic
   - Approximation
   - Valuation
-  - Val_FldPadElt
+  - *Val_FldPadElt*
   - Printing
 ---
 
@@ -16,31 +16,35 @@ headings:
 
 ## Location
 
-> **`Parent`**`(x :: FldPadExactElt)`
+> **Parent** (x :: *FldPadExactElt*)
 >
-> `-> FldPadExact`
+> -> *FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 The field containing `x`.
 
 ## Arithmetic
 
-> **`'-'`**`(x :: FldPadExactElt)`
+> **'-'** (x :: *FldPadExactElt*)
 >
-> **`'+'`**`(x :: FldPadExactElt, y :: FldPadExactElt)`
+> **'+'** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 >
-> **`'-'`**`(x :: FldPadExactElt, y :: FldPadExactElt)`
+> **'-'** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 >
-> **`'*'`**`(x :: FldPadExactElt, y :: FldPadExactElt)`
+> **'*'**(x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 >
-> **`'/'`**`(x :: FldPadExactElt, y :: FldPadExactElt)`
+> **'/'**(x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 >
-> **`'^'`**`(x :: FldPadExactElt, n :: RngIntElt)`
+> **'^'**(x :: *FldPadExactElt*, n :: *RngIntElt*)
 >
-> **`'&+'`**`(xs :: [FldPadExactElt])`
+> **'&+'**(xs :: [*FldPadExactElt*])
 >
-> **`'&*'`**`(xs :: [FldPadExactElt])`
+> **'&*'**(xs :: [*FldPadExactElt*])
 >
-> `-> FldPadExactElt`
+> -> *FldPadExactElt*
+> {:.ret}
+{:.intrinsic}
 
 Negation, addition, subtraction, multiplication, division, powering, sum and product.
 
@@ -50,53 +54,69 @@ Negation, addition, subtraction, multiplication, division, powering, sum and pro
 
 ## Approximation
 
-> **`AbsolutePrecision`**`(x :: FldPadExactElt)`
+> **AbsolutePrecision** (x :: *FldPadExactElt*)
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 The absolute precision to which `x` is currently known.
 
-> **`WeakValuation`**`(x :: FldPadExactElt)`
+> **WeakValuation** (x :: *FldPadExactElt*)
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 The valuation of `x`, if known, otherwise the best lower bound `AbsolutePrecision(x)`.
 
-> **`IsWeaklyZero`**`(x :: FldPadExactElt)`
+> **IsWeaklyZero** (x :: *FldPadExactElt*)
 >
-> `-> BoolElt`
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
 
 True if `x` is zero to the current precision. That is, true if the valuation of `x` is at least the absolute precision.
 
-> **`Precision`**`(x :: FldPadExactElt)`
+> **Precision** (x :: *FldPadExactElt*)
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 The relative precision to which `x` is known: `AbsolutePrecision(x) - WeakValuation(x)`. It is zero iff `x` is weakly zero.
 
-> **`IsDefinitelyZero`**`(x :: FldPadExactElt)`
+> **IsDefinitelyZero** (x :: *FldPadExactElt*)
 >
-> `-> BoolElt`
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
 
 True if `x` is definitely zero: it is weakly zero and has infinite absolute precision.
 
-> **`BaselineValuation`**`(x :: FldPadExactElt)`
+> **BaselineValuation** (x :: *FldPadExactElt*)
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 A fixed lower bound on the valuation of `x`; usually the weak valuation of the initial approximation of `x`.
 
-> **`BaselinePrecision`**`(x :: FldPadExactElt)`
+> **BaselinePrecision** (x :: *FldPadExactElt*)
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 The precision of `x` relative to the baseline: `AbsolutePrecision(x)-BaselineValuation(x)`.
 
 ## Valuation
 
-> **`Valuation`**`(x :: FldPadExactElt)`
+> **Valuation** (x :: *FldPadExactElt*)
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 The valuation of `x`.
 
@@ -104,107 +124,131 @@ The valuation of `x`.
 
 * `Strategy`: Used to increase the precision of `x` until it is not weakly zero. If this fails, then a precision error occurs. (Default: `"default"`);
 
-> **`ValuationEq`**`(x :: FldPadExactElt, n)`
+> **ValuationEq** (x :: *FldPadExactElt*, n)
 >
-> **`ValuationNe`**`(x :: FldPadExactElt, n)`
+> **ValuationNe** (x :: *FldPadExactElt*, n)
 >
-> **`ValuationLe`**`(x :: FldPadExactElt, n)`
+> **ValuationLe** (x :: *FldPadExactElt*, n)
 >
-> **`ValuationLt`**`(x :: FldPadExactElt, n)`
+> **ValuationLt** (x :: *FldPadExactElt*, n)
 >
-> **`ValuationGe`**`(x :: FldPadExactElt, n)`
+> **ValuationGe** (x :: *FldPadExactElt*, n)
 >
-> **`ValuationGt`**`(x :: FldPadExactElt, n)`
+> **ValuationGt** (x :: *FldPadExactElt*, n)
 >
-> `-> BoolElt`
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
 
 Compares the valuation of `x` with `n`. Avoids precision errors compared to doing for example `Valuation(x) lt 0` because the precise valuation of `x` is not required.
 
 May increase the absolute precision of `x` to `n` or `n+1`.
 
-> **`IsUnit`**`(x :: FldPadExactElt)`
+> **IsUnit** (x :: *FldPadExactElt*)
 >
-> `-> BoolElt`
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
 
 True if the valuation of `x` is 0.
 
-> **`IsIntegral`**`(x :: FldPadExactElt)`
+> **IsIntegral** (x :: *FldPadExactElt*)
 >
-> `-> BoolElt`
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
 
 True if the valuation of `x` is at least 0.
 
-## Val_FldPadElt
+## *Val_FldPadElt*
 
-Valuations of p-adic numbers are represented by objects of type `Val_FldPadElt`, which are a simple wrapper type for integers, rationals and infinity. They are returned by intrinsics such as `Valuation` and `AbsolutePrecision`.
+Valuations of p-adic numbers are represented by objects of type `*Val_FldPadElt*`, which are a simple wrapper type for integers, rationals and infinity. They are returned by intrinsics such as `Valuation` and `AbsolutePrecision`.
 
-> **`Val_FldPadElt_Make`**`(v)`
+> **Val_FldPadElt_Make**(v)
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 Makes a valuation with the value `v` which must be an integer `RngIntElt`, rational `FldRatElt` or infinity `Infty`.
 
-> **`Value`**`(v :: Val_FldPadElt)`
+> **Value** (v :: *Val_FldPadElt*)
 >
-> `-> .`
+> -> *Any*
+> {:.ret}
+{:.intrinsic}
 
 The value of the valuation, either an integer `RngIntElt`, rational `FldRatElt` or infinity `Infty`.
 
-> **`IntegerValue`**`(v :: Val_FldPadElt)`
+> **IntegerValue** (v :: *Val_FldPadElt*)
 >
-> `-> RngIntElt`
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
 
 The value of the valuation coerced to an integer. The value must be an integer or a rational with denominator 1.
 
-> **`'+'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'+'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'-'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'-'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'*'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'*'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'&+'`**`(vs :: [Val_FldPadElt])`
+> **'&+'**(vs :: [*Val_FldPadElt*])
 >
-> **`'&*'`**`(vs :: [Val_FldPadElt])`
+> **'&*'**(vs :: [*Val_FldPadElt*])
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 Add, subtract, multiply, sum, product.
 
-> **`Ceiling`**`(v :: Val_FldPadElt)`
+> **Ceiling**(v :: *Val_FldPadElt*)
 >
-> `-> Val_FldPadElt`
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 The valuation rounded up to the next integer.
 
-> **`'meet'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'meet'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'join'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'join'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+>
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
 
 Minimum and maximum. We use `meet` and `join` because more general valuations, such as those for polynomials, are only partially ordered.
 
-> **`'eq'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'eq'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'ne'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'ne'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'le'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'le'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'lt'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'lt'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'ge'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'ge'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **`'gt'`**`(v :: Val_FldPadElt, w :: Val_FldPadElt)`
+> **'gt'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> `-> BoolElt`
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
 
 Comparisons.
 
 ## Printing
 
-By default, `FldPadExactElt`s are printed to relative precision 1, so we see its (weak) valuation and the first p-adic coefficient thereafter. At print level `Magma`, they are printed to their full absolute precision. The user can get more control using the `Format` intrinsic.
+By default, `*FldPadExactElt*`s are printed to relative precision 1, so we see its (weak) valuation and the first p-adic coefficient thereafter. At print level `Magma`, they are printed to their full absolute precision. The user can get more control using the `Format` intrinsic.
 
-> **`Format`**`(x :: FldPadExactElt)`
+> **Format** (x :: *FldPadExactElt*)
 >
-> `-> MonStgElt`
+> -> *MonStgElt*
+> {:.ret}
+{:.intrinsic}
 
 Returns a string representation of `x` according to the parameters.
 
