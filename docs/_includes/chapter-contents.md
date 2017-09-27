@@ -1,5 +1,3 @@
-Up: [Home]({{site.baseurl}})
-
 {% assign ps = site.pages | where: "chapter", page.chapter | sort: "section" %}
 {% for p in ps %}
 {% if p.section > 0 %}
