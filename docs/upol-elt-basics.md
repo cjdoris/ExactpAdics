@@ -228,21 +228,21 @@ The smallest valuation of the coefficients of `f`.
 
 ## Arithmetic
 
-> **<span>'-'</span>** (f :: *RngUPolElt_FldPadExact*)
+> **\'-\'** (f :: *RngUPolElt_FldPadExact*)
 >
-> **'+'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
+> **\'+\'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 >
-> **'-'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
+> **\'-\'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 >
-> **'*'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
+> **\'\*\'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 >
-> **'^'** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
+> **\'^\'** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 >
-> **'div'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
+> **\'div\'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 >
-> **'&+'** (fs :: [*RngUPolElt_FldPadExact*])
+> **\'&+\'** (fs :: [*RngUPolElt_FldPadExact*])
 >
-> **<span>'&*'</span>** (fs :: [*RngUPolElt_FldPadExact*])
+> **\'&\*\'** (fs :: [*RngUPolElt_FldPadExact*])
 >
 > -> *RngUPolElt_FldPadExact*
 > {:.ret}
