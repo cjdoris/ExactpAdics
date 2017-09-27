@@ -92,7 +92,7 @@ Evaluates `h` at `v`.
 
 Evaluates the inverse of `h` at `u`.
 
-> **'eq'** (h1 :: *HasseHerbTransFunc*, h2 :: *HasseHerbTransFunc*)
+> **\'eq\'** (h1 :: *HasseHerbTransFunc*, h2 :: *HasseHerbTransFunc*)
 >
 > -> *BoolElt*
 > {:.ret}
