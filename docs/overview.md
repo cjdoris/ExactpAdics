@@ -2,7 +2,9 @@
 chapter: 1
 ---
 
-## Overview
+# Overview
+
+{% include prev-next.md %}
 
 Magma's built-in types for p-adic computation (`FldPad`, `RngPad`, `RngPadRes`, etc) are all *approximate* in the sense that their elements are computed immediately to some precision, and therefore an element really corresponds to an equivalence class of genuine p-adic elements.
 

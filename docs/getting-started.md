@@ -4,6 +4,8 @@ chapter: 2
 
 # Getting started
 
+{% include prev-next.md %}
+
 ## Download
 
 * **Option 1:** Download the latest release from [here](https://github.com/cjdoris/ExactpAdics/releases).

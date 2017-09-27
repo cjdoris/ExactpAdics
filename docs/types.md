@@ -4,6 +4,8 @@ chapter: 90
 
 # New types
 
+{% include prev-next.md %}
+
 ## FldPadExact, FldPadExactElt
 
 [Exact p-adic fields]({{site.baseurl}}/pad-intro) and their elements.
