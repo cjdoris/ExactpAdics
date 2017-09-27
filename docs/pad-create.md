@@ -26,7 +26,7 @@ Returns the field of `p`-adic numbers, where `p` is a positive prime.
 
 ## Unramified extensions
 
-> **ext** <K :: *FldPadExact* | f>
+> **ext** <K :: *FldPadExact* \| f>
 >
 > **UnramifiedExtension** (K :: *FldPadExact*, f)
 >
@@ -42,7 +42,7 @@ Returns the unramified extension of `K` defined by the polynomial `f` (or anythi
 
 > **UnramifiedExtension** (K :: *FldPadExact*, n :: *RngIntElt*)
 >
-> **ext** <K :: *FldPadExact* | n :: *RngIntElt*>
+> **ext** <K :: *FldPadExact* \| n :: *RngIntElt*>
 >
 > -> *FldPadExact*
 > {:.ret}
@@ -58,7 +58,7 @@ Returns an unramified extension of `K` of degree `n`.
 >
 > **TotallyRamifiedExtension** (f :: *RngUPolElt_FldPadExact*)
 >
-> **ext** <K :: *FldPadExact* | f>
+> **ext** <K :: *FldPadExact* \| f>
 >
 > -> FldPadExact
 > {:.ret}
