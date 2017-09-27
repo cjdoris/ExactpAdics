@@ -11,7 +11,7 @@ The rationale for the design of the package and an overview of the internal stru
 
 The package is [hosted here on GitHub](https://github.com/cjdoris/ExactpAdics) and can be [downloaded from here](https://github.com/cjdoris/ExactpAdics/releases).
 
-Please direct any comments, queries or complaints to [the GitHub issue tracker](https://github.com/cjdoris/ExactpAdics/issues).
+Please direct any bugs, comments or queries to [the GitHub issue tracker](https://github.com/cjdoris/ExactpAdics/issues).
 
 ## Contents
 
