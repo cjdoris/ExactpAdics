@@ -228,7 +228,7 @@ The smallest valuation of the coefficients of `f`.
 
 ## Arithmetic
 
-> **<pre>'-'</pre>** (f :: *RngUPolElt_FldPadExact*)
+> **<span>'-'</span>** (f :: *RngUPolElt_FldPadExact*)
 >
 > **'+'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 >
@@ -242,7 +242,7 @@ The smallest valuation of the coefficients of `f`.
 >
 > **'&+'** (fs :: [*RngUPolElt_FldPadExact*])
 >
-> **<pre>'&*'</pre>** (fs :: [*RngUPolElt_FldPadExact*])
+> **<span>'&*'</span>** (fs :: [*RngUPolElt_FldPadExact*])
 >
 > -> *RngUPolElt_FldPadExact*
 > {:.ret}
