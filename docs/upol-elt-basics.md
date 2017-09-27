@@ -23,12 +23,16 @@ headings:
 > **Zero** (R :: *RngUPolElt_FldPadExact*)
 >
 > -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 The zero polynomial in `R`,
 
 > **One** (R :: *RngUPolElt_FldPadExact*)
 >
 > -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 The one polynomial in `R`.
 
@@ -179,6 +183,8 @@ True if the current approximation of `f` is zero up to precision.
 > **BaselineValuation** (f :: *RngUPolElt_FldPadExact*)
 >
 > -> Val_RngUPolElt_FldPadExact
+> {:.ret}
+{:.intrinsic}
 
 A fixed lower bound on the valuation of `f`; usually the weak valuation of the initial approximation of `f`.
 

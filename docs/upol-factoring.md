@@ -48,6 +48,8 @@ Equivalent to calling `IsHenselLiftable(f,x)`, raising an error if it returns fa
 > **IsHenselLiftable** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 >
 > -> *BoolElt*, *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
 
 True if `f` and `g` satisfy Hensel's lemma for factors of univariate polynomials. That is, `f` and `g` are both integral and v(`f - g * (f div g)`) > 2 * v(`Resultant(g, f div g)`).
 

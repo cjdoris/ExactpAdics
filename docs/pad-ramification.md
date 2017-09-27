@@ -76,13 +76,15 @@ The ramification degree of an extension with this transition function.
 
 The vertices of the transition function.
 
-> **'@'** (v, h :: *HasseHerbTransFunc*)
+> **\'@\'** (v, h :: *HasseHerbTransFunc*)
 >
 > -> *Any*
+> {:.ret}
+{:.intrinsic}
 
 Evaluates `h` at `v`.
 
-> **'@@'** (u, h :: *HasseHerbTransFunc*)
+> **\'@@\'** (u, h :: *HasseHerbTransFunc*)
 >
 > -> *Any*
 > {:.ret}

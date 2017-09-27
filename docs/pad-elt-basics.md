@@ -26,21 +26,21 @@ The field containing `x`.
 
 ## Arithmetic
 
-> **'-'** (x :: *FldPadExactElt*)
+> **\'-\'** (x :: *FldPadExactElt*)
 >
-> **'+'** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
+> **\'+\'** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 >
-> **'-'** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
+> **\'-\'** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 >
-> **'*'**(x :: *FldPadExactElt*, y :: *FldPadExactElt*)
+> **\'\*\'**(x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 >
-> **'/'**(x :: *FldPadExactElt*, y :: *FldPadExactElt*)
+> **\'/\'**(x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 >
-> **'^'**(x :: *FldPadExactElt*, n :: *RngIntElt*)
+> **\'^\'**(x :: *FldPadExactElt*, n :: *RngIntElt*)
 >
-> **'&+'**(xs :: [*FldPadExactElt*])
+> **\'&+\'**(xs :: [*FldPadExactElt*])
 >
-> **'&*'**(xs :: [*FldPadExactElt*])
+> **\'&\*\'**(xs :: [*FldPadExactElt*])
 >
 > -> *FldPadExactElt*
 > {:.ret}
@@ -188,15 +188,15 @@ The value of the valuation, either an integer `RngIntElt`, rational `FldRatElt` 
 
 The value of the valuation coerced to an integer. The value must be an integer or a rational with denominator 1.
 
-> **'+'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'+\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'-'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'-\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'*'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'\*\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'&+'**(vs :: [*Val_FldPadElt*])
+> **\'&+\'**(vs :: [*Val_FldPadElt*])
 >
-> **'&*'**(vs :: [*Val_FldPadElt*])
+> **\'&\*\'**(vs :: [*Val_FldPadElt*])
 >
 > -> *Val_FldPadElt*
 > {:.ret}
@@ -212,9 +212,9 @@ Add, subtract, multiply, sum, product.
 
 The valuation rounded up to the next integer.
 
-> **'meet'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'meet\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'join'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'join\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
 > -> *Val_FldPadElt*
 > {:.ret}
@@ -222,17 +222,17 @@ The valuation rounded up to the next integer.
 
 Minimum and maximum. We use `meet` and `join` because more general valuations, such as those for polynomials, are only partially ordered.
 
-> **'eq'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'eq\'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'ne'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'ne\'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'le'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'le\'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'lt'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'lt\'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'ge'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'ge\'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **'gt'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+> **\'gt\'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
 > -> *BoolElt*
 > {:.ret}

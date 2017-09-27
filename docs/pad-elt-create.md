@@ -69,9 +69,11 @@ A generator of `L` over `K`. If the extension is trivial, returns 1. If `L` is d
 
 > K ! x
 >
-> **elt** <K :: *FldPadExact* | x>
+> **elt** <K :: *FldPadExact* \| x>
 >
 > -> FldPadExactElt
+> {:.ret}
+{:.intrinsic}
 
 Creates an element of `K` from `x`, which must be one of the following
 
@@ -83,9 +85,9 @@ Creates an element of `K` from `x`, which must be one of the following
 
 > K ! [x1, ..., xn]
 >
-> **elt** <K | x1, ..., xn>
+> **elt** <K \| x1, ..., xn>
 >
-> **elt** <K | [x1, ..., xn]>
+> **elt** <K \| [x1, ..., xn]>
 >
 > -> *FldPadExactElt*
 > {:.ret}
