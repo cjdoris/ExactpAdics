@@ -11,7 +11,13 @@ blockquote.intrinsic {
   margin-bottom: 10px !important;
   background-color: #fafafa !important;
   font-family: "SFMono-Regular","Consolas","Liberation Mono","Menlo","Courier",monospace !important;
-  overflow: scroll !important;
+  overflow-x: scroll !important;
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+  -ms-overflow-style: -ms-autohiding-scrollbar;
   p {
     margin-bottom: 4px !important;
     white-space: nowrap !important;
