@@ -10,12 +10,14 @@ blockquote.intrinsic {
   margin-top: 30px !important;
   margin-bottom: 10px !important;
   background-color: #fafafa !important;
-  font-family: "SFMono-Regular","Consolas","Liberation Mono","Menlo","Courier",monospace;
+  font-family: "SFMono-Regular","Consolas","Liberation Mono","Menlo","Courier",monospace !important;
+  overflow: scroll !important;
   p {
     margin-bottom: 0px !important;
+    white-space: nowrap !important;
   }
   p.ret {
-    margin-left: 20px;
+    margin-left: 20px !important;
   }
   // code {
   //   background: transparent !important;
