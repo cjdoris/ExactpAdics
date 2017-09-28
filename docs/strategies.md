@@ -125,7 +125,7 @@ The global precision strategy with the given `name`.
 
 ## Execution
 
-> **ExactpAdics_ExecutePrecisionStrategy(cb :: *UserProgram*, strategy, [initial :: *RngIntElt*])
+> **ExactpAdics_ExecutePrecisionStrategy** (cb :: *UserProgram*, strategy, [initial :: *RngIntElt*])
 >
 > -> *BoolElt*, *RngIntElt*, *Any*
 > {:.ret}
