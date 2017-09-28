@@ -62,6 +62,7 @@ Evaluates the Getter `g` and returns its value.
 ## Composition
 
 > **Apply** (f, g :: *ExactpAdics_Gettr*)
+>
 > **Compose** (g :: *ExactpAdics_Gettr*, f)
 >
 > -> *ExactpAdics_Gettr*
@@ -71,6 +72,7 @@ Evaluates the Getter `g` and returns its value.
 The getter `g` with the function `f` applied to its output.
 
 > **ApplyProcedure** (f, g :: *ExactpAdics_Gettr*)
+>
 > **ComposeProcedure** (g :: *ExactpAdics_Gettr*, f)
 >
 > -> *ExactpAdics_Gettr*
@@ -83,6 +85,7 @@ The getter `g` which calls the procedure `f` on its return value.
 - `Value := true`: The value returned by the new getter.
 
 > **ApplyGetter** (f, g :: *ExactpAdics_Gettr*)
+>
 > **ComposeGetter** (g :: ExactpAdics_Gettr*, f)
 >
 > -> *ExactpAdics_Gettr*
@@ -105,6 +108,7 @@ The getter with value `Evaluate(f(Evaluate(gs[1]), Evaluate(gs[2]), ...))`. `f` 
 **Parameters.** As for previous intrinsic.
 
 > **\'mod\'** (g :: *ExactpAdics_Gettr*, f)
+>
 > **\'mod\'** (g :: [*ExactpAdics_Gettr*], f)
 >
 > -> *ExactpAdics_Gettr*
