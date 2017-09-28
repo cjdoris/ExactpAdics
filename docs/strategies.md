@@ -131,7 +131,7 @@ The global precision strategy with the given `name`.
 > {:.ret}
 {:.intrinsic}
 
-Runs though the values `n` of the `strategy` and for each one, calls the callback function `cb`. The callback returns `success, value`, where `success` is `true` to signify stopping and `false` to signify continuing. The initial value for `n` is `initial` if given, or else 0.
+Runs though the values `n` of the `strategy` and for each one, calls the callback function `cb`. The callback returns `success, value`, where `success` is `true` to signify stopping and `false` to signify continuing. The `value` is ignored when `success` is `false`, and may be `_`. The initial value for `n` is `initial` if given, or else 0.
 
 The first return value is `false` if the end of the strategy was reached before a successful callback and otherwise `true`. The second return value is the `n` at which the strategy stopped executing. The third return value is the `value` returned from a callback in the case of success.
 
