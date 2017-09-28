@@ -160,9 +160,9 @@ True if the valuation of `x` is 0.
 
 True if the valuation of `x` is at least 0.
 
-## *Val_FldPadElt*
+## Val_FldPadElt
 
-Valuations of p-adic numbers are represented by objects of type `*Val_FldPadElt*`, which are a simple wrapper type for integers, rationals and infinity. They are returned by intrinsics such as `Valuation` and `AbsolutePrecision`.
+Valuations of p-adic numbers are represented by objects of type `Val_FldPadElt`, which are a simple wrapper type for integers, rationals and infinity. They are returned by intrinsics such as `Valuation` and `AbsolutePrecision`.
 
 > **Val_FldPadElt_Make**(v)
 >
@@ -239,6 +239,14 @@ Minimum and maximum. We use `meet` and `join` because more general valuations, s
 {:.intrinsic}
 
 Comparisons.
+
+> **IsValidAbsolutePrecision** (x :: *FldPadExactElt*, n)
+>
+> -> *BoolElt*, *Any*
+> {:.ret}
+{:.intrinsic}
+
+True if `n` can be interpreted as a valuation for `x`. If so, also returns the valuation as a `Val_FldPadElt`. If not, returns an error message.
 
 ## Printing
 

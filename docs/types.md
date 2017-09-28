@@ -42,7 +42,7 @@ chapter: 90
 
 Homomorphisms of exact p-adic fields.
 
-## XPGettr
+## ExactpAdics_Gettr
 
 Computations with lazy p-adic dependencies.
 

@@ -129,7 +129,7 @@ A random element of `K` of valuation at least `v`.
 > {:.ret}
 {:.intrinsic}
 
-Creates an element of `K` by setting its internal representation directly. The initial approximation is `init`. If `x` is the element being created, then `mkUpdate` is a `function(x)` which returns a `function(apr :: Val_FldPadExactElt) -> XPGetter` whose return value, when evaluated, increases the absolute precision of `x` to `apr` (which is usually achieved via the `Update` intrinsic, below).
+Creates an element of `K` by setting its internal representation directly. The initial approximation is `init`. If `x` is the element being created, then `mkUpdate` is a `function(x)` which returns a `function(apr :: Val_FldPadExactElt) -> ExactpAdics_Gettr` whose return value, when evaluated, increases the absolute precision of `x` to `apr` (which is usually achieved via the `Update` intrinsic, below).
 
 > **Update** (x :: *FldPadExactElt*, xx :: *FldPadElt*)
 {:.intrinsic}
