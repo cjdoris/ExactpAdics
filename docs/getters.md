@@ -8,7 +8,7 @@ headings:
 
 # Getters: recursive computations
 
-{% include prev-next.md %}
+{% include jump-list.md %}
 
 The new type `ExactpAdics_Gettr` encapsulates a computation which, when evaluated, yields a value. The computation may depend on other computations which in turn recursively depend on the value of some p-adic objects being known to some precision. Evaluating a Getter entails finding all of these dependencies recursively, merging them so that there is only one dependency per object, and then satisfying the tree of dependencies in order, before findally evaluating the root.
 
