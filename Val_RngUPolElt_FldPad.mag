@@ -534,3 +534,12 @@ intrinsic '@'(i :: RngIntElt, v :: Val_RngUPolElt_FldPad) -> Val_FldPadElt
   {The valuation of coefficient i.}
   return Value(v)(i);
 end intrinsic;
+
+intrinsic ShiftSlope(v :: Val_RngUPolElt_FldPad, s) -> Val_RngUPolElt_FldPad
+  {Adds i*s onto v(i).}
+  s := Val_FldPadElt_Make(s);
+  a := v`values;
+  require Type(a`dflt`value) eq Infty: "The constant part of argument 1 must be infinite";
+  ks := SetToSequence(Keys(a`array));
+  return Val_RngUPolElt_FldPad_Make(a`dflt, ks, [a`array[k] + k*s : k in ks]);
+end intrinsic;

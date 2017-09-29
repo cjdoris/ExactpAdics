@@ -114,9 +114,21 @@ intrinsic Value(v :: Val_FldPadElt) -> .
   return v`value;
 end intrinsic;
 
+intrinsic IsFinite(v :: Val_FldPadElt) -> BoolElt
+  {True if v is finite, i.e. an integer or rational.}
+  return Type(v`value) ne Infty;
+end intrinsic;
+
+intrinsic IsIntegral(v :: Val_FldPadElt) -> BoolElt, RngIntElt
+  {True if v has an integer value, and the value if so.}
+  return IsCoercible(Z, v`value);
+end intrinsic;
+
 intrinsic IntegerValue(v :: Val_FldPadElt) -> RngIntElt
   {The value of v coerced to an integer.}
-  return Z ! Value(v);
+  ok, n := IsIntegral(v);
+  require ok: "must be an integer";
+  return n;
 end intrinsic;
 
 intrinsic Ceiling(v :: Val_FldPadElt) -> Val_FldPadElt

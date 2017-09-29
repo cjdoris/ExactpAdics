@@ -729,7 +729,7 @@ end intrinsic;
 
 intrinsic Approximation_Lazy(x :: FldPadExactElt, apr : Quick:=false, FixPr:=true) -> ExactpAdics_Gettr
   {An approximation to x.}
-  ok, apr := IsValidAbsolutePrecision(x, apr);
+  ok, apr := IsValidAbsolutePrecisionDiff(x, apr);
   require ok: "Argument 2: " cat apr;
   pr := PrecisionRequired(x, apr);
   iapF := IncreaseAbsolutePrecision_Lazy(Parent(x), pr);
@@ -1938,7 +1938,7 @@ end intrinsic;
 
 intrinsic Approximation_Lazy(f :: RngUPolElt_FldPadExact, apr : Quick:=false, FixPr:=true) -> ExactpAdics_Gettr
   {An approximation to f.}
-  ok, apr := IsValidAbsolutePrecision(f, apr);
+  ok, apr := IsValidAbsolutePrecisionDiff(f, apr);
   require ok: "Argument 2: " cat apr;
   pr := PrecisionRequired(f, apr);
   // vs := [Valuation(c) : c in Coefficients(f`approximation)];
@@ -2822,34 +2822,46 @@ intrinsic RandomUnit(F :: FldPadExact) -> FldPadExactElt
   return RandomUnit(F, 0);
 end intrinsic;
 
-intrinsic ValuationEq(x :: FldPadExactElt, v :: RngIntElt) -> BoolElt
-  {True if x has valuation v.}
+intrinsic ValuationEq(x :: FldPadExactElt, v) -> BoolElt
+  {"}
+  v := Val_FldPadElt_Make(v);
+  if not WZERO(x) then
+    return WVAL(x) eq v;
+  end if;
+  if IsFinite(v) and not IsIntegral(v) then
+    return false;
+  end if;
   IncreaseAbsolutePrecision(x, v+1);
-  return WeakValuation(x) eq v;
+  return WVAL(x) eq v;
 end intrinsic;
 
-intrinsic ValuationNe(x :: FldPadExactElt, v :: RngIntElt) -> BoolElt
+intrinsic ValuationNe(x :: FldPadExactElt, v) -> BoolElt
   {True if x does not have valuation v.}
   return not ValuationEq(x, v);
 end intrinsic;
 
-intrinsic ValuationGe(x :: FldPadExactElt, v :: RngIntElt) -> BoolElt
+intrinsic ValuationGe(x :: FldPadExactElt, v) -> BoolElt
   {True if the valuation of x is at least v.}
-  IncreaseAbsolutePrecision(x, v);
+  IncreaseAbsolutePrecision(x, Ceiling(v));
   return WeakValuation(x) ge v;
 end intrinsic;
 
-intrinsic ValuationGt(x :: FldPadExactElt, v :: RngIntElt) -> BoolElt
+intrinsic ValuationGt(x :: FldPadExactElt, v) -> BoolElt
   {True if the valuation of x is greater than v.}
-  return ValuationGe(x, v+1);
+  v := Val_FldPadElt_Make(v);
+  if v eq OO then
+    return false;
+  else
+    return ValuationGe(x, v+1);
+  end if;
 end intrinsic;
 
-intrinsic ValuationLe(x :: FldPadExactElt, v :: RngIntElt) -> BoolElt
+intrinsic ValuationLe(x :: FldPadExactElt, v) -> BoolElt
   {True if the valuation of x is at most v.}
   return not ValuationGt(x, v);
 end intrinsic;
 
-intrinsic ValuationLt(x :: FldPadExactElt, v :: RngIntElt) -> BoolElt
+intrinsic ValuationLt(x :: FldPadExactElt, v) -> BoolElt
   {True if the valuation of x is less than v.}
   return not ValuationGe(x, v);
 end intrinsic;
@@ -3004,9 +3016,9 @@ intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default") -> Nw
       // increase precision of f just enough to determine if there are any more unknowns
       IncreaseAbsolutePrecision(f, &cat[
         (j eq 1)
-        select [Ceiling(vs[j][2])]
+        select [<0,Ceiling(vs[j][2])>]
         else ([ 
-            Ceiling(v0+i*s)
+            <i0+i,Ceiling(v0+i*s)>
             : i in [1..i1-i0]
           ] 
           where s:=(v1-v0)/(i1-i0)
@@ -3107,14 +3119,14 @@ intrinsic IsHenselLiftable
   // CONDITION SATISFIED, NOW RETURN THE LIFT
   t := Valuation(dfx);
   s := WeakValuation(fx);
-  xx := Approximation(x);
+  xx := x`approximation;
   init := CHANGE_APR(xx, s-t);
   mkupdate := func<z | function (apr)
-    v := Min(WeakValuation(z), WeakValuation(f));
-    pr := Max(0, apr + t - v);
+    v := WeakValuation(z) meet WeakMinValuation(f);
+    pr := (apr + t - v) join 0;
     return ExactpAdics_GeneralGetter(pr,
       procedure (~pr, ~g)
-        g := Approximation_Lazy(f : APr:=v+pr);  
+        g := Approximation_Lazy(f, v+pr);
       end procedure,
       procedure (xf, ~pr, ~val)
         xz := CAST(BaseRing(xf), GetData(z));
@@ -3621,18 +3633,18 @@ intrinsic Derivative(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -> RngUPolElt_
     return CAST(R, 0);
   end if;
   if not assigned f`derivative then
-    f`derivative := [*false : i in [1..d]*];
+    f`derivative := [];
   end if;
-  if f`derivative[n] cmpeq false then
+  if not IsDefined(f`derivative, n) then
     K := BaseRing(R);
     e := AbsoluteRamificationDegree(K);
     p := Prime(K);
     bs := [NumberOfPermutations(i,n) : i in [n..d]];
     vbs := [e*Valuation(b,p) : b in bs];
-    init := Derivative(Approximation(f : Pr:=1, Weak), n);
+    init := Derivative(Approximation(f, CAPR(f)), n);
     mkupdate := func<z | function (aprs)
       faprs := AbsolutePrecision(f);
-      return Approximation_Lazy(f : APr:=[(i lt n) select faprs[i+1] else aprs[i-n+1]-vbs[i-n+1] : i in [0..WeakDegree(f)]]) mod function (xf)
+      return Approximation_Lazy(f, [i lt n select <i, faprs(i)> else <i, aprs(i-n)-vbs[i-n+1]> : i in [n..WeakDegree(f)]]) mod function (xf)
         Update(z, Derivative(xf, n));
         return true;
       end function;
@@ -3663,18 +3675,17 @@ intrinsic Evaluate(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> FldPadEx
     return Coefficient(f, 0);
   end if;
   // main case
-  xf := Approximation(f : Pr:=1, Weak);
-  xx := Approximation(x : Pr:=1, Weak);
+  xf := Approximation(f, CAPR(f));
+  xx := Approximation(x, CAPR(x));
   init := Evaluate(xf, xx);
   mkupdate := func<z | function (apr)
     vx := WeakValuation(x);
-    xf := Approximation(f);
-    d := Degree(xf);
-    vfs := [Valuation(c) : c in Coefficients(xf)];
-    pr := apr - Min([vfs[i+1]+i*vx : i in [0..d]]);
+    d := WeakDegree(f);
+    vfs := WeakValuation(f);
+    pr := apr - &meet ShiftSlope(vfs, vx);
     return [
-      Approximation_Lazy(f : APr:=[apr-i*vx : i in [0..d]]),
-      Approximation_Lazy(x : APr:=vx+pr)
+      Approximation_Lazy(f, [<i,apr-i*vx> : i in [0..d]]),
+      Approximation_Lazy(x, vx+pr)
     ] mod function (xf, xx)
       Update(z, Evaluate(xf, xx));
       return true;
