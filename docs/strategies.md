@@ -8,11 +8,11 @@ headings:
   - Execution
 ---
 
-# Precision Strategies
+# Precision strategies
 
 {% include jump-list.md %}
 
-A design feature of `ExactpAdics` is that all functions either return the correct value or raise an error if this is not possible. In particular, some p-adic computations are not possible unless the inputs are known to sufficient precision, and if this occurs then we raise a *precision error*. Precision strategies are how we tell Magma how much we are willing to increase certain precisions before giving up.
+All intrinsics in `ExactpAdics` either return the correct value or raise an error if this is not possible. In particular, some p-adic computations are not possible unless the inputs are known to sufficient precision, and if this occurs then we raise a *precision error*. Precision strategies are how we tell these computation how much we are willing to increase certain precisions before giving up.
 
 ## Motivation
 
