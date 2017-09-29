@@ -1,3 +1,5 @@
+import "ExactpAdics.mag": IS_INSTANCE;
+
 STATE := recformat<cb, prec, limit, result, randomize>;
 
 declare verbose ExactpAdics_ExecutePrecisionStrategy, 1;
@@ -22,7 +24,7 @@ function execute(state, strat)
     
   // STRING: use the corresponding global named strategy
   when MonStgElt:
-    s := GetGlobalExactpAdicPrecisionStrategy(strat);
+    s := ExactpAdics_GetGlobalPrecisionStrategy(strat);
     return execute(state, s);
 
   // INTEGER: set this as the precision, and run the callback on it
@@ -62,7 +64,7 @@ function execute(state, strat)
       case strat[1]:
       when "limit":
         if (#strat eq 2)
-        and IsInstance(strat[2], <RngIntElt,Infty,FldRatElt,FldReElt>) then
+        and IS_INSTANCE(strat[2], {RngIntElt,Infty,FldRatElt,FldReElt}) then
           state`limit := strat[2];
           return false, false, state;
         end if;
@@ -70,16 +72,16 @@ function execute(state, strat)
         if #strat eq 1 then
           state`randomize := true;
           return false, false, state;
-        elif #strat eq 2 and IsInstance(strat[2], BoolElt) then
+        elif #strat eq 2 and IS_INSTANCE(strat[2], BoolElt) then
           state`randomize := strat[2];
           return false, false, state;
         end if;
       when "exp":
         if (#strat ge 2)
         and (#strat le 3)
-        and IsInstance(strat[2], <RngIntElt,FldRatElt,FldReElt>)
+        and IS_INSTANCE(strat[2], {RngIntElt,FldRatElt,FldReElt})
         and strat[2] gt 1
-        and ((#strat lt 3) or IsInstance(strat[3], RngIntElt)) then
+        and ((#strat lt 3) or IS_INSTANCE(strat[3], RngIntElt)) then
           m := strat[2];
           base := (#strat lt 3) select 0 else strat[3];
           return execute(state, func<pr | true, base + Max(1, Ceiling((pr-base)*m))>);
@@ -125,7 +127,7 @@ end intrinsic;
 
 STRATS := NewStore();
 StoreSet(STRATS, "defaultLimit", <"limit",100>);
-StoreSet(STRATS, "unlimitedDefault", [* 10, <"randomize">, <"double"> *]);
+StoreSet(STRATS, "unlimitedDefault", [* 1, <"randomize">, <"double"> *]);
 StoreSet(STRATS, "default", ["defaultLimit", "unlimitedDefault"]);
 
 intrinsic ExactpAdics_IsGlobalPrecisionStrategyDefined(name :: MonStgElt) -> BoolElt, .

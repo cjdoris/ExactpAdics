@@ -42,151 +42,14 @@ intrinsic ExactpAdics_GetProfileUpdates() -> []
   return STORE`updates;
 end intrinsic;
 
-/////////////////////////////////////////////////////////////////////////////////
-// absolute precision manipulations
-
-_apr := AbsolutePrecision;
-
-intrinsic _apr_isValid(x, n) -> BoolElt, .
-  {True if n is a valid apr for x.}
-  return false, "wrong type";
-end intrinsic;
-
-intrinsic _apr_isValid(x :: FldPadExactElt, n) -> BoolElt, .
-  {"}
-  return IsCoercible(PowVal_FldPadElt_Make(), n);
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n) -> BoolElt, .
-  {"}
-  return false, "wrong type";
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: Val_RngUPolElt_FldPad) -> BoolElt, .
-  {"}
-  return true, n;
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: RngIntElt) -> BoolElt, .
-  {"}
-  return true, Val_RngUPolElt_FldPad_Make([0..WeakDegree(x)], [n : i in [0..WeakDegree(x)]]);
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: Infty) -> BoolElt, .
-  {"}
-  return Val_RngUPolElt_FldPad_Make([0..WeakDegree(x)], [n : i in [0..WeakDegree(x)]]);
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: ExtReElt) -> BoolElt, .
-  {"}
-  return Val_RngUPolElt_FldPad_Make([0..WeakDegree(x)], [n : i in [0..WeakDegree(x)]]);
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: [RngIntElt]) -> BoolElt, .
-  {"}
-  d := WeakDegree(x);
-  if #n ge d+1 then
-    return true, Val_RngUPolElt_FldPad_Make([0..d], n[1..d+1]);
-  end if;
-  return false, "too short";
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: [Infty]) -> BoolElt, .
-  {"}
-  d := WeakDegree(x);
-  if #n ge d+1 then
-    return true, Val_RngUPolElt_FldPad_Make([0..d], n[1..d+1]);
-  end if;
-  return false, "too short";
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngUPolElt_FldPadExact, n :: [ExtReElt]) -> BoolElt, .
-  {"}
-  d := WeakDegree(x);
-  if #n ge d+1 then
-    return true, Val_RngUPolElt_FldPad_Make([0..d], n[1..d+1]);
-  end if;
-  return false, "too short";
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngMPolElt_FldPadExact, n :: RngIntElt) -> BoolElt, .
-  {"}
-  return true, n;
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngMPolElt_FldPadExact, n :: Infty) -> BoolElt, .
-  {"}
-  return true, n;
-end intrinsic;
-
-intrinsic _apr_isValid(x :: RngMPolElt_FldPadExact, n :: ExtReElt) -> BoolElt, .
-  {"}
-  return true, n;
-end intrinsic;
-
-function _apr_normalize(x, n)
-  ok, n := _apr_isValid(x,n);
-  if ok then
-    return n;
-  else
-    error "invalid precision:", n;
-  end if;
-end function;
-
-intrinsic _apr_le(x :: FldPadExactElt, a, b) -> BoolElt
-  {True if (normalized) absolute precision a is less than or equal to b.}
-  return a le b;
-end intrinsic;
-
-intrinsic _apr_le(x :: RngUPolElt_FldPadExact, a, b) -> BoolElt
-  {"}
-  return a le b;
-end intrinsic;
-
-intrinsic _apr_le(x :: RngMPolElt_FldPadExact, a, b) -> BoolElt
-  {"}
-  return a le b;
-end intrinsic;
-
-intrinsic _apr_sup(x :: FldPadExactElt, a, b) -> .
-  {A supremum for the (normalized) absolute precisions a and b.}
-  return a join b;
-end intrinsic;
-
-intrinsic _apr_sup(x :: RngUPolElt_FldPadExact, a, b) -> .
-  {"}
-  return a join b;
-end intrinsic;
-
-intrinsic _apr_sup(x :: RngMPolElt_FldPadExact, a, b) -> .
-  {"}
-  return Max(a, b);
-end intrinsic;
-
-// the Update() intrinsics now merge the old and new approximations to get the best possible, so the precision passed to the x`update(apr) function can be less than the final apr we are aiming for; the following assume that _apr_isValid(a) and not _apr_le(a,_apr(x))
-
-intrinsic _apr_required(x :: FldPadExactElt, a) -> .
-  {The apr required to update x to at least a.}
-  return a;
-end intrinsic;
-
-intrinsic _apr_required(x :: RngUPolElt_FldPadExact, a) -> .
-  {The apr needed to update x to at least a.}
-  return a diff _apr(x);
-end intrinsic;
-
-intrinsic _apr_required(x :: RngMPolElt_FldPadExact, a) -> .
-  {"}
-  return a;
-end intrinsic;
-
 //////////////////////////////////////////////////////////////////////////////////
 // dependencies
 
 DEP := recformat<id, x, apr, st, g, childids>;
 
 function dep_new(x, apr)
-  apr := _apr_normalize(x, apr);
+  ok, apr := IsValidAbsolutePrecision(x, apr);
+  error if not ok, Sprintf("invalid apr: %o", apr);
   return rec<DEP | id:=x`id, x:=x, apr:=apr, childids:={Integers()|}>;
 end function;
 
@@ -203,12 +66,12 @@ end procedure;
 
 procedure dep_getDeps(~d, ~deps)
   if not assigned d`g then
-    d`g := d`x`update(_apr_required(d`x, d`apr));
+    d`g := d`x`update(d`apr diff AbsolutePrecision(d`x));
     case Type(d`g):
-    when XPGettr:
+    when ExactpAdics_Gettr:
       ;
     when BoolElt:
-      d`g := ConstXPGetter(d`g);
+      d`g := ExactpAdics_ConstGetter(d`g);
     else
       error "update function should return a getter or true";
     end case;
@@ -224,7 +87,7 @@ procedure dep_doUpdate(~d, ~done)
 end procedure;
 
 function dep_isDone(d)
-  return _apr_le(d`x, d`apr, _apr(d`x));
+  return d`apr le AbsolutePrecision(d`x);
 end function;
 
 function deps_new()
@@ -255,23 +118,23 @@ end procedure;
 procedure deps_add(~deps, d, maxid)
   assert d`id lt maxid;
   // compare the target and current apr
-  apr := _apr(d`x);
-  if _apr_le(d`x, d`apr, apr) then
+  apr := AbsolutePrecision(d`x);
+  if d`apr le apr then
     return;
-  elif _apr_le(d`x, apr, d`apr) then
+  elif apr le d`apr then
     ;
   else
-    dep_set_apr(~d, _apr_sup(d`x, d`apr, apr));
+    dep_set_apr(~d, d`apr join apr);
   end if;
   // see if a dependency for this already exists, and compare aprs
   ok, d2 := IsDefined(deps, d`id);
   if ok then
-    if _apr_le(d`x, d`apr, d2`apr) then
+    if d`apr le d2`apr then
       return;
-    elif _apr_le(d`x, d2`apr, d`apr) then
+    elif d2`apr le d`apr then
       ;
     else
-      dep_set_apr(~d, _apr_sup(d`x, d`apr, d2`apr));
+      dep_set_apr(~d, d`apr join d2`apr);
     end if;
   end if;
   // now actually set the dependency
@@ -327,10 +190,10 @@ end procedure;
 //////////////////////////////////////////////////////////////////////////////////
 // the getter
 // 
-// a dependency is a pair <x,a> where x`id is a dependency-ordered integer, _apr_isValid(x,a) is true, x`update(a) is a getter whose value we ignore.
+// a dependency is a pair <x,a> where x`id is a dependency-ordered integer, IsValidAbsolutePrecision(x,a) is true, x`update(a) is a getter whose value we ignore.
 
-declare type XPGettr;
-declare attributes XPGettr: state, getDeps, getValue, explode;
+declare type ExactpAdics_Gettr;
+declare attributes ExactpAdics_Gettr: state, getDeps, getValue, explode;
 
 // WRAPPED_FUNCTION := recformat<func, inputs, outputs, numInputs, numOutputs>;
 
@@ -417,7 +280,7 @@ declare attributes XPGettr: state, getDeps, getValue, explode;
 //   end case;
 // end function;
 
-intrinsic Evaluate(g :: XPGettr) -> .
+intrinsic Evaluate(g :: ExactpAdics_Gettr) -> .
   {Evaluates the getter and retuns its value.}
   st := g`state;
   repeat
@@ -433,23 +296,23 @@ intrinsic Evaluate(g :: XPGettr) -> .
   end if;
 end intrinsic;
 
-intrinsic Print(g :: XPGettr)
+intrinsic Print(g :: ExactpAdics_Gettr)
   {Prints g.}
   printf "Getter";
 end intrinsic;
 
-intrinsic MakeXPGetter(state, getDeps, getValue) -> XPGettr
-  {Makes a new XPGettr.}
-  g := New(XPGettr);
+intrinsic ExactpAdics_Getter(state, getDeps, getValue) -> ExactpAdics_Gettr
+  {Makes a new ExactpAdics_Gettr.}
+  g := New(ExactpAdics_Gettr);
   g`state := state;
   g`getDeps := getDeps;
   g`getValue := getValue;
   return g;
 end intrinsic;
 
-intrinsic ConstXPGetter(X) -> XPGettr
+intrinsic ExactpAdics_ConstGetter(X) -> ExactpAdics_Gettr
   {The getter returning X.}
-  return MakeXPGetter(
+  return ExactpAdics_Getter(
     false,
     procedure (~st, ~deps)
       ;
@@ -476,9 +339,9 @@ function callList(f, x, n)
   return CALL_LIST[n+1](f, x);
 end function;
 
-intrinsic Apply(f, g :: XPGettr) -> XPGettr
+intrinsic Apply(f, g :: ExactpAdics_Gettr) -> ExactpAdics_Gettr
   {Applies f to the output of g.}
-  return MakeXPGetter(g`state, g`getDeps, procedure (~st, ~val)
+  return ExactpAdics_Getter(g`state, g`getDeps, procedure (~st, ~val)
     g`getValue(~st, ~val);
     if assigned val then
       if assigned g`explode then
@@ -490,10 +353,10 @@ intrinsic Apply(f, g :: XPGettr) -> XPGettr
   end procedure);
 end intrinsic;
 
-// intrinsic Apply(f :: Tup, g :: XPGettr) -> XPGettr
+// intrinsic Apply(f :: Tup, g :: ExactpAdics_Gettr) -> ExactpAdics_Gettr
 //   {"}
 //   f := wrappedFunction(f);
-//   return MakeXPGetter(g`state, g`getDeps, procedure (~st, ~val)
+//   return ExactpAdics_Getter(g`state, g`getDeps, procedure (~st, ~val)
 //     g`getValue(~st, ~val);
 //     if assigned val then
 //       val := callWrappedFunction_InList(f, val);
@@ -501,14 +364,14 @@ end intrinsic;
 //   end procedure);
 // end intrinsic;
 
-intrinsic Compose(g :: XPGettr, f) -> XPGettr
+intrinsic Compose(g :: ExactpAdics_Gettr, f) -> ExactpAdics_Gettr
   {"}
   return Apply(f, g);
 end intrinsic;
 
-intrinsic ApplyProcedure(f, g :: XPGettr : Value:=true) -> XPGettr
+intrinsic ApplyProcedure(f, g :: ExactpAdics_Gettr : Value:=true) -> ExactpAdics_Gettr
   {Applies the procedure f to the output of g, and sets the output to the given value.}
-  return MakeXPGetter(g`state, g`getDeps, procedure (~st, ~val)
+  return ExactpAdics_Getter(g`state, g`getDeps, procedure (~st, ~val)
     g`getValue(~st, ~val);
     if assigned val then
       f(val);
@@ -517,14 +380,14 @@ intrinsic ApplyProcedure(f, g :: XPGettr : Value:=true) -> XPGettr
   end procedure);
 end intrinsic;
 
-intrinsic ComposeProcedure(g :: XPGettr, f : Value:=true) -> XPGettr
+intrinsic ComposeProcedure(g :: ExactpAdics_Gettr, f : Value:=true) -> ExactpAdics_Gettr
   {"}
   return ApplyProcedure(f, g : Value:=Value);
 end intrinsic;
 
-intrinsic ApplyGetter(f, g :: XPGettr : AllowConst:=false) -> XPGettr
+intrinsic ApplyGetter(f, g :: ExactpAdics_Gettr : AllowConst:=false) -> ExactpAdics_Gettr
   {The getter which returns the return value of f(return value of g).}
-  return MakeXPGetter([*false, g`state, false*], procedure (~st, ~deps)
+  return ExactpAdics_Getter([*false, g`state, false*], procedure (~st, ~deps)
     if st[1] then
       st[2]`getDeps(~st[3], ~deps);
     else
@@ -542,7 +405,7 @@ intrinsic ApplyGetter(f, g :: XPGettr : AllowConst:=false) -> XPGettr
         else
           fv := f(v);
         end if;
-        if Type(fv) eq XPGettr then
+        if Type(fv) eq ExactpAdics_Gettr then
           st[1] := true;
           st[2] := f(v);
           st[3] := st[2]`state;
@@ -556,30 +419,30 @@ intrinsic ApplyGetter(f, g :: XPGettr : AllowConst:=false) -> XPGettr
   end procedure);
 end intrinsic;
 
-intrinsic 'mod'(g :: XPGettr, f) -> XPGettr
+intrinsic 'mod'(g :: ExactpAdics_Gettr, f) -> ExactpAdics_Gettr
   {"}
   return ApplyGetter(f, g : AllowConst);
 end intrinsic;
 
-intrinsic ApplyGetter(f, gs :: [XPGettr] : AllowConst:=false) -> XPGettr
+intrinsic ApplyGetter(f, gs :: [ExactpAdics_Gettr] : AllowConst:=false) -> ExactpAdics_Gettr
   {The getter which returns the return value of f(return value of gs[1], ...).}
   return Apply(f, Flatten(gs) / #gs);
 end intrinsic;
 
-intrinsic 'mod'(gs :: [XPGettr], f) -> XPGettr
+intrinsic 'mod'(gs :: [ExactpAdics_Gettr], f) -> ExactpAdics_Gettr
   {"}
   return ApplyGetter(f, gs);
 end intrinsic;
 
-intrinsic ComposeGetter(g :: XPGettr, f) -> XPGettr
+intrinsic ComposeGetter(g :: ExactpAdics_Gettr, f) -> ExactpAdics_Gettr
   {"}
   return ApplyGetter(f, g);
 end intrinsic;
 
-intrinsic Flatten(gs :: [XPGettr] : Sequence:=false, Universe:=false) -> XPGettr
-  {The XPGettr whose value is the list of values of the given gettrs.}
+intrinsic Flatten(gs :: [ExactpAdics_Gettr] : Sequence:=false, Universe:=false) -> ExactpAdics_Gettr
+  {The ExactpAdics_Gettr whose value is the list of values of the given gettrs.}
   if #gs eq 0 then
-    return ConstXPGetter([**]);
+    return ExactpAdics_ConstGetter([**]);
   elif #gs eq 1 then
     return gs[1] mod function (val)
       if Universe cmpne false then
@@ -591,7 +454,7 @@ intrinsic Flatten(gs :: [XPGettr] : Sequence:=false, Universe:=false) -> XPGettr
       end if;
     end function;
   else
-    return MakeXPGetter([*[*g`state, false, false*] : g in gs*],
+    return ExactpAdics_Getter([*[*g`state, false, false*] : g in gs*],
       procedure (~st, ~deps)
         for i in [1..#gs] do
           if not st[i][2] then
@@ -628,14 +491,14 @@ intrinsic Flatten(gs :: [XPGettr] : Sequence:=false, Universe:=false) -> XPGettr
   end if;
 end intrinsic;
 
-intrinsic '&cat'(gs :: [XPGettr]) -> XPGettr
+intrinsic '&cat'(gs :: [ExactpAdics_Gettr]) -> ExactpAdics_Gettr
   {The getter whose value is the sequence of values of gs.}
   return Flatten(gs : Sequence);
 end intrinsic;
 
-intrinsic MakeGeneralXPGetter(state, getGetter, getValue) -> XPGettr
+intrinsic ExactpAdics_GeneralGetter(state, getGetter, getValue) -> ExactpAdics_Gettr
   {Alternative getter where getGetter(~st,~g) gets a getter g which is evaluated to gval before calling getValue(gval,~st,~val).}
-  return MakeXPGetter(rec<recformat<gg,st,g,gst>|gg:=true,st:=state,g:=false,gst:=false>,
+  return ExactpAdics_Getter(rec<recformat<gg,st,g,gst>|gg:=true,st:=state,g:=false,gst:=false>,
     procedure (~st, ~deps)
       if st`gg then
         getGetter(~st`st, ~st`g);
@@ -653,7 +516,7 @@ intrinsic MakeGeneralXPGetter(state, getGetter, getValue) -> XPGettr
     end procedure);
 end intrinsic;
 
-intrinsic '/'(g :: XPGettr, n :: RngIntElt) -> XPGettr
+intrinsic '/'(g :: ExactpAdics_Gettr, n :: RngIntElt) -> ExactpAdics_Gettr
   {Modifies g so that it returns the first n values of its return value.}
   g`explode := n;
   return g;
@@ -727,7 +590,7 @@ end intrinsic;
 
 // GETTER_STATE := recformat<value, deps, depvalues, jumpto>;
 
-// intrinsic Evaluate(g :: XPGettr) -> .
+// intrinsic Evaluate(g :: ExactpAdics_Gettr) -> .
 //   {Evaluates g.}
 //   st := rec<GETTER_STATE |>;
 //   i := 1;

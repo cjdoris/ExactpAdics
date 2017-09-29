@@ -1,0 +1,442 @@
+// TO ATTACH THIS FILE YOU MUST ALSO ATTACH
+// - Promotion.mag
+// - DefaultAssociativeArray.mag
+
+import "Promotion.mag": do_binop;
+
+Z := Integers();
+OO := Infinity();
+
+// the valuation of a FldPadElt or FldPadExactElt or similar
+declare type Val_FldPadElt;
+declare attributes Val_FldPadElt
+  : value            // REQ: FldRatElt, RngIntElt or Infty
+  ;
+
+VAL_FLDPADELT_INFINITY := New(Val_FldPadElt);
+VAL_FLDPADELT_INFINITY`value := OO;
+
+VAL_FLDPADELT_NEGINFINITY := New(Val_FldPadElt);
+VAL_FLDPADELT_NEGINFINITY`value := -OO;
+
+VAL_FLDPADELT_ZERO := New(Val_FldPadElt);
+VAL_FLDPADELT_ZERO`value := 0;
+
+intrinsic Val_FldPadElt_IsCoercible(v) -> BoolElt, .
+  {True if v is coercible to a Val_FldPadElt, and the coerced value.}
+  return false, "wrong type";
+end intrinsic;
+
+intrinsic Val_FldPadElt_IsCoercible(v :: Val_FldPadElt) -> BoolElt, .
+  {"}
+  return true, v;
+end intrinsic;
+
+intrinsic Val_FldPadElt_IsCoercible(v :: RngIntElt) -> BoolElt, .
+  {"}
+  r := New(Val_FldPadElt);
+  r`value := v;
+  return true, r;
+end intrinsic;
+
+intrinsic Val_FldPadElt_IsCoercible(v :: Infty) -> BoolElt, .
+  {"}
+  r := New(Val_FldPadElt);
+  r`value := v;
+  return true, r;
+end intrinsic;
+
+intrinsic Val_FldPadElt_IsCoercible(v :: ExtReElt) -> BoolElt, .
+  {"}
+  return Val_FldPadElt_IsCoercible(Retrieve(v));
+end intrinsic;
+
+intrinsic Val_FldPadElt_IsCoercible(v :: FldRatElt) -> BoolElt, .
+  {"}
+  r := New(Val_FldPadElt);
+  r`value := v;
+  return true, r;
+end intrinsic;
+
+intrinsic IsPromotable(v :: Val_FldPadElt, w) -> BoolElt, .
+  {True if v and w are promotable to a common type.}
+  ok, w2 := Val_FldPadElt_IsCoercible(w);
+  if ok then
+    return true, v, w2;
+  end if;
+  return false, _, _;
+end intrinsic;
+
+intrinsic IsValidAbsolutePrecision(x :: FldPadExactElt, v) -> BoolElt, .
+  {True if v is coercible to an absolute precision for x. Also returns the coerced value.}
+  return Val_FldPadElt_IsCoercible(v);
+end intrinsic;
+
+intrinsic IsValidAbsolutePrecisionDiff(x :: FldPadExactElt, v) -> BoolElt, .
+  {True if v is coercible to an absolute precision diff for x. Also returns the coerced value.}
+  return Val_FldPadElt_IsCoercible(v);
+end intrinsic;
+
+intrinsic Val_FldPadElt_Make(v) -> Val_FldPadElt
+  {A Val_FldPadElt with value v.}
+  ok, v := Val_FldPadElt_IsCoercible(v);
+  require ok: v;
+  return v;
+end intrinsic;
+
+intrinsic Val_FldPadElt_Infinity() -> Val_FldPadElt
+  {The valuation Infinity.}
+  return VAL_FLDPADELT_INFINITY;
+end intrinsic;
+
+intrinsic Val_FldPadElt_NegInfinity() -> Val_FldPadElt
+  {The valuation -Infinity.}
+  return VAL_FLDPADELT_NEGINFINITY;
+end intrinsic;
+
+intrinsic Val_FldPadElt_Zero() -> Val_FldPadElt
+  {The valuation 0.}
+  return VAL_FLDPADELT_ZERO;
+end intrinsic;
+
+intrinsic Print(v :: Val_FldPadElt, lvl :: MonStgElt)
+  {Print.}
+  case lvl:
+  when "Magma":
+    printf "Val_FldPadElt_Make(%m)", Value(v);
+  else
+    printf "%O", Value(v), lvl;
+  end case;
+end intrinsic;
+
+intrinsic Value(v :: Val_FldPadElt) -> .
+  {The value of v.}
+  return v`value;
+end intrinsic;
+
+intrinsic IntegerValue(v :: Val_FldPadElt) -> RngIntElt
+  {The value of v coerced to an integer.}
+  return Z ! Value(v);
+end intrinsic;
+
+intrinsic Ceiling(v :: Val_FldPadElt) -> Val_FldPadElt
+  {The integer valuation larger than v, or just v if infinite.}
+  return Val_FldPadElt_Make(Ceiling(Value(v)));
+end intrinsic;
+
+intrinsic '-'(v :: Val_FldPadElt) -> Val_FldPadElt
+  {Negation.}
+  return Val_FldPadElt_Make(-Value(v));
+end intrinsic;
+
+intrinsic '&+'(vs :: [Val_FldPadElt]) -> Val_FldPadElt
+  {Summation.}
+  w := &+[v`value : v in vs];
+  return Val_FldPadElt_Make(Type(w) eq ExtReElt select Retrieve(w) else w);
+end intrinsic;
+
+intrinsic '+'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {Addition.}
+  return &+[v,w];
+end intrinsic;
+
+intrinsic '+'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('+', v, w);
+end intrinsic;
+
+intrinsic '+'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('+', v, w);
+end intrinsic;
+
+intrinsic '+'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('+', v, w);
+end intrinsic;
+
+intrinsic '+'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('+', v, w);
+end intrinsic;
+
+intrinsic '-'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {Subtraction. Note that subtraction is interpreted as a "precision = absolute precision - valuation" calculation, so Infinity-Infinity is 0.}
+  return Val_FldPadElt_Make(Value(v) eq Value(w) select 0 else Value(v) - Value(w));
+end intrinsic;
+
+intrinsic '-'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('-', v, w);
+end intrinsic;
+
+intrinsic '-'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('-', v, w);
+end intrinsic;
+
+intrinsic '-'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('-', v, w);
+end intrinsic;
+
+intrinsic '-'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('-', v, w);
+end intrinsic;
+
+intrinsic '*'(v :: Val_FldPadElt, w :: RngIntElt) -> Val_FldPadElt
+  {Multiplication.}
+  return Val_FldPadElt_Make(Value(v) * w);
+end intrinsic;
+
+intrinsic '*'(v :: Val_FldPadElt, w :: FldRatElt) -> Val_FldPadElt
+  {"}
+  return Val_FldPadElt_Make(Value(v) * w);
+end intrinsic;
+
+intrinsic '*'(v :: RngIntElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {"}
+  return Val_FldPadElt_Make(v * Value(w));
+end intrinsic;
+
+intrinsic '*'(v :: FldRatElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {"}
+  return Val_FldPadElt_Make(v * Value(w));
+end intrinsic;
+
+intrinsic '/'(v :: Val_FldPadElt, w :: RngIntElt) -> Val_FldPadElt
+  {Division.}
+  return Val_FldPadElt_Make(Value(v) / w);
+end intrinsic;
+
+intrinsic '/'(v :: Val_FldPadElt, w :: FldRatElt) -> Val_FldPadElt
+  {"}
+  return Val_FldPadElt_Make(Value(v) / w);
+end intrinsic;
+
+intrinsic 'join'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {The higher of v and w. Interpreted as an upper bound on two absolute precisions.}
+  return v ge w select v else w;
+end intrinsic;
+
+intrinsic 'join'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('join', v, w);
+end intrinsic;
+
+intrinsic 'join'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('join', v, w);
+end intrinsic;
+
+intrinsic 'join'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('join', v, w);
+end intrinsic;
+
+intrinsic 'join'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('join', v, w);
+end intrinsic;
+
+intrinsic 'meet'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {The lower of v and w. Interpreted as a lower bound on two valuations.}
+  return v le w select v else w;
+end intrinsic;
+
+intrinsic 'meet'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('meet', v, w);
+end intrinsic;
+
+intrinsic 'meet'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('meet', v, w);
+end intrinsic;
+
+intrinsic 'meet'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('meet', v, w);
+end intrinsic;
+
+intrinsic 'meet'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('meet', v, w);
+end intrinsic;
+
+intrinsic 'diff'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {v if v is higher than w else -OO. Interpreted as the absolute precision required if v is wanted and w is already got.}
+  return v gt w select v else VAL_FLDPADELT_NEGINFINITY;
+end intrinsic;
+
+intrinsic 'diff'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('diff', v, w);
+end intrinsic;
+
+intrinsic 'diff'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('diff', v, w);
+end intrinsic;
+
+intrinsic 'diff'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('diff', v, w);
+end intrinsic;
+
+intrinsic 'diff'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('diff', v, w);
+end intrinsic;
+
+intrinsic 'eq'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {Equality.}
+  return Value(v) eq Value(w);
+end intrinsic;
+
+intrinsic 'eq'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('eq', v, w);
+end intrinsic;
+
+intrinsic 'eq'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('eq', v, w);
+end intrinsic;
+
+intrinsic 'eq'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('eq', v, w);
+end intrinsic;
+
+intrinsic 'eq'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('eq', v, w);
+end intrinsic;
+
+intrinsic 'ne'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {Inequality.}
+  return Value(v) ne Value(w);
+end intrinsic;
+
+intrinsic 'ne'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('ne', v, w);
+end intrinsic;
+
+intrinsic 'ne'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('ne', v, w);
+end intrinsic;
+
+intrinsic 'ne'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('ne', v, w);
+end intrinsic;
+
+intrinsic 'ne'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('ne', v, w);
+end intrinsic;
+
+intrinsic 'le'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {Equality.}
+  return Value(v) le Value(w);
+end intrinsic;
+
+intrinsic 'le'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('le', v, w);
+end intrinsic;
+
+intrinsic 'le'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('le', v, w);
+end intrinsic;
+
+intrinsic 'le'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('le', v, w);
+end intrinsic;
+
+intrinsic 'le'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('le', v, w);
+end intrinsic;
+
+intrinsic 'lt'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {Equality.}
+  return Value(v) lt Value(w);
+end intrinsic;
+
+intrinsic 'lt'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('lt', v, w);
+end intrinsic;
+
+intrinsic 'lt'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('lt', v, w);
+end intrinsic;
+
+intrinsic 'lt'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('lt', v, w);
+end intrinsic;
+
+intrinsic 'lt'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('lt', v, w);
+end intrinsic;
+
+intrinsic 'ge'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {Equality.}
+  return Value(v) ge Value(w);
+end intrinsic;
+
+intrinsic 'ge'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('ge', v, w);
+end intrinsic;
+
+intrinsic 'ge'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('ge', v, w);
+end intrinsic;
+
+intrinsic 'ge'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('ge', v, w);
+end intrinsic;
+
+intrinsic 'ge'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('ge', v, w);
+end intrinsic;
+
+intrinsic 'gt'(v :: Val_FldPadElt, w :: Val_FldPadElt) -> Val_FldPadElt
+  {Equality.}
+  return Value(v) gt Value(w);
+end intrinsic;
+
+intrinsic 'gt'(v, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('gt', v, w);
+end intrinsic;
+
+intrinsic 'gt'(v:: Val_FldPadElt, w) -> .
+  {"}
+  return do_binop('gt', v, w);
+end intrinsic;
+
+intrinsic 'gt'(v :: Infty, w :: Val_FldPadElt) -> .
+  {"}
+  return do_binop('gt', v, w);
+end intrinsic;
+
+intrinsic 'gt'(v:: Val_FldPadElt, w :: Infty) -> .
+  {"}
+  return do_binop('gt', v, w);
+end intrinsic;
+

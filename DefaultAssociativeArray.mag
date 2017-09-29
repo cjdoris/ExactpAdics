@@ -1,0 +1,139 @@
+// TO ATTACH THIS FILE YOU MUST ALSO ATTACH
+// - nothing
+
+// an associative array with default value
+// it is indexed like x(i) and if the index is not defined, it returns the default value
+declare type AssocDflt;
+declare attributes AssocDflt
+  : array    // Assoc: associative array of non-default values
+  , dflt     // the default value
+  ;
+
+intrinsic DefaultAssociativeArray(x, a :: Assoc) -> AssocDflt
+  {Makes an associative array with default value x and special values a.}
+  b := New(AssocDflt);
+  b`array := a;
+  b`dflt := x;
+  return b;
+end intrinsic;
+
+intrinsic DefaultAssociativeArray(x, keys :: [], values :: []) -> AssocDflt
+  {An associative array with default value x, and keys and corresponding values.}
+  require #keys eq #values: "Argument 2 must have the same length as argument 3";
+  a := AssociativeArray();
+  for i in [1..#keys] do
+    v := values[i];
+    if v ne x then
+      k := keys[i];
+      require not IsDefined(a, k): "repeated key:", k;
+      a[k] := v;
+    end if;
+  end for;
+  return DefaultAssociativeArray(x, a);
+end intrinsic;
+
+intrinsic DefaultAssociativeArray(x, contents :: [Tup]) -> AssocDflt
+  {An associative array with default value x, and <key,value> pairs given.}
+  require NumberOfComponents(Universe(contents)) eq 2: "Argument 2 must be a sequence of tuples of length 2";
+  return DefaultAssociativeArray(x, [x[1] : x in contents], [x[2] : x in contents]);
+end intrinsic;
+
+intrinsic DefaultAssociativeArray(x) -> AssocDflt
+  {Makes an associative array with default value x.}
+  return DefaultAssociativeArray(x, AssociativeArray());
+end intrinsic;
+
+intrinsic Print(x :: AssocDflt, lvl :: MonStgElt)
+  {Print.}
+  case lvl:
+  when "Magma":
+    printf "DefaultAssociativeArray(%m, %m)", x`array, x`dflt;
+  else
+    printf "%O with default value %O", x`array, lvl, x`dflt, lvl;
+  end case;
+end intrinsic;
+
+intrinsic '@'(i, x :: AssocDflt) -> .
+  {The value at index i of x.}
+  ok, a := IsDefined(x`array, i);
+  return ok select a else x`dflt;
+end intrinsic;
+
+intrinsic ApplyPointwise(f, x :: AssocDflt, y :: AssocDflt) -> AssocDflt
+  {Applies the function f pointwise to values of x and y.}
+  d := f(x`dflt, y`dflt);
+  z := DefaultAssociativeArray(d);
+  for k in Keys(x`array) join Keys(y`array) do
+    c := f(x(k), y(k));
+    if c ne d then
+      z`array[k] := c;
+    end if;
+  end for;
+  return z;
+end intrinsic;
+
+intrinsic ApplyPointwise(f, x :: AssocDflt) -> AssocDflt
+  {Applies the function f pointwise to values of x.}
+  d := f(x`dflt);
+  z := DefaultAssociativeArray(d);
+  for k in Keys(x`array) do
+    c := f(x`array[k]);
+    if c ne d then
+      z`array[k] := c;
+    end if;
+  end for;
+  return z;
+end intrinsic;
+
+intrinsic Image(x :: AssocDflt) -> {}
+  {The set of possible output values.}
+  return {x`dflt} join {x`array[k] : k in Keys(x`array)};
+end intrinsic;
+
+intrinsic DefaultValue(x :: AssocDflt) -> .
+  {The default value of x.}
+  return x`dflt;
+end intrinsic;
+
+intrinsic SpecialAssociativeArray(x :: AssocDflt) -> Assoc
+  {The associative array of the special values of x.}
+  return x`array;
+end intrinsic;
+
+intrinsic SpecialKeys(x :: AssocDflt) -> Assoc
+  {The keys of special values of x.}
+  return Keys(x`array);
+end intrinsic;
+
+intrinsic Zip(xs :: [AssocDflt]) -> AssocDflt
+  {The array [i] -> [x(i) : x in xs]. The inputs must have compatible indices.}
+  d := [x`dflt : x in xs];
+  if #xs eq 0 then
+    return DefaultAssociativeArray(d);
+  end if;
+  ks := SetToSequence(&join[Keys(x`array) : x in xs]);
+  vs := [[x(k) : x in xs] : k in ks];
+  return DefaultAssociativeArray(d, ks, vs);
+end intrinsic;
+
+intrinsic ZipApplyPointwise(f, xs :: [AssocDflt]) -> AssocDflt
+  {The array [i] -> f([x(i) : x in xs]). Equivalent to ApplyPointwise(f,Zip(xs)).}
+  d := f([x`dflt : x in xs]);
+  if #xs eq 0 then
+    return DefaultAssociativeArray(d);
+  end if;
+  ks := SetToSequence(&join[Keys(x`array) : x in xs]);
+  vs := [f([x(k) : x in xs]) : k in ks];
+  return DefaultAssociativeArray(d, ks, vs);
+end intrinsic;
+
+intrinsic ForAll(x :: AssocDflt, f) -> BoolElt
+  {True if f(x(i)) is true for all i.}
+  return f(x`dflt) and forall{k : k in Keys(x`array) | f(x`array[k])};
+end intrinsic;
+
+intrinsic ForAll(x :: AssocDflt, y :: AssocDflt, f) -> BoolElt
+  {True if f(x(i),y(i)) is true for all i.}
+  return f(x`dflt, y`dflt) and forall{k : k in Keys(x`array) join Keys(y`array) | f(x(k),y(k))};
+end intrinsic;
+
