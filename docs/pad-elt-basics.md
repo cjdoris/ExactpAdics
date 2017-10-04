@@ -6,7 +6,7 @@ headings:
   - Arithmetic
   - Approximation
   - Valuation
-  - *Val_FldPadElt*
+  - Val_FldPadElt
   - Printing
 ---
 
