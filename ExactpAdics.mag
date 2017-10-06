@@ -4455,6 +4455,20 @@ intrinsic Eltseq(x :: FldPadExactElt) -> []
   return Coefficients(x);
 end intrinsic;
 
+function eisensteinPolyDefinesUniqueExtension(f)
+  d := Degree(f);
+  assert IsEisenstein(f);
+  D := Discriminant(f);
+  if WZERO(D) then
+    return false;
+  end if;
+  vD := VAL(D);
+  j := vD - d + 1;
+  FUDGE := 2*d*AbsoluteRamificationDegree(BaseRing(f));
+  apr := Floor(1+2*j/d) + 1 + FUDGE;
+  return forall{c : c in Coefficients(f) | AbsolutePrecision(c) ge apr};
+end function;
+
 // true if E/BaseField(E) determines a unique extension
 function isDefinitelyUnique1(E)
   if Precision(E) eq OO then
@@ -4464,21 +4478,12 @@ function isDefinitelyUnique1(E)
   d := Degree(E);
   if IsUnramified(E) then
     assert IsInertial(f);
-    apr := 1;
+    return forall{c : c in Coefficients(f) | AbsolutePrecision(c) ge 1};
   elif IsTotallyRamified(E) then
-    assert IsEisenstein(f);
-    D := Discriminant(f);
-    if WZERO(D) then
-      return false;
-    end if;
-    vD := Valuation(D);
-    j := vD - d + 1;
-    FUDGE := 2*AbsoluteRamificationDegree(E);
-    apr := Floor(1 + 2*j/d) + 1 + FUDGE;
+    return eisensteinPolyDefinesUniqueExtension(f);
   else
     assert false;
   end if;
-  return forall{c : c in Coefficients(f) | AbsolutePrecision(c) ge apr};
 end function;
 
 function isDefinitelyUnique(E, F)
