@@ -117,7 +117,7 @@ end intrinsic;
 
 intrinsic ExactpAdics_PrecisionStrategyHasNext(strategy, prec :: RngIntElt) -> BoolElt, RngIntElt
   {True if the precision strategy has a next element, and if so, also returns that.}
-  ok, _, pr := ExactpAdics_ExecutePrecisionStrategy(func<pr | true, pr>, strategy, prec);
+  ok, _, pr := ExactpAdics_ExecutePrecisionStrategy(func<pr | pr gt prec, pr>, strategy);
   if ok then
     return true, pr;
   else

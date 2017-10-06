@@ -8,4 +8,8 @@
   DefaultAssociativeArray.mag
   Val_FldPadElt.mag
   Val_RngUPolElt_FldPad.mag
+  MultivariatePolynomials.mag
+  Val_RngMPolElt_FldPad.mag
+  Roots.mag
+  Factorization.mag
 }

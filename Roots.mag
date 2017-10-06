@@ -1,0 +1,205 @@
+// TODO: the algorithm is currently depth-first; if we put a cap on the number of roots to return (e.g. HasRoot) then a breadth-first algorithm will be more efficient in general (e.g. suppose there is a repeated root and a simple root, then if the repeated root is found first, then the algorithm will follow it all the way to the end of the strategy, which is arbitrarily long, whereas if we went depth first, we only follow the roots until the simple root is found, which is in bounded time)
+
+import "ExactpAdics.mag": VAL, WZERO, SHIFT_VAL, CHANGE_PR, APR, record_time;
+
+Z := Integers();
+OO := Infinity();
+
+declare verbose ExactpAdics_Roots, 1;
+
+STATE := recformat<f, xfs, strat, roots, partial_roots, success, maxnumroots, times, last_time>;
+
+procedure get_xf(~ok, ~xf, ~state, idx)
+  while #state`xfs lt idx do
+    ok, pr := ExactpAdics_PrecisionStrategyHasNext(state`strat, idx eq 1 select 0 else state`xfs[#state`xfs][1]);
+    if not ok then
+      ok := false;
+      return;
+    else
+      Append(~state`xfs, <pr, Approximation(state`f, BaselineValuation(state`f) + pr)>);
+    end if;
+  end while;
+  xf := state`xfs[idx][2];
+  ok := true;
+end procedure;
+
+function try_newton_polygon(xf)
+  d := Degree(xf);
+  np := NewtonPolygon([<i, VAL(Coefficient(xf, i))> : i in [0..d] | not WZERO(c) where c:=Coefficient(xf, i)] : Faces:="Lower");
+  vs := ChangeUniverse(Vertices(np), car<Z,Z>);
+  // the Newton polygon must go (almost) end to end
+  // we tolerate a missing coefficient at 0 because there might be a really high valuation root
+  if #vs eq 0 then
+    return false, _;
+  elif vs[#vs][1] ne d then
+    return false, _;
+  elif vs[1][1] gt 1 then
+    return false, _;
+  elif d eq 1 then
+    return true, np;
+  end if;
+  // check the coefficients are known to sufficient valuation
+  // "1+Floor(v)" is the smallest integer greater than v; we could have used "Ceiling(v)" but we also need the residual polynomials later, which requires the next p-adic coefficient
+  aprs := &cat[[1+Floor(v) where v:=y0+s*(j-x0) : j in [j0..j1]] where j0:=(i eq 2 select 0 else x0) where j1:=(i eq #vs select x1 else x1-1) where s:=(y1-y0)/(x1-x0) where x0,y0:=Explode(vs[i-1]) where x1,y1:=Explode(vs[i]) : i in [2..#vs]];
+  assert #aprs eq d+1;
+  if forall{i : i in [0..d] | APR(Coefficient(xf, i)) ge aprs[i+1]} then
+    return true, np;
+  else
+    return false, _;
+  end if;
+end function;
+
+procedure roots(~state : Idx:=1, MinVal:=-OO, Approx:=<0,0,0>)
+  R := Parent(state`f);
+  K := BaseRing(R);
+  // find the Newton polygon
+  while true do
+    get_xf(~ok, ~xf, ~state, Idx);
+    if not ok then
+      if Approx[3] ne 0 then
+        Append(~state`partial_roots, Approx);
+      end if;
+      state`success := false;
+      return;
+    end if;
+    xR := Parent(xf);
+    xK := BaseRing(xR);
+    pr := Precision(xK);
+    xroot := WZERO(xr) select xK!0 else CHANGE_PR(xr, pr) where xr:=xK!Approx[1];
+    xf2 := Evaluate(xf, xroot + SHIFT_VAL(xK!1, Approx[2]) * xR.1);
+    ok, np := try_newton_polygon(xf2);
+    if ok then
+      break;
+    else
+      Idx +:= 1;
+    end if;
+  end while;
+  // print "np =", np;
+  vs := ChangeUniverse(Vertices(np), car<Z,Z>);
+  // special case: root close to 0
+  if vs[1][1] ne 0 then
+    assert vs[1][1] eq 1;
+    ok, r := IsHenselLiftable(state`f, WeakApproximation(K ! xroot) : Strategy:=state`strat);
+    assert ok;
+    Append(~state`roots, <r, 1>);
+    if #state`roots ge state`maxnumroots then
+      return;
+    end if;
+  end if;
+  // each face corresponds to roots with a certain valuation
+  for i in [2..#vs] do
+    x0, y0 := Explode(vs[i-1]);
+    x1, y1 := Explode(vs[i]);
+    s := (y1 - y0) / (x1 - x0);
+    if -s lt MinVal then
+      continue i;
+    end if;
+    h := Numerator(s);
+    e := Denominator(s);
+    // if the valuation is fractional, the root is in a ramified extension
+    assert e gt 0;
+    if e ne 1 then
+      continue i;
+    end if;
+    // find the residual polynomial
+    F, m := ResidueClassField(Integers(xK));
+    respol := Polynomial([F| SHIFT_VAL(Coefficient(xf2, i), -y0-h*(i-x0))@m : i in [x0..x1]]);
+    assert Degree(respol) eq x1-x0;
+    assert Coefficient(respol, x1-x0) ne 0;
+    assert Coefficient(respol, 0) ne 0;
+    // each factor corresponds to roots satisfying this mod pi
+    for resfac in Factorization(respol) do
+      // if the factor is not linear, the roots in an unramified extension
+      if Degree(resfac[1]) ne 1 then
+        continue;
+      end if;
+      // new approximation to the root
+      resroot := -Coefficient(resfac[1], 0) / Coefficient(resfac[1], 1);
+      assert Evaluate(resfac[1], resroot) eq 0;
+      new_xroot0 := SHIFT_VAL(xK ! (resroot @@ m), -h);
+      new_xroot := xroot + SHIFT_VAL(new_xroot0, Approx[2]);
+      if resfac[2] eq 1 then
+        // if the factor is simple, then we have a unique root and can hensel lift
+        ok, r := IsHenselLiftable(state`f, WeakApproximation(K ! new_xroot) : Strategy:=state`strat);
+        assert ok;
+        Append(~state`roots, <r, 1>);
+      else
+        // otherwise there may be several roots and need to recurse
+        roots(~state : Idx:=Idx, MinVal:=0, Approx:=<new_xroot, Approx[2]+1-h, resfac[2]>);
+      end if;
+      if #state`roots ge state`maxnumroots then
+        return;
+      end if;
+    end for;
+  end for;
+end procedure;
+
+intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default") -> []
+  {The roots of f in its base ring with multiplicities. The roots must all be simple.}
+  if not assigned f`roots then
+    state := rec<STATE | f:=f, xfs:=[**], strat:=Strategy, roots:=[], partial_roots:=[**], success:=true, maxnumroots:=OO>;
+    roots(~state);
+    // print [<k, state`times[k]> : k in Keys(state`times)];
+    if state`success then
+      f`roots := state`roots;
+    elif #state`partial_roots gt 0 then
+      error "precision error (possibly non-simple roots)";
+    else
+      error "precision error";
+    end if;
+  end if;
+  return f`roots;
+end intrinsic;
+
+intrinsic Roots(f :: RngUPolElt_FldPadExact, K :: FldPadExact : Strategy:="default") -> []
+  {The roots of f in K with multiplicities. The roots must all be simple.}
+  return Roots(ChangeRing(f, K) : Strategy:=Strategy);
+end intrinsic;
+
+intrinsic Roots(f :: RngUPolElt, K :: FldPadExact : Strategy:="default") -> []
+  {"}
+  return Roots(ChangeRing(f, K) : Strategy:=Strategy);
+end intrinsic;
+
+intrinsic WeakRoots(f :: RngUPolElt_FldPadExact : Strategy:="default") -> []
+  {Like `Roots` but without precision errors. Returns triples `<r,m,pr>` where `r` is a potential root, `m` is its multiplicity and `pr` is its precision. If the precision `pr` is infinite, then it is a genuine root of `f`, otherwise it may only appear to be a root of `f` up to precision.}
+  state := rec<STATE | f:=f, xfs:=[**], strat:=Strategy, roots:=[], partial_roots:=[**], success:=true, maxnumroots:=OO>;
+  roots(~state);
+  return [<r[1], r[2], OO> : r in state`roots] cat [<BaseRing(f) ! r[1], r[3], r[2]> : r in state`partial_roots];
+end intrinsic;
+
+intrinsic WeakRoots(f :: RngUPolElt_FldPadExact, K :: FldPadExact : Strategy:="default") -> []
+  {"}
+  return WeakRoots(ChangeRing(f, K) : Strategy:=Strategy);
+end intrinsic;
+
+intrinsic WeakRoots(f :: RngUPolElt, K :: FldPadExact : Strategy:="default") -> []
+  {"}
+  return WeakRoots(ChangeRing(f, K) : Strategy:=Strategy);
+end intrinsic;
+
+intrinsic HasRoot(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt, FldPadExactElt
+  {True if f has a (simple) root in its base ring. If so, also returns a root.}
+  state := rec<STATE | f:=f, xfs:=[**], strat:=Strategy, roots:=[], partial_roots:=[**], success:=true, maxnumroots:=1>;
+  roots(~state);
+  if #state`roots gt 0 then
+    return true, state`roots[1][1];
+  elif state`success then
+    return false, _;
+  elif #state`partial_roots gt 0 then
+    error "precision error (possibly non-simple roots)";
+  else
+    error "precision error";
+  end if;
+end intrinsic;
+
+intrinsic HasRoot(f :: RngUPolElt_FldPadExact, K :: FldPadExact : Strategy:="default") -> BoolElt, FldPadExactElt
+  {True if f has a (simple) root in K. If so, also returns a root.}
+  return HasRoot(ChangeRing(f, K) : Strategy:=Strategy);
+end intrinsic;
+
+intrinsic HasRoot(f :: RngUPolElt, K :: FldPadExact : Strategy:="default") -> BoolElt, FldPadExactElt
+  {True if f has a (simple) root in K. If so, also returns a root.}
+  return HasRoot(ChangeRing(f, K) : Strategy:=Strategy);
+end intrinsic;
+

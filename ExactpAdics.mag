@@ -91,11 +91,35 @@ function CAPR(x : PrCap:=1)
 end function;
 BVAL := BaselineValuation;
 BPR := BaselinePrecision;
+MONOMIAL := _ExactpAdics_Monomial;
 
 // the level of recursion to check in _ExactpAdics_Cast and _ExactpAdics_Eltseq when working in totally ramified extensions; 0 means no checking; recommend 1 or 2 in development
 // TOT_RAM_CAST_CHECK := 0;
 
+procedure record_time(~times, ~last_time, label)
+  t := Cputime();
+  if not assigned times then
+    times := AssociativeArray();
+  else
+    ok, T := IsDefined(times, label);
+    dt := t - last_time;
+    if ok then
+      times[label] := T + dt;
+    else
+      times[label] := dt;
+    end if;
+  end if;
+  last_time := t;
+end procedure;
+
 // UTILITY FUNCTIONS
+
+intrinsic _ExactpAdics_Monomial(R :: RngMPol, e :: [RngIntElt]) -> RngMPolElt
+  {The monomial x^e in R.}
+  // MAGMA BUG: R.i is cached, so its coefficient may be to a lower precision than the precision of the base ring!
+  // this forces the coefficient to be to the full current precision of the base ring
+  return Polynomial([BaseRing(R) ! 1], [Monomial(R, e)]);
+end intrinsic;
 
 intrinsic _ExactpAdics_Sort(xs) -> .
   {Sort.}
@@ -174,34 +198,12 @@ intrinsic _ExactpAdics_IsValidApproximation(R :: RngUPol_FldPadExact, app :: Rng
   end if;
 end intrinsic;
 
-intrinsic _ExactpAdics_IsValidApproximation(R :: RngMPol_FldPadExact, app :: RngMPolElt) -> BoolElt, RngMPolElt
-  {"}
-  assert Type(BaseRing(Parent(app))) eq FldPad;
-  xR := R`approximation_ring;
-  xR2 := Parent(app);
-  xF := BaseRing(xR);
-  xF2 := BaseRing(xR2);
-  pr := Precision(xF2);
-  if pr eq OO and xF2 eq xF then
-    return true, CAST(xR, app);
-  elif ChangePrecision(xF, pr) eq xF2 then
-    return true, CAST(xR, app);
-  else
-    return false, _;
-  end if;
-end intrinsic;
-
 intrinsic _ExactpAdics_IsWeaklyZero(x) -> BoolElt
   {IsWeaklyZero(x).}
   return IsWeaklyZero(x);
 end intrinsic;
 
 intrinsic _ExactpAdics_IsWeaklyZero(f :: RngUPolElt[FldPad]) -> BoolElt
-  {"}
-  return forall{c : c in Coefficients(f) | WZERO(c)};
-end intrinsic;
-
-intrinsic _ExactpAdics_IsWeaklyZero(f :: RngMPolElt) -> BoolElt
   {"}
   return forall{c : c in Coefficients(f) | WZERO(c)};
 end intrinsic;
@@ -227,18 +229,6 @@ intrinsic _ExactpAdics_IsWeaklyEqual(x :: RngUPolElt[FldPad], y :: RngUPolElt[Fl
   d := Min(dx, dy);
   C := Coefficient;
   return forall{i : i in [0..d] | WEQ(C(x,i), C(y,i))} and forall{i : i in [d+1..dx] | WZERO(C(x,i))} and forall{i : i in [d+1..dy] | WZERO(C(y,i))};
-end intrinsic;
-
-intrinsic _ExactpAdics_IsWeaklyEqual(x :: RngMPolElt, y :: RngMPolElt) -> BoolElt
-  {"}
-  assert Parent(x) eq Parent(y);
-  R := Parent(x);
-  mxs := {Exponents(m) : m in Monomials(x)};
-  mys := {Exponents(m) : m in Monomials(y)};
-  C := func<x,m | MonomialCoefficient(x, Monomial(R, m))>;
-  return forall{m : m in mxs meet mys | WEQ(C(x,m), C(y,m))}
-    and forall{m : m in mxs diff mys | WZERO(C(x,m))}
-    and forall{m : m in mys diff mxs | WZERO(C(y,m))};
 end intrinsic;
 
 intrinsic _ExactpAdics_ChangePrecision(x :: FldPadElt, n :: RngIntElt) -> FldPadElt
@@ -468,6 +458,7 @@ declare attributes RngUPolElt_FldPadExact
   , is_irreducible_doris // IsIrreducible_Doris(*)
   , negation             // '-'(*)
   , min_valuation        // MinValuation(*)
+  , powers               // [n] -> '^'(*,n)
   ;
 
 declare type RngPadExact[RngPadExactElt];
@@ -483,26 +474,6 @@ declare attributes RngPadExactElt
   : id
   , parent
   , field_element
-  ;
-
-declare type RngMPol_FldPadExact[RngMPolElt_FldPadExact];
-declare attributes RngMPol_FldPadExact
-  : base_ring                       // REQ: BaseRing(*)
-  , rank                            // REQ: Rank(*)
-  , id                              // REQ: NEXTID()
-  , approximation_ring
-  , varnames
-  , generators_sequence             // GeneratorsSequence(*)
-  ;
-
-declare type RngMPolElt_FldPadExact;
-declare attributes RngMPolElt_FldPadExact
-  : parent
-  , id
-  , approximation
-  , update
-  , valuation                       // Valuation(*)
-  , base_ring                       // BaseRing(*)
   ;
 
 declare type HassHerbTransFunc;
@@ -549,12 +520,6 @@ declare attributes HomFldPadExact
   , generator_images       // REQ: list of images (in E2) of generators of each subfield in E1/F
   , basis_images           // images of the standard basis of E1/F (derived from generator_images)
   , inverse                // Inverse(*) (if invertible)
-  ;
-
-// the valuation of a RngMPolElt[FldPad], RngMPolElt_FldPadExact or similar
-declare type Val_RngMPolElt_FldPad;
-declare attributes Val_RngMPolElt_FldPad
-  : values          // REQ: AssocDflt: [[RngIntElt]] -> Val_FldPadElt (valuation at each degree)
   ;
 
 ///# Exact p-adic fields
@@ -718,11 +683,6 @@ intrinsic PrecisionRequired(x :: FldPadExactElt, apr) -> RngIntElt
 end intrinsic;
 
 intrinsic PrecisionRequired(f :: RngUPolElt_FldPadExact, apr) -> RngIntElt
-  {The precision required to approximate f with the given parameters.}
-  return Max(1, Ceiling(Value(&join(apr - WVAL(f)))));
-end intrinsic;
-
-intrinsic PrecisionRequired(f :: RngMPolElt_FldPadExact, apr) -> RngIntElt
   {The precision required to approximate f with the given parameters.}
   return Max(1, Ceiling(Value(&join(apr - WVAL(f)))));
 end intrinsic;
@@ -1054,13 +1014,9 @@ intrinsic IsCoercible(F :: FldPadExact, X :: FldPadElt) -> BoolElt, .
   {"}
   ok, app := IS_VALID_APPROX(F, X);
   if ok then
-    x := New(FldPadExactElt);
-    x`parent := F;
-    x`approximation := app;
-    x`update := function (apr)
+    return true, F ! <app, func<z | function (apr)
       error "cannot increase precision of approximate p-adics";
-    end function;
-    return true, x;
+    end function>>;
   end if;
   return false, "wrong field";
 end intrinsic;
@@ -1507,29 +1463,22 @@ end intrinsic;
 
 intrinsic '^'(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -> RngUPolElt_FldPadExact
   {"}
-  requirege n, 0;
-  R := Parent(f);
-  if n eq 0 then
-    return CAST(R, 1);
-  elif n eq 1 then
+  require n ge 0: "Argument 2 must be at least 0";
+  case n:
+  when 0:
+    return One(Parent(f));
+  when 1:
     return f;
   else
-    assert n gt 1;
-    if IsDefinitelyZero(f) then
-      return f;
-    else
-      init := Approximation(f, CAPR(f))^n;
-      mkupdate := func<z | function (apr)
-        v := WeakMinValuation(f);
-        pr := &join(apr) - n * v;
-        return Approximation_Lazy(f, v+pr) mod function (xf)
-          Update(z, xf^n);
-          return true;
-        end function;
-      end function>;
-      return R ! <init, mkupdate>;
+    if not assigned f`powers then
+      f`powers := [];
     end if;
-  end if;
+    if not IsDefined(f`powers, n) then
+      m := n div 2;
+      f`powers[n] := f^m * f^(n-m);
+    end if;
+    return f`powers[n];
+  end case;
 end intrinsic;
 
 intrinsic IsWeaklyZero(x :: FldPadExactElt : Strategy:=false) -> BoolElt
@@ -1604,18 +1553,20 @@ intrinsic '&*'(fs :: [RngUPolElt_FldPadExact]) -> RngUPolElt_FldPadExact
   elif #fs eq 1 then
     return fs[1];
   else
-    init := &*[Approximation(f, CAPR(f)) : f in fs];
-    mkupdate := func<z | function (aprs)
-      d := WeakDegree(z);
-      apr := &join aprs;
-      pr := apr - &+[WeakMinValuation(f) : f in fs];
-      return &cat[Approximation_Lazy(f, WeakMinValuation(f)+pr) : f in fs]
-      mod function (xfs)
-        Update(z, &*xfs);
-        return true;
-      end function;
-    end function>;
-    return R ! <init, mkupdate>;
+
+    // OLD VERSION: works, but uses a bad lower bound on the valuation for simplicity
+    // init := &*[Approximation(f, CAPR(f)) : f in fs];
+    // mkupdate := func<z | function (aprs)
+    //   d := WeakDegree(z);
+    //   apr := &join aprs;
+    //   pr := apr - &+[WeakMinValuation(f) : f in fs];
+    //   return &cat[Approximation_Lazy(f, WeakMinValuation(f)+pr) : f in fs]
+    //   mod function (xfs)
+    //     Update(z, &*xfs);
+    //     return true;
+    //   end function;
+    // end function>;
+    // return R ! <init, mkupdate>;
   end if;
 end intrinsic;
 
@@ -1640,7 +1591,12 @@ intrinsic '*'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> RngUP
   {"}
   ok, R := ExistsCoveringStructure(Parent(f), Parent(g));
   require ok: "f and g must come from the same ring";
-  return &*[R | f, g];
+  f := R ! f;
+  g := R ! g;
+  K := BaseRing(R);
+  df := WeakDegree(f);
+  dg := WeakDegree(g);
+  return R ! [K| &+[K| Coefficient(f,i)*Coefficient(g,k-i) : i in [Max(0,k-dg)..Min(k,df)]] : k in [0..df+dg]];
 end intrinsic;
 
 intrinsic '*'(x, y :: RngUPolElt_FldPadExact) -> .
@@ -2737,19 +2693,14 @@ intrinsic WeakApproximation(x :: FldPadExactElt) -> FldPadExactElt
   if WZERO(x) then
     return F ! 0;
   else
-    v := Valuation(x);
-    y := New(FldPadExactElt);
-    y`id := NEXTID();
-    y`parent := x`parent;
-    y`approximation := x`approximation;
-    y`update := function (apr)
-      pr := PrecisionRequired(y, apr);
+    mkupdate := func<z | function (apr)
+      pr := PrecisionRequired(z, apr);
       return IncreaseAbsolutePrecision_Lazy(F, pr) mod function (ig)
-        Update(y, CHANGE_APR(y`approximation, apr));
+        Update(z, CHANGE_APR(z`approximation, apr));
         return true;
       end function;
-    end function;
-    return y;
+    end function>;
+    return F ! <x`approximation, mkupdate>;
   end if;
 end intrinsic;
 
@@ -2773,7 +2724,7 @@ intrinsic WeakApproximation(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExa
       //   : i in [0..dg]
       // ]);
       return IncreaseAbsolutePrecision_Lazy(R, pr) mod function (ig)
-        Update(g, CHANGE_APR(g`approximation, apr));
+        Update(g, CHANGE_APR(g`approximation, apr join APR(g)));
         return true;
       end function;
     end function;
@@ -2993,6 +2944,67 @@ intrinsic ShiftValuation(x :: FldPadExactElt, n) -> FldPadExactElt
   return ShiftValuation(x, IntegerValue(n));
 end intrinsic;
 
+// points <x,y> on the edge of the newton polygon with integer coefficients
+function nwtnpgon_integer_points(np)
+  vs := [car<Z,Z>| v : v in Vertices(np)];
+  if #vs eq 0 then
+    return vs;
+  end if;
+  return &cat[i eq 1 select [vs[i]] else ([<j, y0+h*((j-x0) div e)> : j in [x0+e..x1 by e]] where h:=Numerator(s) where e:=Denominator(s) where s:=(y1-y0)/(x1-x0) where x0:=vs[i-1][1] where y0:=vs[i-1][2] where x1:=vs[i][1] where y1:=vs[i][2]) : i in [1..#vs]];
+end function;
+
+intrinsic WeakPartialNewtonPolygon(f :: RngUPolElt_FldPadExact) -> NwtnPgon
+  {A fragment of the Newton polygon of f, based on its non weakly zero coefficients.}
+  df := WeakDegree(f);
+  // trivial cases
+  if df lt 0 then
+    return NewtonPolygon([] : Faces:="Lower");
+  elif df eq 0 then
+    c := Coefficient(f`approximation, 0);
+    if WZERO(c) then
+      return NewtonPolygon([] : Faces:="Lower");
+    else
+      return NewtonPolygon([<0, VAL(c)>] : Faces:="Lower");
+    end if;
+  end if;
+  // iterate until done
+  while true do
+    xf := f`approximation;
+    // find the weak newton polygon of f
+    wnp := NewtonPolygon([<i, v> : i in [0..df] | v lt OO where v:=VAL(Coefficient(xf,i))] : Faces:="Lower");
+    // the non weakly zero coefficient valuations
+    vals := [<i, VAL(c)> : i in [0..df] | not WZERO(c) where c:=Coefficient(xf, i)];
+    // those lying on the edge of the Newton polygon
+    good_vals := SORT(SequenceToSet(vals) meet SequenceToSet(nwtnpgon_integer_points(wnp)));
+    // not many
+    if #good_vals eq 0 then
+      // if there are none, there's nothing we can do
+      return NewtonPolygon([] : Faces:="Lower");
+    elif #good_vals eq 1 then
+      // if there is one and it's a vertex, then return that
+      v := good_vals[1];
+      if v in Vertices(wnp) then
+        return NewtonPolygon([v] : Faces:="Lower");
+      else
+        return NewtonPolygon([] : Faces:="Lower");
+      end if;
+    end if;
+    // the newton polygon around the good vertices
+    np := NewtonPolygon(good_vals : Faces:="Lower");
+    // compute the value of the Newton polygon at each integer 0..df
+    // we want to be strictly more precise than this
+    vs := ChangeUniverse(Vertices(np), car<Z,Z>);
+    aprs := &cat[[y0+(j-x0)*s : j in [j0..j1]] where j0:=(i eq 2 select 0 else x0) where j1:=(i eq #vs select df else x1-1) where s:=(y1-y0)/(x1-x0) where x0,y0:=Explode(vs[i-1]) where x1,y1:=Explode(vs[i]) : i in [2..#vs]];
+    assert #aprs eq df+1;
+    // if we are already this precise, then we are done
+    if forall{i : i in [0..df] | APR(Coefficient(xf, i)) gt aprs[i+1]} then
+      return np;
+    else
+      IncreaseAbsolutePrecision(f, [<i, Floor(aprs[i+1]+1)> : i in [0..df]]);
+    end if;
+  end while;
+end intrinsic;
+
 intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default") -> NwtnPgon
   {The Newton polygon of f.}
   if not assigned f`newton_polygon then
@@ -3037,7 +3049,40 @@ intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default") -> Nw
 end intrinsic;
 
 
-
+intrinsic ShiftArgument(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> RngUPol_FldPadExact
+  {The polynomial f(x+X).}
+  ok, K := ExistsCoveringStructure(BaseRing(f), Parent(x));
+  require ok: "Arguments must be defined over a common field";
+  f := ChangeRing(f, K);
+  x := K ! x;
+  R := Parent(f);
+  xf := Approximation(f, CAPR(f));
+  xx := Approximation(x, CAPR(x));
+  init := Evaluate(xf, Parent(xf).1 + xx);
+  e := AbsoluteRamificationDegree(K);
+  df := WeakDegree(f);
+  p := Prime(K);
+  binvals := [[Valuation(Binomial(i,j),p)*e : i in [j..df]] : j in [0..df]];
+  mkupdate := func<z | function (apr)
+    // f(x+X) = sum_j X^j (sum_i f_i (i choose j) x^(i-j))
+    // so f(x+X)_j = sum_i f_i (i choose j) x^(i-j)
+    // so if we want f(x+X)_j to absolute precision apr(j)
+    // then we want f_i (i choose j) x^(i-j) to absolute precision apr(j)
+    // i.e. relative precision pr_ij apr(j) - val(f_i) - val(i choose j) - (i-j) val(x)
+    // so we want f_i to absolute precision val(f_i) + pr_ij
+    // and x to absolute precision val(x) + pr_ij
+    vf := WVAL(f);
+    vx := WVAL(x);
+    pr := [[apr(j) - vf(i) - binvals[j+1][i-j+1] - vx*(i-j) : i in [j..df]] : j in [0..df]];
+    aprx := vx + &join &cat pr;
+    aprf := [<i, vf(i) + &join[pr[j+1][i-j+1] : j in [0..i]]> : i in [0..df]];
+    return [Approximation_Lazy(f, aprf), Approximation_Lazy(x, aprx)] mod function (xf, xx)
+      Update(z, Parent(xf)![&+[Coefficient(xf,i) * Binomial(i,j) * xx^(i-j) : i in [j..df]] : j in [0..df]]);
+      return true;
+    end function;
+  end function>;
+  return R ! <init, mkupdate>;
+end intrinsic;
 
 
 // TODO: implement multivariate polynomial rings, and hensel-lifting of solutions of equations therein
@@ -3045,129 +3090,221 @@ end intrinsic;
 declare verbose ExactpAdics_IsHenselLiftable_Root, 1;
 declare verbose ExactpAdics_IsHenselLiftable_Factor, 1;
 
-intrinsic IsHenselLiftable
-  ( f :: RngUPolElt_FldPadExact
-  , x :: FldPadExactElt
-  : Strategy := "default"
-  , ShiftValuation := false
-  , ShiftSlope := false
-  ) -> BoolElt, FldPadExactElt
-  {Returns true if x is sufficiently close to a root of f to be Hensel-liftable, and if so, also returns the root.}
-  // PUT f AND x IN THE SAME FIELD
+intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt : Strategy:="default") -> BoolElt, FldPadExactElt
+  {True if x is sufficiently close to a root of f to be Hensel-liftable. If so, also returns the root.}
   ok, K := ExistsCoveringStructure(BaseRing(f), Parent(x));
-  require ok: "f and x must come from a common field";
+  require ok: "Coefficients of argument 1 and argument 2 must be coercible to a common field";
   f := ChangeRing(f, K);
-  x := CAST(K, x);
+  x := K ! x;
   R := Parent(f);
-  // DESLOPE f
-  case [*ShiftSlope*]:
-  when [*false*]:
-    require IsIntegral(x): "x must be integral";
-    vx := 0;
-  when [*true*]:
-    vx := Valuation(x : Strategy:=Strategy);
-  when [*"Weak"*]:
-    vx := WeakValuation(x);
-  else
-    error "bad ShiftSlope option";
-  end case;
-  x := SHIFT_VAL(x, -vx);
-  f := SHIFT_SLOPE(f, vx);
-  assert IsIntegral(x);
-  // CHECK f IS INTEGRAL
-  case [*ShiftValuation*]:
-  when [*false*]:
-    require IsIntegral(f): "f must be integral";
-  when [*true*]:
-    v := Valuation(f : Strategy:=Strategy);
-    f := SHIFT_VAL(f, -v);
-  when [*"Weak"*]:
-    v := WeakValuation(f : Strategy:=Strategy);
-    f := SHIFT_VAL(f, -v);
-  else
-    error "bad ShiftValuation option";
-  end case;
-  assert IsIntegral(f);
-  // CHECK THE HENSEL CONDITION v(f(x)) > 2*v(f'(x))
-  fx := Evaluate(f, x);
-  df := Derivative(f);
-  dfx := Evaluate(df, x);
-  function hc()
-    if not WZERO(fx) then
-      s := Valuation(fx);
-      return true, ValuationLt(dfx, Ceiling(s/2));
-    elif not WZERO(dfx) then
-      t := Valuation(dfx);
-      return true, ValuationGt(fx, 2*t);
-    else
-      return false, _;
-    end if;    
-  end function;
-  ok, hcok := hc();
-  if not ok then
-    ok, _, hcok := ExactpAdics_ExecutePrecisionStrategy(function (apr)
-      IncreaseAbsolutePrecisions([*[*fx, apr*], [*dfx, apr*]*]);
-      return hc();
-    end function, Strategy, 0);
-    if not ok then
-      error "f(x) and f'(x) both weakly zero";
-    end if;
-  end if;
-  if not hcok then
+  // trivial case, no roots possible
+  if WeakDegree(f) le 0 then
     return false, _;
   end if;
-  // CONDITION SATISFIED, NOW RETURN THE LIFT
-  t := Valuation(dfx);
-  s := WeakValuation(fx);
-  xx := x`approximation;
-  init := CHANGE_APR(xx, s-t);
-  mkupdate := func<z | function (apr)
-    v := WeakValuation(z) meet WeakMinValuation(f);
-    pr := (apr + t - v) join 0;
-    return ExactpAdics_GeneralGetter(pr,
-      procedure (~pr, ~g)
-        g := Approximation_Lazy(f, v+pr);
-      end procedure,
-      procedure (xf, ~pr, ~val)
-        xz := CAST(BaseRing(xf), GetData(z));
-        xz2 := HenselLift(xf, xz);
-        xfz2 := Evaluate(xf, xz2);
-        // assert WZERO(xfz2);
-        s := Valuation(xfz2);
-        d := apr + t - s;
-        if d gt 0 then
-          pr +:= d;
-        else
-          Update(z, CHANGE_APR(xz2, s-t));
-          SetData(z, xz2);
-          val := true;
-        end if;
-      end procedure
-    );
-  end function>;
-  y := K ! <init, mkupdate, xx>;
-  return true, SHIFT_VAL(y, vx);
+  // check the hensel condition
+  // we take an approximation of f and x, compute g(X):=f(x+X), and see if its Newton polygon has a vertex at 1
+  // we do this by computing the Newton polygon of the weak valuations of g, and seeing if this has a vertex at 1 and the coefficient is not weakly zero
+  ok, _, res := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+    xf, xx := Explode(Evaluate(Flatten([Approximation_Lazy(f, BaselineValuation(f) + pr), Approximation_Lazy(x, BaselineValuation(x) + pr)])));
+    xR := Parent(xf);
+    xg := Evaluate(xf, xR.1 + xx);
+    np := NewtonPolygon([<i, v> : i in [0..Degree(xg)] | v lt OO where v:=VAL(Coefficient(xg, i))] : Faces:="Lower");
+    vs := ChangeUniverse(Vertices(np), car<Z,Z>);
+    // these asserts may not hold; it is possible that g has some exactly zero coefficients
+    // TODO: deal with this case
+    assert vs[1][1] eq 0;
+    assert vs[2][1] ge 1;
+    // if there is a vertex at 1...
+    if vs[2][1] eq 1 then
+      // ... and it is a real vertex ...
+      if not WZERO(Coefficient(xg, 1)) then
+        // then we have a root
+        return true, [*true,vs[1][2],vs[2][2]*];
+      else
+        // else, we don't know
+        return false, _;
+      end if;
+    end if;
+    // if there is a face from 0 to n, n>1, then it is not hensel liftable
+    assert vs[2][1] gt 1;
+    x0,y0:=Explode(vs[1]);
+    x1,y1:=Explode(vs[2]);
+    s := (y1-y0)/(x1-x0);
+    if not WZERO(Coefficient(xg, 0)) and exists{i : i in [2..x1] | (not WZERO(c)) and VAL(c) eq y0+s*(i-x0) where c:=Coefficient(xg, i)} then
+      return true, [*false*];
+    end if;
+    // otherwise we don't know
+    return false, false;
+  end function, Strategy);
+  // did we pass?
+  if not res[1] then
+    return false, _;
+  end if;
+  // hooray! now find a lift
+  val0 := res[2];
+  val1 := res[3];
+  g := ShiftArgument(f, x);
+  s := val0 - val1;
+  h := ShiftSlope(g, s : Offset:=-val0);
+  xh := Approximation(h, 1);
+  assert VAL(Coefficient(xh, 0)) ge 0;
+  assert VAL(Coefficient(xh, 1)) eq 0 and not WZERO(Coefficient(xh, 1));
+  assert forall{i : i in [2..WeakDegree(h)] | VAL(Coefficient(xh, i)) gt 0};
+  // now hensel lift a root of h
+  rh := K!<init, mkupdate>
+    where init := Coefficient(xh, 0) / Coefficient(xh, 1)
+    where mkupdate := func<z | function (apr)
+      n := IntegerValue(apr);
+      assert n gt 0;
+      return [Approximation_Lazy(K, n), Approximation_Lazy(h, apr)] mod function (xK, xh)
+        Q := quo<Integers(xK) | ShiftValuation(xK!1, n)>;
+        qh := ChangeRing(xh, Q);
+        qr := Q ! z`approximation;
+        dqh := Derivative(qh);
+        while true do
+          qhr := Evaluate(qh, qr);
+          dqhr := Evaluate(dqh, qr);
+          s := VAL(qhr);
+          assert VAL(dqhr) eq 0;
+          if s eq n then
+            break;
+          else
+            qr2 := qr - qhr div dqhr;
+            assert VAL(Evaluate(qh,qr2)) ge Min(n,2*s);
+            qr := qr2;
+          end if;
+        end while;
+        Update(z, xK ! qr);
+        return true;
+      end function;
+    end function>;
+  // translate back to a root of f and we're done
+  return true, ShiftValuation(rh, s) + x;
 end intrinsic;
 
-intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, x :: . : Strategy:="default", ShiftValuation:=false, ShiftSlope:=false) -> BoolElt, FldPadExactElt
+// intrinsic IsHenselLiftable
+//   ( f :: RngUPolElt_FldPadExact
+//   , x :: FldPadExactElt
+//   : Strategy := "default"
+//   , ShiftValuation := false
+//   , ShiftSlope := false
+//   ) -> BoolElt, FldPadExactElt
+//   {Returns true if x is sufficiently close to a root of f to be Hensel-liftable, and if so, also returns the root.}
+//   // PUT f AND x IN THE SAME FIELD
+//   ok, K := ExistsCoveringStructure(BaseRing(f), Parent(x));
+//   require ok: "f and x must come from a common field";
+//   f := ChangeRing(f, K);
+//   x := CAST(K, x);
+//   R := Parent(f);
+//   // DESLOPE f
+//   case [*ShiftSlope*]:
+//   when [*false*]:
+//     require IsIntegral(x): "x must be integral";
+//     vx := 0;
+//   when [*true*]:
+//     vx := Valuation(x : Strategy:=Strategy);
+//   when [*"Weak"*]:
+//     vx := WeakValuation(x);
+//   else
+//     error "bad ShiftSlope option";
+//   end case;
+//   x := SHIFT_VAL(x, -vx);
+//   f := SHIFT_SLOPE(f, vx);
+//   assert IsIntegral(x);
+//   // CHECK f IS INTEGRAL
+//   case [*ShiftValuation*]:
+//   when [*false*]:
+//     require IsIntegral(f): "f must be integral";
+//   when [*true*]:
+//     v := Valuation(f : Strategy:=Strategy);
+//     f := SHIFT_VAL(f, -v);
+//   when [*"Weak"*]:
+//     v := WeakValuation(f : Strategy:=Strategy);
+//     f := SHIFT_VAL(f, -v);
+//   else
+//     error "bad ShiftValuation option";
+//   end case;
+//   assert IsIntegral(f);
+//   // CHECK THE HENSEL CONDITION v(f(x)) > 2*v(f'(x))
+//   fx := Evaluate(f, x);
+//   df := Derivative(f);
+//   dfx := Evaluate(df, x);
+//   function hc()
+//     if not WZERO(fx) then
+//       s := Valuation(fx);
+//       return true, ValuationLt(dfx, Ceiling(s/2));
+//     elif not WZERO(dfx) then
+//       t := Valuation(dfx);
+//       return true, ValuationGt(fx, 2*t);
+//     else
+//       return false, _;
+//     end if;    
+//   end function;
+//   ok, hcok := hc();
+//   if not ok then
+//     ok, _, hcok := ExactpAdics_ExecutePrecisionStrategy(function (apr)
+//       IncreaseAbsolutePrecisions([*[*fx, apr*], [*dfx, apr*]*]);
+//       return hc();
+//     end function, Strategy, 0);
+//     if not ok then
+//       error "f(x) and f'(x) both weakly zero";
+//     end if;
+//   end if;
+//   if not hcok then
+//     return false, _;
+//   end if;
+//   // CONDITION SATISFIED, NOW RETURN THE LIFT
+//   t := Valuation(dfx);
+//   s := WeakValuation(fx);
+//   xx := x`approximation;
+//   init := CHANGE_APR(xx, s-t);
+//   mkupdate := func<z | function (apr)
+//     v := WeakValuation(z) meet WeakMinValuation(f);
+//     pr := (apr + t - v) join 0;
+//     return ExactpAdics_GeneralGetter(pr,
+//       procedure (~pr, ~g)
+//         g := Approximation_Lazy(f, v+pr);
+//       end procedure,
+//       procedure (xf, ~pr, ~val)
+//         xz := CAST(BaseRing(xf), GetData(z));
+//         xz2 := HenselLift(xf, xz);
+//         xfz2 := Evaluate(xf, xz2);
+//         // assert WZERO(xfz2);
+//         s := Valuation(xfz2);
+//         d := apr + t - s;
+//         if d gt 0 then
+//           pr +:= d;
+//         else
+//           Update(z, CHANGE_APR(xz2, s-t));
+//           SetData(z, xz2);
+//           val := true;
+//         end if;
+//       end procedure
+//     );
+//   end function>;
+//   y := K ! <init, mkupdate, xx>;
+//   return true, SHIFT_VAL(y, vx);
+// end intrinsic;
+
+intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, x :: . : Strategy:="default") -> BoolElt, FldPadExactElt
   {"}
   ok, x := IsCoercible(BaseRing(f), x);
   require ok: "x must be coercible into the base ring of f";
   // IncreaseAbsolutePrecision(x, AbsolutePrecision(f));
-  return IsHenselLiftable(f, x : Strategy:=Strategy, ShiftValuation:=ShiftValuation, ShiftSlope:=ShiftSlope);
+  return IsHenselLiftable(f, x : Strategy:=Strategy);
 end intrinsic;
 
-intrinsic IsHenselLiftable(f :: RngUPolElt, x :: FldPadExactElt : Strategy:="default", ShiftValuation:=false, ShiftSlope:=false) -> BoolElt, FldPadExactElt
+intrinsic IsHenselLiftable(f :: RngUPolElt, x :: FldPadExactElt : Strategy:="default") -> BoolElt, FldPadExactElt
   {"}
   ok, f := CanChangeRing(f, Parent(x));
   require ok: "coefficients of f must be coercible to the field containing x";
   // IncreaseAbsolutePrecision(f, AbsolutePrecision(x));
-  return IsHenselLiftable(f, x : Strategy:=Strategy, ShiftValuation:=ShiftValuation, ShiftSlope:=ShiftSlope);
+  return IsHenselLiftable(f, x : Strategy:=Strategy);
 end intrinsic;
 
-intrinsic HenselLift(f :: RngUPolElt_FldPadExact, x : Strategy:="default", ShiftValuation:=false, ShiftSlope:=false) -> FldPadExactElt
+intrinsic HenselLift(f :: RngUPolElt_FldPadExact, x : Strategy:="default") -> FldPadExactElt
   {Returns the root of f Hensel lifted from x.}
-  ok, y := IsHenselLiftable(f, x : Strategy:=Strategy, ShiftValuation:=ShiftValuation, ShiftSlope:=ShiftSlope);
+  ok, y := IsHenselLiftable(f, x : Strategy:=Strategy);
   if ok then
     return y;
   else
@@ -3175,9 +3312,9 @@ intrinsic HenselLift(f :: RngUPolElt_FldPadExact, x : Strategy:="default", Shift
   end if;
 end intrinsic;
 
-intrinsic HenselLift(f :: RngUPolElt, x : Strategy:="default", ShiftValuation:=false, ShiftSlope:=false) -> FldPadExactElt
+intrinsic HenselLift(f :: RngUPolElt, x : Strategy:="default") -> FldPadExactElt
   {"}
-  ok, y := IsHenselLiftable(f, x : Strategy:=Strategy, ShiftValuation:=ShiftValuation, ShiftSlope:=ShiftSlope);
+  ok, y := IsHenselLiftable(f, x : Strategy:=Strategy);
   if ok then
     return y;
   else
@@ -3194,297 +3331,297 @@ function polyVal(f)
   end if;
 end function;
 
-function henselLiftFactorization(f, g, h)
-  dg := Degree(g);
-  dh := Degree(h);
-  df := Degree(f);
-  assert df eq dg+dh;
-  pr := Precision(BaseRing(f));
-  g := ChangePrecision(g, pr);
-  h := ChangePrecision(h, pr);
-  // print "f =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(f)];
-  K := BaseRing(f);
-  V := VectorSpace(K, df);
-  M := MatrixAlgebra(K, df);
-  res := Resultant(g, h);
-  assert not WZERO(res);
-  t := Valuation(res);
-  d := g*h - f;
-  s := polyVal(d);
-  assert s ge 2*t + 1;
-  while true do
-    // print "  g =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(g)];
-    // print "  h =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(h)];
-    r := s - t;
-    b := ShiftValuation(d, -r);
-    B := CAST(V, [Coefficient(b,i) : i in [0..df-1]]);
-    R := CAST(M,
-      [ [ j ge i
-          select Coefficient(g,j-i)
-          else 0
-          : j in [0..df-1]
-        ]
-        : i in [0..dh-1]
-      ]
-      cat
-      [ [ j ge i
-          select Coefficient(h,j-i)
-          else 0
-          : j in [0..df-1]
-        ]
-        : i in [0..dg-1]
-      ]
-    );
-    assert Valuation(Determinant(R)) eq t;
-    U := Solution(R, B);
-    gnew := ChangePrecision(g - Polynomial([ShiftValuation(U[dh+i], r) : i in [1..dg]]), pr);
-    hnew := ChangePrecision(h - Polynomial([ShiftValuation(U[i], r) : i in [1..dh]]), pr);
-    assert Valuation(Resultant(gnew, hnew)) eq t;
-    dnew := gnew*hnew - f;
-    if WEQ(gnew, g) and WEQ(hnew, h) then
-      assert WZERO(dnew);
-      return gnew, hnew;
-    else
-      snew := Min([Valuation(c) : c in Coefficients(dnew)]);
-      assert WEQ(gnew, g) or polyVal(gnew - g) ge r;
-      assert WEQ(hnew, h) or polyVal(hnew - h) ge r;
-      assert WZERO(dnew) or polyVal(dnew) ge 2*r;
-      g := gnew;
-      h := hnew;
-      d := dnew;
-      s := snew;
-    end if;
-  end while;
-end function;
+// function henselLiftFactorization(f, g, h)
+//   dg := Degree(g);
+//   dh := Degree(h);
+//   df := Degree(f);
+//   assert df eq dg+dh;
+//   pr := Precision(BaseRing(f));
+//   g := ChangePrecision(g, pr);
+//   h := ChangePrecision(h, pr);
+//   // print "f =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(f)];
+//   K := BaseRing(f);
+//   V := VectorSpace(K, df);
+//   M := MatrixAlgebra(K, df);
+//   res := Resultant(g, h);
+//   assert not WZERO(res);
+//   t := Valuation(res);
+//   d := g*h - f;
+//   s := polyVal(d);
+//   assert s ge 2*t + 1;
+//   while true do
+//     // print "  g =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(g)];
+//     // print "  h =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(h)];
+//     r := s - t;
+//     b := ShiftValuation(d, -r);
+//     B := CAST(V, [Coefficient(b,i) : i in [0..df-1]]);
+//     R := CAST(M,
+//       [ [ j ge i
+//           select Coefficient(g,j-i)
+//           else 0
+//           : j in [0..df-1]
+//         ]
+//         : i in [0..dh-1]
+//       ]
+//       cat
+//       [ [ j ge i
+//           select Coefficient(h,j-i)
+//           else 0
+//           : j in [0..df-1]
+//         ]
+//         : i in [0..dg-1]
+//       ]
+//     );
+//     assert Valuation(Determinant(R)) eq t;
+//     U := Solution(R, B);
+//     gnew := ChangePrecision(g - Polynomial([ShiftValuation(U[dh+i], r) : i in [1..dg]]), pr);
+//     hnew := ChangePrecision(h - Polynomial([ShiftValuation(U[i], r) : i in [1..dh]]), pr);
+//     assert Valuation(Resultant(gnew, hnew)) eq t;
+//     dnew := gnew*hnew - f;
+//     if WEQ(gnew, g) and WEQ(hnew, h) then
+//       assert WZERO(dnew);
+//       return gnew, hnew;
+//     else
+//       snew := Min([Valuation(c) : c in Coefficients(dnew)]);
+//       assert WEQ(gnew, g) or polyVal(gnew - g) ge r;
+//       assert WEQ(hnew, h) or polyVal(hnew - h) ge r;
+//       assert WZERO(dnew) or polyVal(dnew) ge 2*r;
+//       g := gnew;
+//       h := hnew;
+//       d := dnew;
+//       s := snew;
+//     end if;
+//   end while;
+// end function;
 
-function henselLiftFactorization2(f, g, h)
-  dg := Degree(g);
-  dh := Degree(h);
-  df := Degree(f);
-  assert df eq dg+dh;
-  pr := Max([AbsolutePrecision(c) : c in Coefficients(f) | AbsolutePrecision(c) lt OO]);
-  R := Parent(f);
-  K := BaseRing(R);
-  OK := Integers(K);
-  QK := quo<OK | ShiftValuation(OK!1, pr)>;
-  QR := PolynomialRing(QK);
-  f := QR ! f;
-  g := QR ! g;
-  h := QR ! h;
-  // print "f =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(f)];
-  V := RSpace(QK, df);
-  M := MatrixAlgebra(QK, df);
-  res := Resultant(g, h);
-  assert not WZERO(res);
-  t := Valuation(res);
-  d := g*h - f;
-  s := Min(polyVal(d), pr);
-  assert s ge 2*t + 1;
-  while true do
-    // print "  g =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(g)];
-    // print "  h =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(h)];
-    r := s - t;
-    b := ShiftValuation(d, -r);
-    Bvec := CAST(V, [Coefficient(b,i) : i in [0..df-1]]);
-    Rmat := CAST(M,
-      [ [ j ge i
-          select Coefficient(g,j-i)
-          else 0
-          : j in [0..df-1]
-        ]
-        : i in [0..dh-1]
-      ]
-      cat
-      [ [ j ge i
-          select Coefficient(h,j-i)
-          else 0
-          : j in [0..df-1]
-        ]
-        : i in [0..dg-1]
-      ]
-    );
-    assert Valuation(Determinant(Rmat)) eq t;
-    ok, U := IsConsistent(Rmat, Bvec);
-    if not ok then
-      print "WARNING: IsHenselLiftable: Using IsInvertible because IsConsistent failed!";
-      ok, Rinv := IsInvertible(Rmat);
-      assert ok;
-      U := Bvec * Rinv;
-    end if;
-    gnew := g - Polynomial([QK|ShiftValuation(U[dh+i], r) : i in [1..dg]]);
-    hnew := h - Polynomial([QK|ShiftValuation(U[i], r) : i in [1..dh]]);
-    assert Valuation(Resultant(gnew, hnew)) eq t;
-    dnew := gnew*hnew - f;
-    if WEQ(gnew, g) and WEQ(hnew, h) then
-      assert WZERO(dnew);
-      return R!gnew, R!hnew;
-    else
-      snew := Min(polyVal(dnew), pr);
-      assert WEQ(gnew, g) or polyVal(gnew - g) ge r;
-      assert WEQ(hnew, h) or polyVal(hnew - h) ge r;
-      assert WZERO(dnew) or snew ge 2*r;
-      g := gnew;
-      h := hnew;
-      d := dnew;
-      s := snew;
-    end if;
-  end while;
-end function;
+// function henselLiftFactorization2(f, g, h)
+//   dg := Degree(g);
+//   dh := Degree(h);
+//   df := Degree(f);
+//   assert df eq dg+dh;
+//   pr := Max([AbsolutePrecision(c) : c in Coefficients(f) | AbsolutePrecision(c) lt OO]);
+//   R := Parent(f);
+//   K := BaseRing(R);
+//   OK := Integers(K);
+//   QK := quo<OK | ShiftValuation(OK!1, pr)>;
+//   QR := PolynomialRing(QK);
+//   f := QR ! f;
+//   g := QR ! g;
+//   h := QR ! h;
+//   // print "f =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(f)];
+//   V := RSpace(QK, df);
+//   M := MatrixAlgebra(QK, df);
+//   res := Resultant(g, h);
+//   assert not WZERO(res);
+//   t := Valuation(res);
+//   d := g*h - f;
+//   s := Min(polyVal(d), pr);
+//   assert s ge 2*t + 1;
+//   while true do
+//     // print "  g =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(g)];
+//     // print "  h =", [<RationalField() ! c, AbsolutePrecision(c)> : c in Coefficients(h)];
+//     r := s - t;
+//     b := ShiftValuation(d, -r);
+//     Bvec := CAST(V, [Coefficient(b,i) : i in [0..df-1]]);
+//     Rmat := CAST(M,
+//       [ [ j ge i
+//           select Coefficient(g,j-i)
+//           else 0
+//           : j in [0..df-1]
+//         ]
+//         : i in [0..dh-1]
+//       ]
+//       cat
+//       [ [ j ge i
+//           select Coefficient(h,j-i)
+//           else 0
+//           : j in [0..df-1]
+//         ]
+//         : i in [0..dg-1]
+//       ]
+//     );
+//     assert Valuation(Determinant(Rmat)) eq t;
+//     ok, U := IsConsistent(Rmat, Bvec);
+//     if not ok then
+//       print "WARNING: IsHenselLiftable: Using IsInvertible because IsConsistent failed!";
+//       ok, Rinv := IsInvertible(Rmat);
+//       assert ok;
+//       U := Bvec * Rinv;
+//     end if;
+//     gnew := g - Polynomial([QK|ShiftValuation(U[dh+i], r) : i in [1..dg]]);
+//     hnew := h - Polynomial([QK|ShiftValuation(U[i], r) : i in [1..dh]]);
+//     assert Valuation(Resultant(gnew, hnew)) eq t;
+//     dnew := gnew*hnew - f;
+//     if WEQ(gnew, g) and WEQ(hnew, h) then
+//       assert WZERO(dnew);
+//       return R!gnew, R!hnew;
+//     else
+//       snew := Min(polyVal(dnew), pr);
+//       assert WEQ(gnew, g) or polyVal(gnew - g) ge r;
+//       assert WEQ(hnew, h) or polyVal(hnew - h) ge r;
+//       assert WZERO(dnew) or snew ge 2*r;
+//       g := gnew;
+//       h := hnew;
+//       d := dnew;
+//       s := snew;
+//     end if;
+//   end while;
+// end function;
 
-intrinsic HenselLift_Doris(f :: RngUPolElt[FldPad], g :: RngUPolElt[FldPad], h :: RngUPolElt[FldPad]) -> RngUPolElt, RngUPolElt
-  {Assuming g and h satisfy the Hensel condition v(f-g*h) > 2*v(Res(g,h)), returns the lifts of g and h to the highest precision possible.}
-  return henselLiftFactorization2(f, g, h);
-end intrinsic;
+// intrinsic HenselLift_Doris(f :: RngUPolElt[FldPad], g :: RngUPolElt[FldPad], h :: RngUPolElt[FldPad]) -> RngUPolElt, RngUPolElt
+//   {Assuming g and h satisfy the Hensel condition v(f-g*h) > 2*v(Res(g,h)), returns the lifts of g and h to the highest precision possible.}
+//   return henselLiftFactorization2(f, g, h);
+// end intrinsic;
 
-intrinsic IsHenselLiftable
-  ( f :: RngUPolElt_FldPadExact   // a polynomial
-  , g :: RngUPolElt_FldPadExact   // an approximate factor
-  : Strategy := "default"        // default strategy
-  , ShiftSlope := false
-  , ShiftValuation := false
-  , WeakResultant := false
-  ) -> BoolElt, RngUPolElt_FldPadExact
-  {Returns true if g is sufficiently close to a factor of f to be Hensel-liftable, and if so, returns the factor.}
-  // PUT f AND g OVER THE SAME FIELD
-  ok, R := ExistsCoveringStructure(Parent(f), Parent(g));
-  require ok: "f and g must be defined over a common field";
-  f := CAST(R, f);
-  g := CAST(R, g);
-  // Shift slopes
-  if ShiftSlope cmpeq false then
-    slope := 0;
-  elif ShiftSlope cmpeq true then
-    npg := NewtonPolygon(g : Strategy:=Strategy);
-    slope := -Ceiling(Max(Slopes(npg)));
-  elif Type(ShiftSlope) eq RngIntElt then
-    slope := ShiftSlope;
-  else
-    error "bad ShiftSlope option";
-  end if;
-  f := SHIFT_SLOPE(f, slope : Pivot:=WeakDegree(f));
-  g := SHIFT_SLOPE(g, slope : Pivot:=WeakDegree(g));
-  // Shift valuations
-  if ShiftValuation cmpeq false and ShiftSlope cmpeq false then
-    vf := 0;
-    vg := 0;
-    require IsIntegral(f): "f must be integral";
-    require IsIntegral(g): "g must be integral";
-  elif ShiftValuation cmpeq true
-  or (ShiftValuation cmpeq false and ShiftSlope cmpne false)
-  then
-    vf := -Valuation(f : Strategy:=Strategy);
-    vg := -Valuation(g : Strategy:=Strategy);
-  elif ShiftValuation cmpeq "Weak" then
-    vf := -WeakValuation(f);
-    vg := -WeakValuation(g);
-  else
-    error "bad ShiftValuation option";
-  end if;
-  f := SHIFT_VAL(f, vf);
-  g := SHIFT_VAL(g, vg);
-  assert IsIntegral(f);
-  assert IsIntegral(g);
-  // Compute the co-factor
-  h := f div g;
-  // Compute a resultant
-  dg := Degree(g : Strategy:=Strategy);
-  res := WeakResultant select WRES(g, h) else RES(g, h);
-  // Compute the error
-  err := f - g*h;
-  // Check the Hensel condition
-  function hc()
-    if not WZERO(res) then
-      return true, ValuationGt(err, 2*VAL(res));
-    elif not WZERO(err) then
-      return true, ValuationLt(res, Ceiling(VAL(err)/2));
-    else
-      return false, _;
-    end if;
-  end function;
-  ok, hcok := hc();
-  if not ok then
-    ok, _, hcok := ExactpAdics_ExecutePrecisionStrategy(function (apr)
-      IncreaseAbsolutePrecisions([*<err, apr>, <res, apr>*]);
-      return hc();
-    end function, Strategy, 0);
-    if not ok then
-      error "resultant and f-gh both weakly zero";
-    end if;
-  end if;
-  if not hcok then
-    return false, _;
-  end if;
-  // hensel condition passed, now find the factor
-  df := WeakDegree(f);
-  dh := df - dg;
-  lcg := Coefficient(g, dg);
-  lcf := Coefficient(f, df);
-  if dg eq df then
-    assert not IsWeaklyZero(lcg : Strategy:=Strategy);
-    assert not IsWeaklyZero(lcf : Strategy:=Strategy);
-    gg := f * (lcg / lcf);
-  else
-    assert dg lt df;
-    lch := lcf / lcg;
-    t := Valuation(res);
-    s := WeakValuation(err);
-    xg := Approximation(g);
-    xh := Approximation(h);
-    init := CAP_APR(xg, [s-t : i in [0..Degree(xg)]]);
-    mkupdate := func<z | function (aprs)
-      apr := Max(aprs);
-      v := Min([WeakValuation(z), WeakValuation(f), WeakValuation(lcg), WeakValuation(lch)]);
-      pr := apr + t - v;
-      if pr gt 0 then
-        return ExactpAdics_GeneralGetter(pr,
-          procedure (~pr, ~g)
-            g := Flatten([
-              Approximation_Lazy(f : APr:=v+pr),
-              Approximation_Lazy(lcg : APr:=v+pr),
-              Approximation_Lazy(lch : APr:=v+pr)
-            ]);
-          end procedure,
-          procedure (x, ~pr, ~val)
-            // we don't require that the f, g or h be monic, and Hensel lifting assumes that the top coefficient is already correct and only changes lower coefficients, so we need to put the exact correct coefficients in
-            xf, xlcg, xlch := Explode(x);
-            xg_old, xh_old := Explode(GetData(z));
-            xf := [BaseRing(xf) | Coefficient(xf, i) : i in [0..df]] @ Polynomial;
-            xg := [BaseRing(xf) | i eq dg select xlcg else Coefficient(xg_old, i) : i in [0..dg]] @ Polynomial;
-            xh := [BaseRing(xf) | i eq dh select xlch else Coefficient(xh_old, i) : i in [0..dh]] @ Polynomial;
-            xg2, xh2 := henselLiftFactorization2(xf, xg, xh);
-            xd := xf - xg2*xh2;
-            s := polyVal(xd);
-            d := apr + t - s;
-            if d le 0 then
-              Update(z, CAP_APR(xg2, [s-t : i in [0..Degree(xg2)]]));
-              SetData(z, [*xg2, xh2*]);
-              val := true;
-            else
-              pr +:= d;
-            end if;
-          end procedure);
-      else
-        UpdateZero(z, aprs);
-      end if;
-    end function>;
-    gg := R ! <init, mkupdate, [*xg,xh*]>;
-  end if;
-  return true, SHIFT_SLOPE(SHIFT_VAL(gg, -vg), -slope);
-end intrinsic;
+// intrinsic IsHenselLiftable
+//   ( f :: RngUPolElt_FldPadExact   // a polynomial
+//   , g :: RngUPolElt_FldPadExact   // an approximate factor
+//   : Strategy := "default"        // default strategy
+//   , ShiftSlope := false
+//   , ShiftValuation := false
+//   , WeakResultant := false
+//   ) -> BoolElt, RngUPolElt_FldPadExact
+//   {Returns true if g is sufficiently close to a factor of f to be Hensel-liftable, and if so, returns the factor.}
+//   // PUT f AND g OVER THE SAME FIELD
+//   ok, R := ExistsCoveringStructure(Parent(f), Parent(g));
+//   require ok: "f and g must be defined over a common field";
+//   f := CAST(R, f);
+//   g := CAST(R, g);
+//   // Shift slopes
+//   if ShiftSlope cmpeq false then
+//     slope := 0;
+//   elif ShiftSlope cmpeq true then
+//     npg := NewtonPolygon(g : Strategy:=Strategy);
+//     slope := -Ceiling(Max(Slopes(npg)));
+//   elif Type(ShiftSlope) eq RngIntElt then
+//     slope := ShiftSlope;
+//   else
+//     error "bad ShiftSlope option";
+//   end if;
+//   f := SHIFT_SLOPE(f, slope : Pivot:=WeakDegree(f));
+//   g := SHIFT_SLOPE(g, slope : Pivot:=WeakDegree(g));
+//   // Shift valuations
+//   if ShiftValuation cmpeq false and ShiftSlope cmpeq false then
+//     vf := 0;
+//     vg := 0;
+//     require IsIntegral(f): "f must be integral";
+//     require IsIntegral(g): "g must be integral";
+//   elif ShiftValuation cmpeq true
+//   or (ShiftValuation cmpeq false and ShiftSlope cmpne false)
+//   then
+//     vf := -Valuation(f : Strategy:=Strategy);
+//     vg := -Valuation(g : Strategy:=Strategy);
+//   elif ShiftValuation cmpeq "Weak" then
+//     vf := -WeakValuation(f);
+//     vg := -WeakValuation(g);
+//   else
+//     error "bad ShiftValuation option";
+//   end if;
+//   f := SHIFT_VAL(f, vf);
+//   g := SHIFT_VAL(g, vg);
+//   assert IsIntegral(f);
+//   assert IsIntegral(g);
+//   // Compute the co-factor
+//   h := f div g;
+//   // Compute a resultant
+//   dg := Degree(g : Strategy:=Strategy);
+//   res := WeakResultant select WRES(g, h) else RES(g, h);
+//   // Compute the error
+//   err := f - g*h;
+//   // Check the Hensel condition
+//   function hc()
+//     if not WZERO(res) then
+//       return true, ValuationGt(err, 2*VAL(res));
+//     elif not WZERO(err) then
+//       return true, ValuationLt(res, Ceiling(VAL(err)/2));
+//     else
+//       return false, _;
+//     end if;
+//   end function;
+//   ok, hcok := hc();
+//   if not ok then
+//     ok, _, hcok := ExactpAdics_ExecutePrecisionStrategy(function (apr)
+//       IncreaseAbsolutePrecisions([*<err, apr>, <res, apr>*]);
+//       return hc();
+//     end function, Strategy, 0);
+//     if not ok then
+//       error "resultant and f-gh both weakly zero";
+//     end if;
+//   end if;
+//   if not hcok then
+//     return false, _;
+//   end if;
+//   // hensel condition passed, now find the factor
+//   df := WeakDegree(f);
+//   dh := df - dg;
+//   lcg := Coefficient(g, dg);
+//   lcf := Coefficient(f, df);
+//   if dg eq df then
+//     assert not IsWeaklyZero(lcg : Strategy:=Strategy);
+//     assert not IsWeaklyZero(lcf : Strategy:=Strategy);
+//     gg := f * (lcg / lcf);
+//   else
+//     assert dg lt df;
+//     lch := lcf / lcg;
+//     t := Valuation(res);
+//     s := WeakValuation(err);
+//     xg := Approximation(g);
+//     xh := Approximation(h);
+//     init := CAP_APR(xg, [s-t : i in [0..Degree(xg)]]);
+//     mkupdate := func<z | function (aprs)
+//       apr := Max(aprs);
+//       v := Min([WeakValuation(z), WeakValuation(f), WeakValuation(lcg), WeakValuation(lch)]);
+//       pr := apr + t - v;
+//       if pr gt 0 then
+//         return ExactpAdics_GeneralGetter(pr,
+//           procedure (~pr, ~g)
+//             g := Flatten([
+//               Approximation_Lazy(f : APr:=v+pr),
+//               Approximation_Lazy(lcg : APr:=v+pr),
+//               Approximation_Lazy(lch : APr:=v+pr)
+//             ]);
+//           end procedure,
+//           procedure (x, ~pr, ~val)
+//             // we don't require that the f, g or h be monic, and Hensel lifting assumes that the top coefficient is already correct and only changes lower coefficients, so we need to put the exact correct coefficients in
+//             xf, xlcg, xlch := Explode(x);
+//             xg_old, xh_old := Explode(GetData(z));
+//             xf := [BaseRing(xf) | Coefficient(xf, i) : i in [0..df]] @ Polynomial;
+//             xg := [BaseRing(xf) | i eq dg select xlcg else Coefficient(xg_old, i) : i in [0..dg]] @ Polynomial;
+//             xh := [BaseRing(xf) | i eq dh select xlch else Coefficient(xh_old, i) : i in [0..dh]] @ Polynomial;
+//             xg2, xh2 := henselLiftFactorization2(xf, xg, xh);
+//             xd := xf - xg2*xh2;
+//             s := polyVal(xd);
+//             d := apr + t - s;
+//             if d le 0 then
+//               Update(z, CAP_APR(xg2, [s-t : i in [0..Degree(xg2)]]));
+//               SetData(z, [*xg2, xh2*]);
+//               val := true;
+//             else
+//               pr +:= d;
+//             end if;
+//           end procedure);
+//       else
+//         UpdateZero(z, aprs);
+//       end if;
+//     end function>;
+//     gg := R ! <init, mkupdate, [*xg,xh*]>;
+//   end if;
+//   return true, SHIFT_SLOPE(SHIFT_VAL(gg, -vg), -slope);
+// end intrinsic;
 
-intrinsic HenselLift
-  ( f :: RngUPolElt_FldPadExact   // a polynomial
-  , g :: RngUPolElt_FldPadExact   // an approximate factor
-  : Strategy := "default"        // default strategy
-  , ShiftSlope := false
-  , ShiftValuation := false
-  , WeakResultant := false
-  ) -> RngUPolElt_FldPadExact
-  {Hensel lifts g to a factor of f.}
-  ok, g2 := IsHenselLiftable(f, g : Strategy:=Strategy, ShiftSlope:=ShiftSlope, ShiftValuation:=ShiftValuation, WeakResultant:=WeakResultant);
-  require ok: "not hensel liftable";
-  return g2;
-end intrinsic;
+// intrinsic HenselLift
+//   ( f :: RngUPolElt_FldPadExact   // a polynomial
+//   , g :: RngUPolElt_FldPadExact   // an approximate factor
+//   : Strategy := "default"        // default strategy
+//   , ShiftSlope := false
+//   , ShiftValuation := false
+//   , WeakResultant := false
+//   ) -> RngUPolElt_FldPadExact
+//   {Hensel lifts g to a factor of f.}
+//   ok, g2 := IsHenselLiftable(f, g : Strategy:=Strategy, ShiftSlope:=ShiftSlope, ShiftValuation:=ShiftValuation, WeakResultant:=WeakResultant);
+//   require ok: "not hensel liftable";
+//   return g2;
+// end intrinsic;
 
 intrinsic CanChangeRing(f :: RngUPolElt_FldPadExact, K :: FldPadExact) -> RngUPolElt_FldPadExact
   {True if f can be coerced to a polynomial over K. If so, also returns the coerced polynomial.}
@@ -3498,23 +3635,6 @@ end intrinsic;
 intrinsic CanChangeRing(f :: RngUPolElt, K :: FldPadExact) -> RngUPolElt_FldPadExact
   {"}
   return IsCoercible(PolynomialRing(K), f);
-end intrinsic;
-
-intrinsic CanChangeRing(f :: RngMPolElt_FldPadExact, K :: FldPadExact) -> RngMPolElt_FldPadExact
-  {"}
-  if BaseRing(f) eq K then
-    return true, f;
-  else
-    R := Parent(f);
-    n := Rank(R);
-    return IsCoercible(PolynomialRing(K, n), f);
-  end if;
-end intrinsic;
-
-intrinsic CanChangeRing(f :: RngMPolElt, K :: FldPadExact) -> RngMPolElt_FldPadExact
-  {"}
-  n := Rank(Parent(f));
-  return IsCoercible(PolynomialRing(K, n), f);
 end intrinsic;
 
 intrinsic ChangeRing(f, K) -> .
@@ -3545,45 +3665,35 @@ function shiftVal_poly(f, ns)
   return Parent(f) ! [shiftVal(cs[i], ns[i]) : i in [1..#cs]];
 end function;
 
-intrinsic ShiftValuation(f :: RngUPolElt_FldPadExact, ns :: [RngIntElt]) -> RngUPolElt_FldPadExact
+intrinsic ShiftValuation(f :: RngUPolElt_FldPadExact, ns) -> RngUPolElt_FldPadExact
   {f with coefficients shifted by corresponding elements of ns.}
+  ok, ns := IsValidAbsolutePrecision(f, ns);
+  require ok: "Argument 2 must be coercible to a valuation of f";
   if IsDefinitelyZero(f) then
     return f;
   end if;
   d := WeakDegree(f);
-  require #ns ge d+1: "ns must have an entry for each coefficient of f";
-  if forall{n : n in ns | n eq 0} then
-    return f;
-  end if;
-  init := shiftVal_poly(Approximation(f : Pr:=1, Weak), ns);
+  nseq := [IntegerValue(ns(i)) : i in [0..d]];
+  init := shiftVal_poly(Approximation(f, CAPR(f)), nseq);
   mkupdate := func<z | function (aprs)
-    return Approximation_Lazy(f : APr:=[aprs[i]-ns[i] : i in [1..#aprs]])
+    return Approximation_Lazy(f, aprs - ns)
     mod function (xf)
-      Update(z, shiftVal_poly(xf, ns));
+      Update(z, shiftVal_poly(xf, nseq));
       return true;
     end function;
   end function>;
   return Parent(f) ! <init, mkupdate>;
 end intrinsic;
 
-intrinsic ShiftValuation(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -> RngUPolElt_FldPadExact
-  {f with coefficients shifted by n.}
-  if IsDefinitelyZero(f) then
-    return f;
-  elif n eq 0 then
-    return f;
-  else
-    return ShiftValuation(f, [n : i in [0..WeakDegree(f)]]);
-  end if;
-end intrinsic;
-
-intrinsic ShiftSlope(f :: RngUPolElt_FldPadExact, n :: RngIntElt : Pivot:=0) -> RngUPolElt_FldPadExact
+intrinsic ShiftSlope(f :: RngUPolElt_FldPadExact, n : Pivot:=0, Offset:=0) -> RngUPolElt_FldPadExact
   {Returns f(x*pi^n)/pi^(n*Pivot) (which increases the slopes of the Newton polygon of f by n, and leaves the Pivot'th coefficient the same).}
+  n := Val_FldPadElt_Make(n);
+  Offset := Val_FldPadElt_Make(Offset);
   require Type(Pivot) eq RngIntElt: "Pivot must be an integer";
-  if (n eq 0) or IsDefinitelyZero(f) then
+  if ((n eq 0) and (Offset eq 0)) or IsDefinitelyZero(f) then
     return f;
   end if;
-  return ShiftValuation(f, [n*(i - Pivot) : i in [0..WeakDegree(f)]]);
+  return ShiftValuation(f, [<i, n*(i - Pivot)+Offset> : i in [0..WeakDegree(f)]]);
 end intrinsic;
 
 intrinsic SetData(x :: FldPadExactElt, data)
@@ -3661,6 +3771,24 @@ end intrinsic;
 
 declare verbose ExactpAdics_Evaluate, 2;
 
+intrinsic Evaluate(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
+  {f(g).}
+  ok, R := ExistsCoveringStructure(Parent(f), Parent(g));
+  require ok: "Argument 1 and argument 2 must be coercible to a common ring";
+  f := R ! f;
+  g := R ! g;
+  // trivial cases
+  if IsDefinitelyZero(f) or WeakDegree(f) eq 0 then
+    return f;
+  elif IsDefinitelyZero(g) then
+    return Slice(f, [0]);
+  elif WeakDegree(g) eq 0 then
+    return Evaluate(f, Coefficient(g,0));
+  end if;
+  // main case (f and g are both non-constant)
+  return &+[Coefficient(f,i) * g^i : i in [0..WeakDegree(f)]];
+end intrinsic;
+
 intrinsic Evaluate(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> FldPadExactElt
   {f(x).}
   ok, K := ExistsCoveringStructure(BaseRing(f), Parent(x));
@@ -3710,146 +3838,6 @@ intrinsic Evaluate(f :: RngUPolElt, x :: FldPadExactElt) -> FldPadExactElt
 end intrinsic;
 
 issqfree := IsSquarefree;
-
-declare verbose ExactpAdics_Roots, 1;
-
-function roots(f, Strategy, MainStrategy)
-  R := Parent(f);
-  K := BaseRing(R);
-  ok, pr, rs := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-    if pr le 0 then
-      return false, _;
-    end if;
-    vprint ExactpAdics_Roots: "Roots:", Cputime(), "pr =", pr;
-    // approximate f
-    xf := Approximation(f : APr:=pr);
-    // find roots
-    ok := true;
-    try
-      vprint ExactpAdics_Roots: "Roots:", Cputime(), "root finding...";
-      xroots := Roots(xf : IsSquarefree);
-    catch err
-      if IS_PREC_ERR(err) then
-        return false, _;
-      else
-        error err;
-      end if;
-    end try;
-    // check roots have multiplicity 1
-    vprint ExactpAdics_Roots: "Roots:", Cputime(), "checking...";
-    if exists{xr : xr in xroots | xr[2] ne 1} then
-      return false, _;
-    end if;
-    // check Hensel's lemma
-    vprint ExactpAdics_Roots: "Roots:", Cputime(), "Hensel lifting...";
-    rs := [];
-    for xr in xroots do
-      ok, r := IsHenselLiftable(f, WeakApproximation(CAST(K, xr[1])) : Strategy:=Strategy, ShiftSlope, ShiftValuation);
-      if ok then
-        Append(~rs, <r, xr[2]>);
-      else
-        return false, _;
-      end if;
-    end for;
-    return true, rs;
-  end function, MainStrategy, 0);
-  if ok then
-    return true, rs;
-  else
-    return false, PREC_ERR("could not find roots");
-  end if;
-end function;
-
-function nicen_poly(f : Monic:=false, Integral:=false, Deslope:=false, Strategy:="default")
-  R := Parent(f);
-  K := BaseRing(R);
-  Deslope or:= Monic and Integral;
-  if Deslope then
-    np := NewtonPolygon(f : Strategy:=Strategy);
-    d := Degree(f : Strategy:=Strategy);
-    s := Ceiling(Max(Slopes(np)));
-    f := ShiftSlope(f, -s : Pivot:=d);
-  else
-    s := 0;
-  end if;
-  if Monic then
-    lc := LeadingCoefficient(f : Strategy:=Strategy);
-    f := f / lc;
-  else
-    lc := K ! 1;
-  end if;
-  if Integral then
-    v := Valuation(f : Strategy:=Strategy);
-    if v ne 0 and Monic then
-      error "incompatible options";
-    end if;
-    f := ShiftValuation(f, -v);
-  else
-    v := 0;
-  end if;
-  return f, v, lc, s;
-end function;
-
-intrinsic Roots
-  ( f :: RngUPolElt_FldPadExact     // finds the roots of f
-  // : IsSquarefree:=false             // set to true if known to be squarefree
-  : Strategy:="default"
-  , MainStrategy:=Strategy
-  ) -> SeqEnum
-  {The roots of f in its base field. Requires f to be squarefree.}
-  if not assigned f`roots then
-    facs := NewtonPolygonFactorization(f : Strategy:=Strategy);
-    rs := [];
-    for f2 in facs do
-      if not assigned f2`roots then
-        f3, _, _, slope := nicen_poly(f2 : Integral, Deslope);
-        if not assigned f3`roots then
-          ok, rs3 := roots(f3, Strategy, MainStrategy);
-          if ok then
-            f3`roots := rs3;
-          else
-            error rs3;
-          end if;
-        end if;
-        locf2 := f2;
-        locf2`roots := [<ShiftValuation(r[1], -slope), r[2]> : r in rs3];
-      end if;
-      rs cat:= f2`roots;
-    end for;
-    f`roots := rs;
-  end if;
-  return f`roots;
-end intrinsic;
-
-intrinsic Roots(f :: RngUPolElt_FldPadExact, F :: FldPadExact : Strategy:="default", MainStrategy:=Strategy) -> SeqEnum
-  {The roots of f in F. Requires f to be squarefree.}
-  return Roots(ChangeRing(f, F));
-end intrinsic;
-
-intrinsic Roots
-  ( f :: RngUPolElt
-  , K :: FldPadExact
-  : Strategy := "default"
-  , MainStrategy := Strategy
-  ) -> SeqEnum
-  {"}
-  ok, fK := CanChangeRing(f, K);
-  require ok: "coefficients of f must be coercible to K";
-  F := BaseRing(f);
-  roots := func<f | Roots(f : Strategy:=Strategy, MainStrategy:=MainStrategy)>;
-  if IsExact(F) then
-    nzeros := 0;
-    while Coefficient(f, 0) eq 0 do
-      nzeros +:= 1;
-      f := f div Parent(f).1;
-    end while;
-    // TODO: Is it quicker to factorize before coercing? Probably not, the only good reason to factorize first is in case f is not squarefree. Perhaps it's better to factorize f into squarefree, coprime (but not necessarily irreducible) factors first, if that's fast?
-    facs := Factorization(f);
-    return (nzeros ne 0 select [<K!0, nzeros>] else []) cat [<r[1], r[2]*fac[2]> : r in roots(ChangeRing(fac[1], K)), fac in facs];
-  else
-    return roots(fK);
-  end if;
-end intrinsic;
 
 intrinsic Integers(F :: FldPadExact, v :: RngIntElt) -> RngPadExact
   {The ring of elements of F of valuation at least v.}
@@ -3952,12 +3940,16 @@ end intrinsic;
 
 intrinsic Format(x :: FldPadExactElt : APr := AbsolutePrecision(x) meet (WeakValuation(x) + 1)) -> MonStgElt
   {Returns a string representation of x.}
+  ok, APr := IsValidAbsolutePrecision(x, APr);
+  require ok: "APr: " cat APr;
   IncreaseAbsolutePrecision(x, APr);
   return Sprintf("%o", CHANGE_APR(x`approximation, APr));
 end intrinsic;
 
 intrinsic Format(f :: RngUPolElt_FldPadExact : APr := AbsolutePrecision(f) meet (WeakValuation(f) + 1)) -> MonStgElt
   {Returns a string representation of f.}
+  ok, APr := IsValidAbsolutePrecision(f, APr);
+  require ok: "APr: " cat APr;
   IncreaseAbsolutePrecision(f, APr);
   // renewEltApproximation_poly(f);
   return Sprintf("%o", CHANGE_APR(f`approximation, APr));
@@ -4072,25 +4064,19 @@ intrinsic '*'(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> RngUPolElt_Fl
   x := CAST(F, x);
   // trivial cases
   if IsDefinitelyZero(f) or IsDefinitelyZero(x) then
-    return f;
+    return Zero(R);
   end if;
   // general case
-  xf := Approximation(f : Pr:=1, Weak);
-  xx := Approximation(x : Pr:=1, Weak);
+  xf := Approximation(f, CAPR(f));
+  xx := Approximation(x, CAPR(x));
   init := xf * xx;
   mkupdate := func<z | function (aprs)
-    d := WeakDegree(z);
     vx := WeakValuation(x);
-    zf := Approximation(f);
-    vfs := [Valuation(Coefficient(zf, i)) : i in [0..d]];
-    pr := Max([
-      v lt OO select aprs[i+1]-v else 0
-      where v := vfs[i+1] + vx
-      : i in [0..d]
-    ] cat [0]);
+    vf := WeakValuation(f);
+    pr := &join(aprs - vf - vx);
     return [
-      Approximation_Lazy(f : APr:=[a-vx : a in aprs]),
-      Approximation_Lazy(x : APr:=vx+pr)
+      Approximation_Lazy(f, aprs-vx),
+      Approximation_Lazy(x, vx+pr)
     ] mod function (xf, xx)
       Update(z, xf * xx);
       return true;
@@ -4351,22 +4337,25 @@ intrinsic Slice(f :: RngUPolElt_FldPadExact, idxs :: [RngIntElt]) -> RngUPolElt_
   if #idxs eq 0 then
     return CAST(R, []);
   end if;
-  xf := Approximation(f : Pr:=1, Weak);
-  init := Parent(xf) ! [Coefficient(xf, i) : i in idxs];
-  mkupdate := func<z | function (aprs)
-    xf := Approximation(f);
-    df := Degree(xf);
-    vfs := [Valuation(Coefficient(xf, i)) : i in [0..df]];
-    faprs := [* vfs[i+1] : i in [0..df] *];
-    for i in [1..#aprs] do
+  xf := Approximation(f, CAPR(f));
+  init := Parent(xf) ! [IsDefined(idxs,i) select Coefficient(xf, idxs[i]) else 0 : i in [1..#idxs]];
+  // make an array a := [<j, [i : idxs[i] eq j]>]
+  a := AssociativeArray();
+  for i in [1..#idxs] do
+    if IsDefined(idxs, i) then
       j := idxs[i];
-      if j le df then
-        faprs[j+1] := Max(faprs[j+1], aprs[i]);
+      if IsDefined(a, j) then
+        Append(~a[j], i);
+      else
+        a[j] := [i];
       end if;
-    end for;
-    pr := Max([vfs[i] lt OO select faprs[i] - vfs[i] else 0 : i in [1..#faprs]]);
-    return Approximation_Lazy(f : APr:=[a : a in faprs]) mod function (xf)
-      Update(z, Parent(xf) ! [Coefficient(xf, i) : i in idxs]);
+    end if;
+  end for;
+  a := [<j, a[j]> : j in Keys(a)];
+  print a;
+  mkupdate := func<z | function (aprs)
+    return Approximation_Lazy(f, [<x[1], &join[aprs(i-1) : i in x[2]]> : x in a]) mod function (xf)
+      Update(z, Parent(xf) ! [IsDefined(idxs,i) select Coefficient(xf, idxs[i]) else 0 : i in [1..#idxs]]);
       return true;
     end function;
   end function>;
@@ -4572,203 +4561,6 @@ intrinsic ExactpAdicField(xxL :: FldPad, K :: FldPadExact : NoCheckUnique:=false
   xK := K`approximation_field;
   mK := map<xK -> xK | x :-> x, y :-> y>;
   return ExactpAdicField(xxL, mK, K : NoCheckUnique:=NoCheckUnique);
-end intrinsic;
-
-FACTORIZATION_CERT := recformat<F, Rho, Rho_orig, E, Pi, Pi_orig, IdealGen1, IdealGen1_orig, IdealGen2, IdealGen2_orig, Extension, Extension_orig>;
-FACTORIZATION := recformat<facs, lc, certs>;
-
-declare verbose ExactpAdics_Factorization, 1;
-
-// assumes f is monic
-function factorization(f : Certificates:=false, Extensions:=false, Ideals:=false, Strategy:="default", MainStrategy:=Strategy)
-  R := Parent(f);
-  K := BaseRing(f);
-  Certificates or:= Extensions;
-  Certificates or:= Ideals;
-  d := Degree(f : Strategy:=Strategy);
-  f3,_,_,slope := nicen_poly(f : Deslope, Strategy:=Strategy);
-  // np := NewtonPolygon(f : Strategy := Strategy);
-  // d := Degree(f : Strategy := Strategy);
-  // // monic (assumed)
-  // f2 := f;
-  // // deslope
-  // slope := Ceiling(Max(Slopes(np)));
-  // f3 := ShiftSlope(f2, -slope : Pivot:=d);
-  // // integral
-  assert IsIntegral(f3);
-  assert ValuationEq(Coefficient(f3, d), 0);
-  // increase precision until we find a valid factorization  
-  ok, pr, fzn := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-    vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "pr =", pr;
-    // approximate f
-    if pr le 0 then
-      return false, _;
-    end if;
-    xf := Approximation(f3 : APr:=pr);
-    xK := BaseRing(xf);
-    if Extensions then
-      // move f over to a fixed-precision field, required for Extensions
-      xxK := ChangePrecision(xK, pr);
-      xxf := ChangeRing(xf, xxK);
-    end if;
-    // factorize
-    try
-      if false then
-        vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "factoring...";
-        xfacs, _, xcerts := Factorization(xf : Certificates:=Certificates, Extensions:=Extensions, Ideals:=Ideals, IsSquarefree);
-        vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "  (done)";
-      else
-        // do an unproven factorization first, then find certificates for the factors later; this is sometimes faster
-        vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "factoring...";
-        xfacs := Factorization(xf : IsSquarefree);
-        vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "  (done)";
-        xcerts := [];
-        if Certificates then
-          vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "secondary factoring...";
-          for x in xfacs do
-            if x[2] ne 1 then
-              return false, _;
-            end if;
-            vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "  factoring...";
-            xfacs2, _, xcerts2 := Factorization(x[1] : Certificates:=Certificates, Extensions:=Extensions, Ideals:=Ideals, IsSquarefree);
-            vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "    (done)";
-            if #xfacs2 ne 1 or xfacs2[1][2] ne 1 then
-              return false, _;
-            end if;
-            assert #xcerts2 eq 1;
-            Append(~xcerts, xcerts2[1]);
-          end for;
-        end if;
-      end if;
-    catch err
-      if IS_PREC_ERR(err) then
-        return false, _;
-      else
-        error err;
-      end if;
-    end try;
-    // Hensel-lift
-    vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "Hensel lifting...";
-    facs := [];
-    for x in xfacs do
-      if x[2] ne 1 then
-        return false, _;
-      end if;
-      xfac := ChangeRing(x[1], xK);
-      ok, g := IsHenselLiftable(f3, WeakApproximation(CAST(R, xfac)) : Strategy:=Strategy, ShiftValuation, ShiftSlope);
-      if ok then
-        Append(~facs, <ShiftSlope(g, slope : Pivot:=Degree(xfac)), 1>);
-      else
-        return false, _;
-      end if;
-    end for;
-    // convert certificates and return
-    vprint ExactpAdics_Factorization: "Factorization:", Cputime(), "converting...";
-    fzn := rec<FACTORIZATION | facs := facs>;
-    if Certificates then
-      fzn`certs := [];
-      for c in xcerts do
-        r := rec<FACTORIZATION_CERT
-          | F := c`F
-          , Rho := ShiftSlope(WeakApproximation(CAST(R, ChangeRing(c`Rho, xK))), slope)
-          , Rho_orig := c`Rho
-          , E := c`E
-          , Pi := ShiftSlope(WeakApproximation(CAST(R, ChangeRing(c`Pi, xK))), slope)
-          , Pi_orig := c`Pi
-          >;
-        // print "RHO", c`Rho, r`Rho;
-        // print "PI", c`Pi, r`Pi;
-        if Ideals then
-          r`IdealGen1 := ShiftSlope(CAST(R, ChangeRing(c`IdealGen1, xK)), slope);
-          r`IdealGen1_orig := c`IdealGen1;
-          r`IdealGen2 := ShiftSlope(CAST(R, ChangeRing(c`IdealGen2, xK)), slope);
-          r`IdealGen2_orig := c`IdealGen2;
-        end if;
-        if Extensions then
-          xxL := c`Extension;
-          if isDefinitelyUnique(xxL, xxK) then
-            r`Extension_orig := xxL;
-            r`Extension := ExactpAdicField(xxL, xxK, K);
-          else
-            return false, _;
-          end if;
-        end if;
-        Append(~fzn`certs, r);
-      end for;
-    end if;
-    return true, fzn;
-  end function, MainStrategy, 0);
-  error if not ok, PREC_ERR("could not find factorization");
-  return fzn;
-end function;
-
-// TODO: check the polynomial is squarefree
-
-intrinsic Factorization
-  ( f :: RngUPolElt_FldPadExact     // we want the factorization of f
-  : Strategy := "default"           // the strategy
-  , MainStrategy := Strategy        // the main factorization strategy
-  , Certificates := false           // true if we want certificates for the factors
-  , Extensions := false             // true if we want extensions for the factors
-  , Ideals := false                 // true if we want ideals for the factors
-  , Proof := true                   // true if we want provable results
-  ) -> []
-  {Returns the factorization of f.}
-  Certificates or:= Extensions;
-  Certificates or:= Ideals;
-  Proof or:= Certificates;
-  if (not assigned f`factorization)
-  or (Proof and not assigned f`factorization`certs)
-  then
-    // check the polynomial is full-degree
-    d := Degree(f : Strategy:=Strategy);
-    R := Parent(f);
-    K := BaseRing(R);
-    // newton polygon factorization
-    // TODO: make this optional
-    npfacs, lc := NewtonPolygonFactorization(f : Residual);
-    // main factorization
-    fzn := rec<FACTORIZATION | facs := [], lc := lc>;
-    if Proof then
-      fzn`certs := [];
-    end if;
-    for npfac in npfacs do
-      fzn2 := factorization(npfac : MainStrategy:=MainStrategy, Strategy:=Strategy, Certificates:=Proof, Extensions:=Extensions, Ideals:=Ideals);
-      fzn`facs cat:= fzn2`facs;
-      if Proof then
-        fzn`certs cat:= fzn2`certs;
-      end if;
-    end for;
-    f`factorization := fzn;
-  end if;
-  // check certificates (if we cached a previous result with certificates but no ideals or extensions, we need to factorize again) and return
-  if Certificates then
-    fzn := f`factorization;
-    assert assigned fzn`certs;
-    facs := fzn`facs;
-    lc := fzn`lc;
-    certs := fzn`certs;
-    for i in [1..#certs] do
-      doexts := Extensions and not assigned certs[i]`Extension;
-      doideals := Ideals and not (assigned certs[i]`IdealGen1 and assigned certs[i]`IdealGen2);
-      if doexts or doideals then
-        fzn := factorization(facs[i][1] : Ideals:=doideals, Extensions:=doexts, MainStrategy:=MainStrategy, Strategy:=Strategy);
-        assert #fzn`facs eq 1;
-        assert #fzn`certs eq 1;
-        if doexts then
-          certs[i]`Extension := fzn`certs[1]`Extension;
-        end if;
-        if doideals then
-          certs[i]`IdealGen1 := fzn`certs[1]`IdealGen1;
-          certs[i]`IdealGen2 := fzn`certs[1]`IdealGen2;
-        end if;
-      end if;
-    end for;
-    f`factorization`certs := certs;
-    return facs, lc, certs;
-  else
-    return f`factorization`facs, f`factorization`lc, _;
-  end if;
 end intrinsic;
 
 procedure assignQuotientRingNames(~R, F)
@@ -5607,299 +5399,6 @@ intrinsic ExactCompletion(K :: FldNum, P :: PlcNumElt) -> FldPadExact, Map, Map
   return completion(K, P);
 end intrinsic;
 
-intrinsic PolynomialRing(F :: FldPadExact, n :: RngIntElt) -> RngMPol_FldPadExact
-  {A polynomial ring of rank n over F.}
-  require n ge 0: "n must be non-negative";
-  if not assigned F`polynomial_ring_m then
-    F`polynomial_ring_m := AssociativeArray();
-  end if;
-  ok, R := IsDefined(F`polynomial_ring_m, n);
-  if not ok then
-    R := New(RngMPol_FldPadExact);
-    R`id := NEXTID();
-    R`base_ring := F;
-    R`rank := n;
-    R`approximation_ring := PolynomialRing(F`approximation_field, n);
-    F`polynomial_ring_m[n] := R;
-  end if;
-  return R;
-end intrinsic;
-
-intrinsic Print(R :: RngMPol_FldPadExact, lvl :: MonStgElt)
-  {Prints R.}
-  case lvl:
-  when "Magma":
-    printf "PolynomialRing(%m, %m)", R`base_ring, R`rank;
-  else
-    printf "Multivariate polynomial ring";
-    if assigned R`varnames and #R`varnames gt 0 then
-      printf " in %o", Join(R`varnames, ", ");
-    end if;
-    printf " of rank %O over %O", R`rank, lvl, R`base_ring, lvl;
-  end case;
-end intrinsic;
-
-intrinsic BaseRing(R :: RngMPol_FldPadExact) -> FldPadExact
-  {The base ring of R.}
-  return R`base_ring;
-end intrinsic;
-
-intrinsic Rank(R :: RngMPol_FldPadExact) -> RngIntElt
-  {The rank of R.}
-  return R`rank;
-end intrinsic;
-
-intrinsic AssignNames(~R :: RngMPol_FldPadExact, names :: [MonStgElt])
-  {Assigns names to the generators of R.}
-  require #names le Rank(R): "Argument 2 should have length at most", Rank(R);
-  R`varnames := names;
-  AssignNames(~R`approximation_ring, names);
-end intrinsic;
-
-intrinsic Name(R :: RngMPol_FldPadExact, i :: RngIntElt) -> RngMPolElt_FldPadExact
-  {The ith generator of R.}
-  require i ge 1 and i le Rank(R): "i must be in the range 1 ..", Rank(R);
-  return GeneratorsSequence(R)[i];
-end intrinsic;
-
-intrinsic '.'(R :: RngMPol_FldPadExact, i :: RngIntElt) -> RngMPolElt_FldPadExact
-  {"}
-  return Name(R, i);
-end intrinsic;
-
-intrinsic GeneratorsSequence(R :: RngMPol_FldPadExact) -> []
-  {The indeterminates generating R.}
-  if not assigned R`generators_sequence then
-    xR := R`approximation_ring;
-    K := BaseRing(R);
-    xK := K`approximation_field;
-    xK`DefaultPrecision := 1;
-    one := xK ! 1;
-    gens := [R|];
-    for i in [1..Rank(R)] do
-      init := Polynomial([one], [xR.i]);
-      mkupdate := func<z | function (apr)
-        return Approximation_Lazy(K, apr) mod function (xK)
-          Update(z, Polynomial([xK!1], [xR.i]));
-          return true;
-        end function;
-      end function>;
-      Append(~gens, R ! <init, mkupdate>);
-    end for;
-    R`generators_sequence := gens;
-  end if;
-  return R`generators_sequence;
-end intrinsic;
-
-intrinsic Parent(f :: RngMPolElt_FldPadExact) -> RngMPol_FldPadExact
-  {The parent ring of f.}
-  return f`parent;
-end intrinsic;
-
-intrinsic BaseRing(f :: RngMPolElt_FldPadExact) -> FldPadExact
-  {The base ring of f.}
-  return f`parent`base_ring;
-end intrinsic;
-
-function makeMPoly(R, init, mkupdate)
-  f := New(RngMPolElt_FldPadExact);
-  f`parent := R;
-  f`update := mkupdate(f);
-  f`id := NEXTID();
-  case Type(init):
-  when RngMPolElt:
-    ok, init := IS_VALID_APPROX(R, init);
-    if ok then
-      f`approximation := init;
-    else
-      return false, "wrong field";
-    end if;
-  else
-    return false, "bad init";
-  end case;
-  return true, f;
-end function;
-
-intrinsic IsCoercible(R :: RngMPol_FldPadExact, X) -> BoolElt, .
-  {True if X is coercible to R, and the coerced element.}
-  return false, "not coercible";
-end intrinsic;
-
-intrinsic IsCoercible(R :: RngMPol_FldPadExact, X :: RngMPolElt_FldPadExact) -> BoolElt, .
-  {"}
-  if Parent(X) eq R then
-    return true, X;
-  end if;
-  return false, "not coercible";
-end intrinsic;
-
-intrinsic IsCoercible(R :: RngMPol_FldPadExact, X :: Tup) -> BoolElt, .
-  {"}
-  if #X eq 2 and Type(X[2]) eq UserProgram then
-    return makeMPoly(R, X[1], X[2]);
-  elif #X eq 2 and Type(X[1]) eq SeqEnum and Type(X[2]) eq SeqEnum then
-    ok, cs := CanChangeUniverse(X[1], BaseRing(R));
-    // TODO: check X[2] is a sequence of the right length of sequences of the right length of integers!
-    es := X[2];
-    xR := Approximation(R, 1);
-    xms := [xR| Monomial(xR, e) : e in es];
-    init := Polynomial([Approximation(c : Pr:=1, Weak) : c in cs], xms);
-    mkupdate := func<z | function (apr)
-      return &cat[Approximation_Lazy(c : APr:=apr) : c in cs] mod function (xcs)
-        Update(z, Polynomial(xcs, xms));
-        return true;
-      end function;
-    end function>;
-    return true, R ! <init, mkupdate>;
-  elif #X eq 3 then
-    ok, x := makeMPoly(R, X[1], X[2]);
-    if ok then
-      SetData(x, X[3]);
-      return true, x;
-    else
-      return false, x;
-    end if;
-  else
-    return false, "wrong number of elements";
-  end if;
-end intrinsic;
-
-intrinsic IsCoercible(R :: RngMPol_FldPadExact, X :: RngMPolElt) -> BoolElt, .
-  {"}
-  if Rank(R) eq Rank(Parent(X)) then
-    K := BaseRing(R);
-    n := Rank(R);
-    cs, ms := CoefficientsAndMonomials(X);
-    ok, cs := CanChangeUniverse(cs, K);
-    if ok then
-      return true, R ! <cs, [Exponents(m) : m in ms]>;
-    end if;
-  end if;
-  return false, _;
-end intrinsic;
-
-function merge_mpolys(f, g)
-  // assuming f and g have the same parent and are weakly equal, returns the polynomial got by taking the most precise coefficients from each
-  assert Parent(f) eq Parent(g);
-  R := Parent(f);
-  efs := {Exponents(m) : m in Monomials(f)};
-  egs := {Exponents(m) : m in Monomials(g)};
-  ms := [Monomial(R, e) : e in efs meet egs];
-  coeffs := [
-    APR(cf) gt APR(cg) select cf else cg
-    where cf := MonomialCoefficient(f, m)
-    where cg := MonomialCoefficient(g, m)
-    : m in ms
-  ];
-  return Polynomial(coeffs, ms);
-end function;
-
-intrinsic Update(f :: RngMPolElt_FldPadExact, app :: RngMPolElt)
-  {Updates f to app.}
-  R := Parent(f);
-  xR := R`approximation_ring;
-  ok, app := IS_VALID_APPROX(R, app);
-  require ok: "app is in the wrong ring";
-  if UPDATE_CONSISTENCY_CHECK then
-    require WEQ(app, f`approximation): "inconsistent";
-  end if;
-  f`approximation := merge_mpolys(f`approximation, app);
-end intrinsic;
-
-intrinsic UpdateZero(f :: RngMPolElt_FldPadExact, n :: RngIntElt)
-  {Updates f to O(pi^n).}
-  xf := f`approximation;
-  zero := Zero(BaseRing(Parent(xf)), n);
-  Update(f, &+[zero*m : m in Monomials(xf)]);
-end intrinsic;
-
-intrinsic 'eq'(R :: RngMPol_FldPadExact, S :: RngMPol_FldPadExact) -> BoolElt
-  {Equality.}
-  return R`id eq S`id;
-end intrinsic;
-
-intrinsic AbsolutePrecision(f :: RngMPolElt_FldPadExact) -> RngIntElt
-  {The absolute precision of f, the minimum of the absolute precisions of its coefficients.}
-  coeffs := Coefficients(f`approximation);
-  if #coeffs eq 0 then
-    return OO;
-  else
-    return Min([APR(c) : c in coeffs]);
-  end if;
-end intrinsic;
-
-intrinsic WeakValuation(f :: RngMPolElt_FldPadExact) -> RngIntElt
-  {The weak valuation of f, the minimum weak valuation of its coefficients.}
-  coeffs := Coefficients(f`approximation);
-  if #coeffs eq 0 then
-    return OO;
-  else
-    return Min([VAL(c) : c in coeffs]);
-  end if;
-end intrinsic;
-
-function parse_apr_mpoly(f : APr:=false, Weak:=false)
-  case Type(APr):
-  when RngIntElt, Infty, ExtReElt:
-    ;
-  when BoolElt:
-    APr := APR(f);
-  end case;
-  if Weak then
-    APr := Min(APr, APR(f));
-  end if;
-  return APr;
-end function;
-
-intrinsic IncreaseAbsolutePrecision(f :: RngMPolElt_FldPadExact, n)
-  {Increases the absolute precision of f to n.}
-  satisfy_dep(f, n);
-end intrinsic;
-
-intrinsic Format(f :: RngMPolElt_FldPadExact : APr:=false, Weak:=false) -> MonStgElt
-  {Returns a string representation of f.}
-  apr := parse_apr_mpoly(f : APr:=APr, Weak:=Weak);
-  IncreaseAbsolutePrecision(f, apr);
-  return Sprintf("%o", CHANGE_APR(f`approximation, apr));
-end intrinsic;
-
-intrinsic Print(f :: RngMPolElt_FldPadExact, lvl :: MonStgElt)
-  {Prints f.}
-  case lvl:
-  when "Magma":
-    printf "%o", f`approximation;
-  else
-    printf "%o", Format(f : APr:=Min(WVAL(f)+1, APR(f)));
-  end case;
-end intrinsic;
-
-intrinsic IncreaseAbsolutePrecision_Lazy(R :: RngMPol_FldPadExact, pr :: RngIntElt) -> ExactpAdics_Gettr
-  {Increases the precision of the approximation to R to at least pr.}
-  pr := Max(pr, 1);
-  return IncreaseAbsolutePrecision_Lazy(BaseRing(R), pr);
-end intrinsic;
-
-intrinsic Approximation_Lazy(R :: RngMPol_FldPadExact, pr :: RngIntElt) -> ExactpAdics_Gettr
-  {An approximation to R whose base field has default precision pr.}
-  require pr gt 0: "pr must be positive";
-  return IncreaseAbsolutePrecision_Lazy(R, pr) mod function (ig)
-    xR := R`approximation_ring;
-    xK := BaseRing(xR);
-    xK`DefaultPrecision := pr;
-    return xR;
-  end function;
-end intrinsic;
-
-intrinsic Approximation(R :: RngMPol_FldPadExact, pr :: RngIntElt) -> RngUPol
-  {"}
-  return Evaluate(Approximation_Lazy(R, pr));
-end intrinsic;
-
-intrinsic Approximation(R :: RngMPol_FldPadExact) -> RngUPol
-  {The approximation to R.}
-  return R`approximation_ring;
-end intrinsic;
-
 intrinsic DescribeExtension(X :: ExtDataFldPadExact : BaseName:="") -> MonStgElt
   {A string describing the extension E/F with F described as FName.}
   if not assigned X`describe_extension then
@@ -5967,473 +5466,102 @@ function quotientMap(K, n)
   return QK, m;
 end function;
 
-function henselLiftMultiroot(fs, xs, t)
-  fs_in := fs;
-  xs_in := xs;
-  R := Universe(fs);
-  K := BaseRing(R);
-  // assert K eq Universe(xs);
-  n := Rank(R);
-  assert n eq #xs;
-  assert n gt 0;
-  pr := Max([APR(c) : c in Coefficients(f), f in fs | APR(c) lt OO]);
-  QK, KtoQ := quotientMap(K, n);
-  // OK := Integers(K);
-  // QK := quo<OK | ShiftValuation(OK!1, pr)>;
-  QR := PolynomialRing(QK, n);
-  RtoQ := map<R -> QR | f :-> Polynomial([KtoQ(c) : c in cs], [Monomial(QR, Exponents(m)) : m in ms]) where cs, ms := CoefficientsAndMonomials(f)>;
-  fs := [RtoQ(f) : f in fs];
-  xs := [KtoQ(x) : x in xs];
-  V := RSpace(QK, n);
-  M := MatrixAlgebra(QK, n);
-  J := Transpose(JacobianMatrix(fs));
-  DJ := Determinant(J);
-  Jx := Evaluate(DJ, xs);
-  assert not WZERO(Jx);
-  assert Valuation(Jx) eq t;
-  ds := [Evaluate(f, xs) : f in fs];
-  s := Min([Valuation(d) : d in ds]);
-  assert s gt 2*t;
-  while true do
-    r := s - t;
-    Bvec := CAST(V, [ShiftValuation(d, -r) : d in ds]);
-    Rmat := CAST(M, [[Evaluate(J[i,j], xs) : j in [1..n]] : i in [1..n]]);
-    assert Valuation(Determinant(Rmat)) eq t;
-    U := Solution(Rmat, Bvec);
-    xsnew := [xs[i] - ShiftValuation(U[i], r) : i in [1..n]];
-    assert Valuation(Evaluate(DJ, xsnew)) eq t;
-    dsnew := [Evaluate(f, xsnew) : f in fs];
-    if forall{i : i in [1..n] | WEQ(xs[i], xsnew[i])} then
-      assert forall{d : d in dsnew | WZERO(d)};
-      return [x@@KtoQ : x in xsnew];
-    else
-      snew := Min([Valuation(d) : d in dsnew]);
-      assert forall{d : d in dsnew | WZERO(d)} or snew ge 2*r;
-      s := snew;
-      ds := dsnew;
-      xs := xsnew;
-    end if;
-  end while;
-end function;
+// function henselLiftMultiroot(fs, xs, t)
+//   fs_in := fs;
+//   xs_in := xs;
+//   R := Universe(fs);
+//   K := BaseRing(R);
+//   // assert K eq Universe(xs);
+//   n := Rank(R);
+//   assert n eq #xs;
+//   assert n gt 0;
+//   pr := Max([APR(c) : c in Coefficients(f), f in fs | APR(c) lt OO]);
+//   QK, KtoQ := quotientMap(K, n);
+//   // OK := Integers(K);
+//   // QK := quo<OK | ShiftValuation(OK!1, pr)>;
+//   QR := PolynomialRing(QK, n);
+//   RtoQ := map<R -> QR | f :-> Polynomial([KtoQ(c) : c in cs], [Monomial(QR, Exponents(m)) : m in ms]) where cs, ms := CoefficientsAndMonomials(f)>;
+//   fs := [RtoQ(f) : f in fs];
+//   xs := [KtoQ(x) : x in xs];
+//   V := RSpace(QK, n);
+//   M := MatrixAlgebra(QK, n);
+//   J := Transpose(JacobianMatrix(fs));
+//   DJ := Determinant(J);
+//   Jx := Evaluate(DJ, xs);
+//   assert not WZERO(Jx);
+//   assert Valuation(Jx) eq t;
+//   ds := [Evaluate(f, xs) : f in fs];
+//   s := Min([Valuation(d) : d in ds]);
+//   assert s gt 2*t;
+//   while true do
+//     r := s - t;
+//     Bvec := CAST(V, [ShiftValuation(d, -r) : d in ds]);
+//     Rmat := CAST(M, [[Evaluate(J[i,j], xs) : j in [1..n]] : i in [1..n]]);
+//     assert Valuation(Determinant(Rmat)) eq t;
+//     U := Solution(Rmat, Bvec);
+//     xsnew := [xs[i] - ShiftValuation(U[i], r) : i in [1..n]];
+//     assert Valuation(Evaluate(DJ, xsnew)) eq t;
+//     dsnew := [Evaluate(f, xsnew) : f in fs];
+//     if forall{i : i in [1..n] | WEQ(xs[i], xsnew[i])} then
+//       assert forall{d : d in dsnew | WZERO(d)};
+//       return [x@@KtoQ : x in xsnew];
+//     else
+//       snew := Min([Valuation(d) : d in dsnew]);
+//       assert forall{d : d in dsnew | WZERO(d)} or snew ge 2*r;
+//       s := snew;
+//       ds := dsnew;
+//       xs := xsnew;
+//     end if;
+//   end while;
+// end function;
 
-function henselLiftMultiroot_simple(fs, xs, t)
-  R := Universe(fs);
-  K := BaseRing(R);
-  xs := [CAST(K,x) : x in xs];
-  n := Rank(R);
-  assert n eq #xs;
-  assert n gt 0;
-  pr := Max([APR(c) : c in Coefficients(f), f in fs | APR(c) lt OO]);
-  xs := [CHANGE_APR(x, pr) : x in xs];
-  V := RSpace(K, n);
-  M := MatrixAlgebra(K, n);
-  K`DefaultPrecision := pr;
-  J := Transpose(JacobianMatrix(fs));
-  DJ := Determinant(J);
-  Jx := Evaluate(DJ, xs);
-  assert not WZERO(Jx);
-  assert Valuation(Jx) eq t;
-  ds := [Evaluate(f, xs) : f in fs];
-  s := Min([Valuation(d) : d in ds]);
-  assert s gt 2*t;
-  while true do
-    r := s - t;
-    Bvec := CAST(V, [CHANGE_APR(ShiftValuation(d, -r),pr-r) : d in ds]);
-    Rmat := CAST(M, [[CHANGE_APR(Evaluate(J[i,j], xs),pr) : j in [1..n]] : i in [1..n]]);
-    assert Valuation(Determinant(Rmat)) eq t;
-    ok, U := IsConsistent(Rmat, Bvec);
-    if not ok then
-      print "WARNING: IsHenselLiftable: Using IsInvertible because IsConsistent failed!";
-      ok, Rinv := IsInvertible(Rmat);
-      assert ok;
-      U := Bvec * Rinv;
-    end if;
-    xsnew := [CHANGE_APR(xs[i] - ShiftValuation(U[i], r), pr) : i in [1..n]];
-    assert Valuation(Evaluate(DJ, xsnew)) eq t;
-    dsnew := [Evaluate(f, xsnew) : f in fs];
-    if forall{i : i in [1..n] | WEQ(xs[i], xsnew[i])} then
-      assert forall{d : d in dsnew | WZERO(d) or Valuation(d) ge pr};
-      return xsnew;
-    else
-      snew := Min([Valuation(d) : d in dsnew]);
-      assert forall{d : d in dsnew | WZERO(d)} or snew ge 2*r;
-      s := snew;
-      ds := dsnew;
-      xs := xsnew;
-    end if;
-  end while;
-end function;
-
-intrinsic IsHenselLiftable
-  ( fs :: [RngMPolElt_FldPadExact]   // a polynomial
-  , xs :: [FldPadExactElt]   // an approximate factor
-  : Strategy := "default"        // default strategy
-  , ShiftValuation := false 
-  , ShiftSlope := false
-  ) -> BoolElt, []
-  {Given n polynomials fs in n variables, and n field values, returns true if the xs can be Hensel lifted to a root of the polynomials, and also returns the root.}
-  // PUT fs AND xs OVER THE SAME FIELD
-  R := Universe(fs);
-  K := BaseRing(R);
-  ok, xs := CanChangeUniverse(xs, K);
-  require ok: "Elements of Argument 2 must lie in the coefficient ring of the universe of Argument 1";
-  n := Rank(R);
-  require #fs eq n: "Length of Argument 1 must equal the rank of its universe";
-  require #xs eq n: "Length of Argument 2 must equal the rank of the universe of Argument 1";
-  if n eq 0 then
-    return true, [];
-  end if;
-  // ensure the xs are integral
-  if ShiftSlope cmpeq false then
-    vxs := [0 : i in [1..n]];
-    require forall{x : x in xs | IsIntegral(x)}: "xs must all be integral";
-  elif ShiftSlope cmpeq true then
-    vxs := [Valuation(x : Strategy:=Strategy) : x in xs];
-  elif ShiftSlope cmpeq "Weak" then
-    vxs := [WeakValuation(x) : x in xs];
-  elif ShiftSlope cmpeq "WeakMin0" then
-    IncreaseAbsolutePrecisions([*<x, 0> : x in xs | WZERO(x)*]);
-    vxs := [Min(WeakValuation(x), 0) : x in xs];
-  elif ShiftSlope cmpeq "Weak0" then
-    IncreaseAbsolutePrecisions([*<x, 0> : x in xs | WZERO(x)*]);
-    vxs := [WeakValuation(x) : x in xs];
-  else
-    error "bad ShiftSlope option";
-  end if;
-  x2s := [SHIFT_VAL(xs[i], -vxs[i]) : i in [1..n]];
-  f2s := [SHIFT_SLOPE(f, vxs) : f in fs];
-  assert forall{x : x in x2s | IsIntegral(x)};
-  // ensure the fs are integral
-  if ShiftValuation cmpeq false then
-    require forall{f : f in fs | IsIntegral(f)}: "fs must all be integral";
-  elif ShiftValuation cmpeq true then
-    vf2s := [Valuation(f : Strategy:=Strategy) : f in f2s];
-  elif ShiftValuation cmpeq "Weak" then
-    vf2s := [WeakValuation(f) : f in f2s];
-  else
-    error "bad ShiftValuation option";
-  end if;
-  f2s := [SHIFT_VAL(f2s[i], -vf2s[i]) : i in [1..n]];
-  // Find Jx=J(fs)(xs)=det_ij(df_i/dx_j)(xs)
-  J := JacobianDeterminant(f2s);
-  Jx := Evaluate(J, x2s);
-  // find errors
-  errs := [Evaluate(f, x2s) : f in f2s];
-  // check hensel condition
-  function hc()
-    if not WZERO(Jx) then
-      t := VAL(Jx);
-      IncreaseAbsolutePrecisions([*<err,2*t+1> : err in errs*]);
-      return true, forall{err : err in errs | ValuationGt(err, 2*t)};
-    elif exists{err : err in errs | not WZERO(err)} then
-      s := Min([WeakValuation(err) : err in errs | not WZERO(err)]);
-      IncreaseAbsolutePrecisions([*<err,s> : err in errs*]);
-      s := Min([WeakValuation(err) : err in errs]);
-      return true, ValuationLt(Jx, Ceiling(s/2));
-    else
-      return false, _;
-    end if;
-  end function;
-  ok, hcok := hc();
-  if not ok then
-    ok,_,hcok := ExactpAdics_ExecutePrecisionStrategy(function (apr)
-      IncreaseAbsolutePrecisions([*<err,apr> : err in errs*] cat [*<Jx,apr>*]);
-      return hc();
-    end function, Strategy, 0);
-    if not ok then
-      error "jacobian and errors both weakly zero";
-    end if;
-  end if;
-  if not hcok then
-    return false, _;
-  end if;
-  // if we get this far, we have a unique root
-  t := VAL(Jx);
-  s := Min([WVAL(err) : err in errs]);
-  xxs := [Approximation(x) : x in x2s];
-  init := [CAP_APR(xx, s-t) : xx in xxs];
-  ys := [K ! <init[1], false, <s, xxs>>] cat [K ! <init[i], false> : i in [2..n]];
-  y1 := ys[1];
-  y1`update := function (apr)
-    // check we are not already done
-    s, xxs := Explode(GetData(y1));
-    if s-t ge apr then
-      for i in [1..n] do
-        Update(ys[i], CAP_APR(xxs[i], s-t));
-      end for;
-      return true;
-    end if;
-    // compute required precision
-    pr := apr + t;
-    if pr gt 0 then
-      return ExactpAdics_GeneralGetter(pr,
-        procedure (~pr, ~g)
-          // TODO: BUG: round pr up to a multiple of the ramification degree to avoid problems coercing to/from the quotient
-          pr := e * Ceiling(pr / e) where e := AbsoluteRamificationDegree(K);
-          g := &cat[Approximation_Lazy(f : APr:=pr) : f in f2s];
-        end procedure,
-        procedure (xfs, ~pr, ~val)
-          xxs_in := xxs;
-          xxs_in2 := ChangeUniverse(xxs_in, BaseRing(Universe(xfs)));
-          xxs2 := henselLiftMultiroot_simple(xfs, xxs_in2, t);
-          xds := [Evaluate(xfs[i], xxs2) : i in [1..n]];
-          s := Min([Valuation(xd) : xd in xds]);
-          d := apr + t - s;
-          if d le 0 then
-            for i in [1..n] do
-              Update(ys[i], CAP_APR(xxs2[i], s-t));
-              SetData(y1, <s, xxs2>);
-              val := true;
-            end for;
-          else
-            pr +:= d;
-          end if;
-        end procedure);
-    else
-      for i in [1..n] do
-        UpdateZero(ys[i], apr);
-      end for;
-      return true;
-    end if;
-  end function;
-  for i in [2..n] do
-    yi := ys[i];
-    yi`update := function (apr)
-      return IncreaseAbsolutePrecision_Lazy(y1, apr);
-    end function;
-  end for;
-  return true, [SHIFT_VAL(ys[i], vxs[i]) : i in [1..n]];
-end intrinsic;
-
-intrinsic IsHenselLiftable
-  ( fs :: [RngMPolElt]
-  , xs :: [FldPadExactElt]
-  : Strategy:="default"
-  , ShiftValuation:=false
-  , ShiftSlope:=false
-  ) -> BoolElt, .
-  {"}
-  K := Universe(xs);
-  n := Rank(Universe(fs));
-  ok, fs := CanChangeUniverse(fs, PolynomialRing(K, n));
-  require ok: "Coefficients of elements of argument 1 must be coercible to the universe of argument 2";
-  return IsHenselLiftable(fs, xs : Strategy:=Strategy, ShiftValuation:=ShiftValuation, ShiftSlope:=ShiftSlope);
-end intrinsic;
-
-intrinsic ShiftSlope(f :: RngMPolElt_FldPadExact, ns :: [RngIntElt] : Pivot:=[0 : n in ns]) -> RngMPolElt_FldPadExact
-  {Given f(x1, x2, ...) returns f(x1*pi^ns[1], x2*pi^ns[2], ...) where pi is the uniformizer of the base ring.}
-  R := Parent(f);
-  n := Rank(R);
-  require #ns eq n: "Length of argument 2 must equal rank of parent of argument 1";
-  require Type(Pivot) eq SeqEnum and Type(Universe(Pivot)) eq RngInt and #Pivot eq n: "Pivot must be a sequence of integers of the same length as argument 1";
-  cs, ms := CoefficientsAndMonomials(Approximation(f : APr:=WeakValuation(f)+1, Weak));
-  shifts := [&+[(e[j]-Pivot[j])*ns[j] : j in [1..n]] where e:=Exponents(m) : m in ms];
-  if forall{s : s in shifts | s eq 0} then
-    return f;
-  end if;
-  init := Polynomial([ShiftValuation(cs[i], shifts[i]) : i in [1..#ms]], ms);
-  mkupdate := func<z | function (apr)
-    ms := Monomials(f`approximation);
-    shifts := [&+[(e[j]-Pivot[j])*ns[j] : j in [1..n]] where e:=Exponents(m) : m in ms];
-    return Approximation_Lazy(f : APr:=apr-Min(shifts)) mod function (xf)
-      cs, ms := CoefficientsAndMonomials(xf);
-      shifts := [&+[(e[j]-Pivot[j])*ns[j] : j in [1..n]] where e:=Exponents(m) : m in ms];
-      Update(z, Polynomial([ShiftValuation(cs[i], shifts[i]) : i in [1..#ms]], ms));
-      return true;
-    end function;
-  end function>;
-  return R ! <init, mkupdate>;
-end intrinsic;
-
-function CAP_APR_MPOL(x,y)
-  error "not implemented";
-end function;
-
-intrinsic JacobianDeterminant(fs :: [RngMPolElt_FldPadExact]) -> RngMPolElt_FldPadExact
-  {The determinant of the Jacobian matrix of fs.}
-  // TODO: BUG: Derivative(RngMPolElt, RngInt) loses precision (it coerces integers into the base ring, but if it has DefaultPrecision set too low, these will have low precision)
-  R := Universe(fs);
-  n := Rank(R);
-  K := BaseRing(R);
-  require #fs eq n: "Length of Argument 1 must equal the rank of its universe";
-  // trivial cases
-  if n eq 0 then
-    return R ! <[K!1],[[0 : i in [1..n]]]>;
-  elif n eq 1 then
-    return fs[1];
-  end if;
-  // general case
-  xfs := [Approximation(f : APr:=WeakValuation(f)+1, Weak) : f in fs];
-  init := Determinant(Matrix([[Derivative(xfs[i], j) : j in [1..n]] : i in [1..n]]));
-  // init := Determinant(JacobianMatrix([Approximation(f : APr:=WeakValuation(f)+1, Weak) : f in fs]));
-  FUDGE := 2*AbsoluteRamificationDegree(K);
-  mkupdate := func<z | function (apr)
-    v := Min([WeakValuation(f) : f in fs]);
-    pr := apr - n*v;
-    if pr gt 0 then
-      return &cat[Approximation_Lazy(fs[i] : APr:=v+pr+FUDGE) : i in [1..n]] mod function (xfs)
-        R := Universe(xfs);
-        K := BaseRing(R);
-        K`DefaultPrecision := pr + FUDGE;
-        Update(z, CAP_APR_MPOL(Determinant(Matrix([[Derivative(xfs[i], j) : j in [1..n]] : i in [1..n]])), apr));
-        // Update(z, Determinant(JacobianMatrix(xfs)));
-        return true;
-      end function;
-    else
-      UpdateZero(z, apr);
-    end if;
-  end function>;
-  return R ! <init, mkupdate>;
-end intrinsic;
-
-intrinsic Valuation(f :: RngMPolElt_FldPadExact : Strategy:="default") -> RngIntElt
-  {The smallest valuation of the coefficients of f.}
-  if not assigned f`valuation then
-    require not IsWeaklyZero(f : Strategy:=Strategy): "f is weakly zero";
-    v := Min([Valuation(c) : c in Coefficients(f`approximation) | not WZERO(c)]);
-    IncreaseAbsolutePrecision(f, v+1);
-    f`valuation := WeakValuation(f);
-  end if;
-  return f`valuation;
-end intrinsic;
-
-intrinsic IsWeaklyZero(f :: RngMPolElt_FldPadExact : Strategy:=false) -> BoolElt
-  {True if f is weakly zero.}
-  if Strategy cmpeq false then
-    return WZERO(f`approximation);
-  elif not WZERO(f) then
-    return false;
-  else
-    return not ExactpAdics_ExecutePrecisionStrategy(function (pr)
-      IncreaseAbsolutePrecision(f, pr);
-      return not WZERO(f), _;
-    end function, Strategy, 0);
-  end if;
-end intrinsic;
-
-intrinsic ShiftValuation(f :: RngMPolElt_FldPadExact, n :: RngIntElt) -> RngMPolElt_FldPadExact
-  {Returns f*pi^n.}
-  if n eq 0 then
-    return f;
-  end if;
-  R := Parent(f);
-  cs, ms := CoefficientsAndMonomials(Approximation(f : APr:=WeakValuation(f)+1, Weak));
-  init := Polynomial([ShiftValuation(c, n) : c in cs], ms);
-  mkupdate := func<z | function (apr)
-    return Approximation_Lazy(f : APr:=apr-n) mod function (xf)
-      cs, ms := CoefficientsAndMonomials(xf);
-      Update(z, Polynomial([ShiftValuation(c, n) : c in cs], ms));
-      return true;
-    end function;
-  end function>;
-  return R!<init,mkupdate>;
-end intrinsic;
-
-intrinsic IncreaseAbsolutePrecision_Lazy(f :: RngMPolElt_FldPadExact, n) -> ExactpAdics_Gettr
-  {A getter which when evaluated increases the absolute precision of f.}
-  ok, n := IsValidAbsolutePrecisionDiff(f, n);
-  if not ok then
-    error "invalid n";
-  end if;
-  return ExactpAdics_Getter(false, procedure (~st, ~deps) deps := [*[*f,n*]*]; end procedure, procedure (~st, ~val) assert n le AbsolutePrecision(f); val := true; end procedure);
-end intrinsic;
-
-intrinsic PrecisionRequired(f :: RngMPolElt_FldPadExact : APr:=false, Weak:=false) -> RngIntElt
-  {"}
-  cs := Coefficients(f`approximation);
-  vs := [Valuation(c) : c in cs];
-  if #cs eq 0 then
-    return 0;
-  end if;
-  apr := parse_apr_mpoly(f : APr:=false, Weak:=false);
-  return Max([v eq OO select 0 else apr-v : v in vs]);
-end intrinsic;
-
-intrinsic Approximation_Lazy(f :: RngMPolElt_FldPadExact : APr:=false, Weak:=false, Quick:=false, FixPr:=false) -> ExactpAdics_Gettr
-  {An approximation to f.}
-  APr := parse_apr_mpoly(f : APr:=APr, Weak:=Weak);
-  Pr := PrecisionRequired(f : APr:=APr);
-  iapR := IncreaseAbsolutePrecision_Lazy(Parent(f), Pr);
-  return iapR mod function (ig)
-    iap := Weak select ExactpAdics_ConstGetter(true)
-      else IncreaseAbsolutePrecision_Lazy(f, APr);
-    return iap mod function (ig)
-      if Quick then
-        xf := f`approximation;
-      else
-        cs, ms := CoefficientsAndMonomials(f`approximation);
-        xf := Polynomial([CAP_APR(c, APr) : c in cs], ms);
-      end if;
-      if FixPr then
-        xf := ChangeRing(xf, ChangePrecision(BaseRing(Parent(xf)), Max(1, Pr)));
-      end if;
-      assert forall{APR(c) ge APr : c in Coefficients(xf)};
-      return xf;
-    end function;
-  end function;
-end intrinsic;
-
-intrinsic Approximation(f :: RngMPolElt_FldPadExact : APr:=false, Weak:=false, Quick:=false, FixPr:=false) -> ExactpAdics_Gettr
-  {"}
-  return Evaluate(Approximation_Lazy(f : APr:=APr, Weak:=Weak, Quick:=Quick, FixPr:=FixPr));
-end intrinsic;
-
-intrinsic BaseRing(f :: RngMPolElt_FldPadExact) -> FldPadExact
-  {The base ring of f.}
-  if not assigned f`base_ring then
-    f`base_ring := BaseRing(Parent(f));
-  end if;
-  return f`base_ring;
-end intrinsic;
-
-intrinsic Evaluate(f :: RngMPolElt_FldPadExact, xs :: [FldPadExactElt]) -> FldPadExactElt
-  {Evaluates f at xs.}
-  ok, K := ExistsCoveringStructure(BaseRing(f), Universe(xs));
-  require ok: "Arguments 1 and 2 must be defined over a common field";
-  f := ChangeRing(f, K);
-  xs := ChangeUniverse(xs, K);
-  R := Parent(f);
-  n := Rank(R);
-  require #xs eq n: "Length of Argument 2 must equal the rank of the parent of Argument 1";
-  init := Evaluate(Approximation(f : APr:=WeakValuation(f)+1, Weak), [Approximation(x : Pr:=1, Weak) : x in xs]);
-  mkupdate := func<z | function (apr)
-    cfs, mfs := CoefficientsAndMonomials(f`approximation);
-    vfs := [Valuation(c) : c in cfs];
-    vf := Min(vfs);
-    efs := [Exponents(m) : m in mfs];
-    vxs := [WeakValuation(x) : x in xs];
-    pr := Max([(v eq OO select 0 else apr - v)
-      where v := vf+vx
-      where vx := &+[ef[j] eq 0 select 0 else ef[j]*vxs[j] : j in [1..n]]
-      where ef := efs[i]
-      : i in [1..#cfs]
-    ]);
-    if pr gt 0 then
-      return [
-        Approximation_Lazy(f : APr:=vf+pr),
-        &cat[Approximation_Lazy(xs[i] : APr:=vxs[i]+pr) : i in [1..n]]
-      ] mod function (xf, xxs)
-        Update(z, Evaluate(xf, xxs));
-        return true;
-      end function;
-    else
-      UpdateZero(z, apr);
-      return true;
-    end if;
-  end function>;
-  return K ! <init, mkupdate>;
-end intrinsic;
-
-intrinsic CanChangeRing(f :: RngMPolElt_FldPadExact, K :: FldPadExact) -> BoolElt, RngMPolElt_FldPadExact
-  {True if f can be coerced to be over ring K.}
-  if BaseRing(f) eq K then
-    return true, f;
-  else
-    R := Parent(f);
-    n := Rank(R);
-    return IsCoercible(PolynomialRing(K, n), f);
-  end if;
-end intrinsic;
+// function henselLiftMultiroot_simple(fs, xs, t)
+//   R := Universe(fs);
+//   K := BaseRing(R);
+//   xs := [CAST(K,x) : x in xs];
+//   n := Rank(R);
+//   assert n eq #xs;
+//   assert n gt 0;
+//   pr := Max([APR(c) : c in Coefficients(f), f in fs | APR(c) lt OO]);
+//   xs := [CHANGE_APR(x, pr) : x in xs];
+//   V := RSpace(K, n);
+//   M := MatrixAlgebra(K, n);
+//   K`DefaultPrecision := pr;
+//   J := Transpose(JacobianMatrix(fs));
+//   DJ := Determinant(J);
+//   Jx := Evaluate(DJ, xs);
+//   assert not WZERO(Jx);
+//   assert Valuation(Jx) eq t;
+//   ds := [Evaluate(f, xs) : f in fs];
+//   s := Min([Valuation(d) : d in ds]);
+//   assert s gt 2*t;
+//   while true do
+//     r := s - t;
+//     Bvec := CAST(V, [CHANGE_APR(ShiftValuation(d, -r),pr-r) : d in ds]);
+//     Rmat := CAST(M, [[CHANGE_APR(Evaluate(J[i,j], xs),pr) : j in [1..n]] : i in [1..n]]);
+//     assert Valuation(Determinant(Rmat)) eq t;
+//     ok, U := IsConsistent(Rmat, Bvec);
+//     if not ok then
+//       print "WARNING: IsHenselLiftable: Using IsInvertible because IsConsistent failed!";
+//       ok, Rinv := IsInvertible(Rmat);
+//       assert ok;
+//       U := Bvec * Rinv;
+//     end if;
+//     xsnew := [CHANGE_APR(xs[i] - ShiftValuation(U[i], r), pr) : i in [1..n]];
+//     assert Valuation(Evaluate(DJ, xsnew)) eq t;
+//     dsnew := [Evaluate(f, xsnew) : f in fs];
+//     if forall{i : i in [1..n] | WEQ(xs[i], xsnew[i])} then
+//       assert forall{d : d in dsnew | WZERO(d) or Valuation(d) ge pr};
+//       return xsnew;
+//     else
+//       snew := Min([Valuation(d) : d in dsnew]);
+//       assert forall{d : d in dsnew | WZERO(d)} or snew ge 2*r;
+//       s := snew;
+//       ds := dsnew;
+//       xs := xsnew;
+//     end if;
+//   end while;
+// end function;
 
 intrinsic IsSquare(x :: FldPadExactElt : Strategy:="default") -> BoolElt, FldPadExactElt
   {True iff x is a square. (Strategy is used to determine if x is nonzero.)}
@@ -6479,108 +5607,6 @@ intrinsic EltConstructor(E :: FldPadExact, t :: .) -> FldPadExactElt
   else
     error "RHS must be nonempty";
   end if;
-end intrinsic;
-
-// returns the roots of f::RngUPolElt_FldPadExact of valuation n::RngIntElt
-function rootsWithValuation(f, n, Strategy, MainStrategy)
-  // shift the slope of f, now find the roots of f2 of valuation 0
-  f2 := ShiftSlope(f, -n : Pivot:=WeakDegree(f));
-  // make it integral
-  v := Valuation(f2 : Strategy:=Strategy);
-  f3 := ShiftValuation(f2, -v);
-  // now find the roots
-  R := Parent(f);
-  K := BaseRing(R);
-  state := NewStore();
-  StoreSet(state, "roots", [K|]);
-  XROOT := recformat<r, rQ, pr, gQ>;
-  StoreSet(state, "approxroots", [rec<XROOT | pr:=0, r:=K!0>]);
-  ok := ExactpAdics_ExecutePrecisionStrategy(function (apr)
-    approxroots := StoreGet(state, "approxroots");
-    if #approxroots eq 0 then
-      return true, _;
-    elif forall{x : x in approxroots | x`pr ge apr} then
-      return false, _;
-    end if;
-    roots := StoreGet(state, "roots");
-    Q, KtoQ := Quotient(K, apr);
-    IncreaseAbsolutePrecision(f3, apr);
-    fQ := Polynomial([Q| KtoQ(c) : c in Coefficients(f3)]);
-    F, QtoF := ResidueClassField(Q);
-    for i in [1..#approxroots] do
-      x := approxroots[i];
-      if x`pr lt apr then
-        rQ := KtoQ(x`r);
-        gQ := Evaluate(fQ, Polynomial([rQ, ShiftValuation(Q!1, x`pr)]));
-        approxroots[i]`rQ := rQ;
-        approxroots[i]`gQ := gQ;
-      end if;
-    end for;
-    while true do
-      newapproxroots := [];
-      again := false;
-      for x in approxroots do
-        if x`pr lt apr then
-          gQ := x`gQ;
-          vg := Min([Valuation(c) : c in Coefficients(gQ)]);
-          gQ := Polynomial([Q| ShiftValuation(c, -vg) : c in Coefficients(gQ)]);
-          gF := Polynomial([F| c @ QtoF : c in Coefficients(gQ)]);
-          rs := Roots(gF);
-          checkHensel := Degree(gF) eq 1;
-          for r in rs do
-            if x`pr eq 0 and r[1] eq 0 then
-              continue;
-            end if;
-            // make better approximations to the roots
-            rQ := r[1] @@ QtoF;
-            gQ2 := Evaluate(gQ, Polynomial([rQ, ShiftValuation(Q!1, 1)]));
-            y := rec<XROOT | pr:=x`pr+1, rQ:=x`rQ+ShiftValuation(rQ,x`pr), gQ:=gQ2>;
-            // maybe check the hensel condition to terminate
-            if checkHensel then
-              df := Derivative(fQ);
-              dfr := Evaluate(df, y`rQ);
-              if not WZERO(dfr) then
-                t := Valuation(dfr);
-                fr := Evaluate(fQ, y`rQ);
-                s := Valuation(fr);
-                if s gt 2*t then
-                  Append(~roots, ShiftValuation(HenselLift(f3, WeakApproximation(y`rQ @@ KtoQ)), n));
-                  continue r;
-                end if;
-              end if;
-            end if;
-            // or just save off the root
-            Append(~newapproxroots, y);
-          end for;
-        else
-          Append(~newapproxroots, x);
-        end if;
-      end for;
-      approxroots := newapproxroots;
-      if #approxroots eq 0 then
-        StoreSet(state, "approxroots", approxroots);
-        StoreSet(state, "roots", roots);
-        return true, _;
-      elif not again then
-        for i in [1..#approxroots] do
-          approxroots[i]`r := WeakApproximation(approxroots[i]`rQ @@ KtoQ);
-        end for;
-        StoreSet(state, "approxroots", approxroots);
-        StoreSet(state, "roots", roots);
-        return false, _;
-      end if;
-    end while;
-  end function, MainStrategy, 0);
-  if ok then
-    return StoreGet(state, "roots");
-  else
-    error "precision error: could not find roots";
-  end if;
-end function;
-
-intrinsic RootsWithValuation(f :: RngUPolElt_FldPadExact, n :: RngIntElt : Strategy:="default", MainStrategy:=Strategy) -> []
-  {The roots of f with valuation n.}
-  return [<r,1> : r in rootsWithValuation(f, n, Strategy, MainStrategy)];
 end intrinsic;
 
 intrinsic Temporary(F :: FldPadExact) -> TmpFldPadExact
@@ -7014,25 +6040,6 @@ end intrinsic;
 intrinsic IsTotallyWildlyRamified(E, F) -> BoolElt
   {True if E/F is totally wildly ramified.}
   return IsTotallyRamified(E,F) and IsPowerOf(RamificationDegree(E,F), Prime(F));
-end intrinsic;
-
-intrinsic Evaluate(f :: RngMPolElt, xs :: []) -> .
-  {Evaluates f at xs.}
-  A := BaseRing(Parent(f));
-  B := Universe(xs);
-  if A cmpne B then
-    ok, C := ExistsCoveringStructure(A, B);
-    if ok then
-      if C cmpne A then
-        f := ChangeRing(f, C);
-      end if;
-      if C cmpne B then
-        xs := ChangeUniverse(xs, C);
-      end if;
-      return Evaluate(f, xs);
-    end if;
-  end if;
-  error Sprintf("'Evaluate' not defined for these");
 end intrinsic;
 
 intrinsic '/'(E :: FldPadExact, F :: FldPadExact) -> ExtDataFldPadExact

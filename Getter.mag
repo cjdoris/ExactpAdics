@@ -522,6 +522,11 @@ intrinsic '/'(g :: ExactpAdics_Gettr, n :: RngIntElt) -> ExactpAdics_Gettr
   return g;
 end intrinsic;
 
+intrinsic ExactpAdics_NullGetter() -> ExactpAdics_Gettr
+  {The getter with no dependencies that does nothing.}
+  return ExactpAdics_ConstGetter(true);
+end intrinsic;
+
 // TODO: more general getter, consisting only of
 //       (a) an initial state; and
 //       (b) a procedure(~state, ~deps, ~value)

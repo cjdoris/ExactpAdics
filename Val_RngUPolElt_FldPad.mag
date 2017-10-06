@@ -166,7 +166,7 @@ intrinsic Val_RngUPolElt_FldPad_Make(x, y, z) -> Val_RngUPolElt_FldPad
   return Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z));
 end intrinsic;
 
-intrinsic Val_FldPadElt_Infinity() -> Val_RngUPolElt_FldPad
+intrinsic Val_RngUPolElt_FldPad_Infinity() -> Val_RngUPolElt_FldPad
   {The valuation Infinity.}
   return VAL_RNGUPOLELT_FLDPAD_INFINITY;
 end intrinsic;
@@ -185,7 +185,7 @@ intrinsic Print(v :: Val_RngUPolElt_FldPad, lvl :: MonStgElt)
   {Print.}
   case lvl:
   when "Magma":
-    printf "Val_FldPadElt_Make(%m)", Value(v);
+    printf "Val_RngUPolElt_FldPad_Make(%m)", Value(v);
   else
     printf "%O", DefaultValue(Value(v)), lvl;
     x := SpecialAssociativeArray(Value(v));
