@@ -4562,11 +4562,11 @@ intrinsic ExactpAdicField(xxL :: FldPad, mK :: Map, K :: FldPadExact : NoCheckUn
     e := RamificationDegree(xxL);
     FUDGE := e gt 1 select 2*e else 0;
     mkupdate := func<z | function (aprs)
-      apr := Max(aprs);
+      apr := IntegerValue(&join aprs);
       return Approximation_Lazy(R, apr) mod function (xR)
         locxxL := xxL;
         locxxL`DefaultPrecision := apr*e + FUDGE;
-        xxf := CAP_APR(xxf, [apr*e : c in Coefficients(xxf)]) where xxf := DefiningPolynomial(locxxL);
+        xxf := CHANGE_APR(xxf, [Min(apr*e, APR(c)) : c in Coefficients(xxf)]) where xxf := DefiningPolynomial(locxxL);
         xf := CAST(xR, [c @ mL0 : c in Coefficients(xxf)]);
         Update(z, xf);
         return true;
@@ -5393,6 +5393,7 @@ function completion(K, P)
     KtoxxC := KtoxxC_old;
   end if;
   C, xxCtoxC := ExactpAdicField(xxC);
+  xC := C`approximation_field;
   KtoxC := KtoxxC * xxCtoxC;
   function _KtoC(x)
     assert Parent(x) eq K;
@@ -5401,12 +5402,14 @@ function completion(K, P)
     end if;
     xxC2 := xxC;
     xxC2`DefaultPrecision := 1;
+    xC2 := Approximation(C, 1);
     init := CAP_PR(KtoxC(x), 1);
     mkupdate := func<z | function (apr)
       v := WeakValuation(z);
-      pr := apr - v;
+      pr := IntegerValue(apr - v);
       xxC2 := xxC;
       xxC2`DefaultPrecision := pr + FUDGE;
+      xC2 := Approximation(C, pr+FUDGE);
       Update(z, CAP_APR(KtoxC(x), apr));
       return ExactpAdics_ConstGetter(true);
     end function>;
