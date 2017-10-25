@@ -7,6 +7,7 @@ headings:
   - Basic properties
   - Approximation
   - Valuation
+  - Val_RngUPolElt_FldPad
   - Arithmetic
   - Related polynomials
   - Resultant and discriminant
@@ -158,7 +159,7 @@ The `i`th coefficient of `f`. `i` must not be negative.
 
 > **AbsolutePrecision** (f :: *RngUPolElt_FldPadExact*)
 >
-> -> Val_RngUPolElt_FldPadExact
+> -> Val_RngUPolElt_FldPad
 > {:.ret}
 {:.intrinsic}
 
@@ -166,11 +167,19 @@ The absolute precisions of the coefficients of the current approximation of `f`.
 
 > **WeakValuation** (f :: *RngUPolElt_FldPadExact*)
 >
-> -> Val_RngUPolElt_FldPadExact
+> -> Val_RngUPolElt_FldPad
 > {:.ret}
 {:.intrinsic}
 
 The weak valuations of the coefficients of the current approximation of `f`.
+
+> **WeakMinValuation** (f :: *RngUPolElt_FldPadExact*)
+>
+> -> Val_FldPadElt
+> {:.ret}
+{:.intrinsic}
+
+The smallest weak valuation of the coefficients of the current approximation of `f`.
 
 > **IsWeaklyZero** (f :: *RngUPolElt_FldPadExact*)
 >
@@ -180,9 +189,17 @@ The weak valuations of the coefficients of the current approximation of `f`.
 
 True if the current approximation of `f` is zero up to precision.
 
+> **IsWeaklyEqual** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
+>
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if the current approximation of `f` and `g` are equal up to precision.
+
 > **BaselineValuation** (f :: *RngUPolElt_FldPadExact*)
 >
-> -> Val_RngUPolElt_FldPadExact
+> -> Val_RngUPolElt_FldPad
 > {:.ret}
 {:.intrinsic}
 
@@ -190,7 +207,7 @@ A fixed lower bound on the valuation of `f`; usually the weak valuation of the i
 
 > **BaselinePrecision** (f :: *RngUPolElt_FldPadExact*)
 >
-> -> Val_RngUPolElt_FldPadExact
+> -> Val_RngUPolElt_FldPad
 > {:.ret}
 {:.intrinsic}
 
@@ -198,17 +215,9 @@ The precision of `f` relative to the baseline: `AbsolutePrecision(f)-BaselineVal
 
 ## Valuation
 
-> **WeakMinValuation** (f :: *RngUPolElt_FldPadExact*)
->
-> -> Val_FldPadExactElt
-> {:.ret}
-{:.intrinsic}
-
-The smallest weak valuation of the coefficients of the current approximation of `f`.
-
 > **Valuation** (f :: *RngUPolElt_FldPadExact*)
 >
-> -> Val_RngUPolElt_FldPadExact
+> -> Val_RngUPolElt_FldPad
 > {:.ret}
 {:.intrinsic}
 
@@ -220,7 +229,7 @@ The valuations of the coefficients of `f`
 
 > **MinValuation** (f :: *RngUPolElt_FldPadExact*)
 >
-> -> Val_FldPadExactElt
+> -> Val_FldPadElt
 > {:.ret}
 {:.intrinsic}
 
@@ -231,6 +240,10 @@ The smallest valuation of the coefficients of `f`.
 * `Strategy`: Used to determine if `f` is nonzero. (Default: `"default"`)
 * `Slope`: Adds `Slope*i` to the valuation of the `i`th coefficient. (Default: `0`)
 * `Pivot`: Adds `-Slope*Pivot` to each valuation. (Default: `0`)
+
+## Val_RngUPolElt_FldPad
+
+TODO
 
 ## Arithmetic
 
@@ -284,7 +297,7 @@ The `k`th derivative of `f`.
 > {:.ret}
 {:.intrinsic}
 
-Shifts the valuation of the coefficients of `f` by `v`. `v` must be a `Val_RngUPolElt_FldPadExact`, `[RngIntElt]`, `RngIntElt`, `Val_FldPadExact`, or anything else coercible to `Val_RngUPolElt_FldPadExact`.
+Shifts the valuation of the coefficients of `f` by `v`. `v` must be a `Val_RngUPolElt_FldPad`, `[RngIntElt]`, `RngIntElt`, `Val_FldPad`, or anything else coercible to `Val_RngUPolElt_FldPad`.
 
 > **ShiftSlope** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 >

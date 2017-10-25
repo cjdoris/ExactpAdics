@@ -51,6 +51,14 @@ Negation, addition, subtraction, multiplication, division, powering, sum and pro
 
 * `Strategy` (division and powering only): used to determine if the value being divided by is non-zero and its valuation. If this fails, a precision error will occur. (Default: `"default"`)
 
+> **ShiftValuation** (x :: *FldPadExactElt*, n)
+>
+> -> *FldPadExactElt*
+> {:.ret}
+{:.ret}
+
+Multiplies `x` by the `n`th power of the uniformizer. Hence this adds `n` to the valuation of `x`.
+
 ## Valuation
 
 > **Valuation** (x :: *FldPadExactElt*)
@@ -100,6 +108,16 @@ True if the valuation of `x` is 0.
 {:.intrinsic}
 
 True if the valuation of `x` is at least 0.
+
+> **ValuationCmpValuation** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
+>
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+-1, 0 or 1 depending on whether the valuation of `x` is less than, equal to or greater than the valuation of `y`.
+
+**Lazy version.** `ValuationCmpValuation_Lazy`
 
 ## Val_FldPadElt
 

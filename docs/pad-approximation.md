@@ -4,6 +4,7 @@ section: 7
 headings:
   - Queries
   - Approximations
+  - Change precision
 ---
 
 # Approximation
@@ -105,6 +106,16 @@ The lazy version `Approximation_Lazy` returns a getter which evaluates to the ap
 {:.intrinsic}
 
 The approximation to `x` to absolute precision `apr`. It is an element of the approximating field of `Parent(x)`.
+
+> **WeakApproximation** (x :: *FldPadExactElt*)
+>
+> -> *FldPadExactElt*
+> {:.ret}
+{:.intrinsic}
+
+An element equal to `x` up to its current precision.
+
+Useful for example if you have an element such as the preimage of a residue class whose precision cannot be increased, and any preimage will do.
 
 ## Change precision
 
