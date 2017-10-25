@@ -1502,7 +1502,7 @@ intrinsic IsWeaklyZero(x :: FldPadExactElt : Strategy:=false) -> BoolElt
     return not ExactpAdics_ExecutePrecisionStrategy(function (pr)
       IncreaseBaselinePrecision(x, pr);
       return not WZERO(x`approximation), _;
-    end function, Strategy, 0);
+    end function, Strategy);
   end if;
 end intrinsic;
 
@@ -1522,7 +1522,7 @@ intrinsic IsWeaklyEqual(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:=fal
       // renewEltApproximation(x);
       // renewEltApproximation(y);
       return not WEQ(x`approximation, y`approximation), _;
-    end function, Strategy, 0);
+    end function, Strategy);
   else
     return false;
   end if;
@@ -2271,7 +2271,7 @@ intrinsic IsWeaklyZero(f :: RngUPolElt_FldPadExact : Strategy:=false) -> BoolElt
     return not ExactpAdics_ExecutePrecisionStrategy(function (apr)
       IncreaseBaselinePrecision(f, apr);
       return not WZERO(f), _;
-    end function, Strategy, 0);
+    end function, Strategy);
   end if;
 end intrinsic;
 
@@ -5040,7 +5040,7 @@ intrinsic IsDefinitelyPrimitive(x, X :: ExtDataFldPadExact : Strategy:="default"
       end function;
     end function>;
     return true, PolynomialRing(X`base_field) ! <xm, mkupdate>;
-  end function, Strategy, 0);
+  end function, Strategy);
   if ok then
     return true, ShiftSlope(m, -s : Pivot:=d);
   else
@@ -5226,7 +5226,7 @@ intrinsic IndexOfSmallest(xs :: [FldPadExactElt] : Strategy:="default", Unique:=
       else
         return false, _;
       end if;
-    end function, Strategy, 0);
+    end function, Strategy);
     unique, i := Explode(ret);
   end if;
   if ok then
@@ -6394,135 +6394,135 @@ intrinsic IncreaseBaselinePrecision(f :: RngUPolElt_FldPadExact, n)
   INC_APR(f, BVAL(f) + n);
 end intrinsic;
 
-intrinsic Factorization_Doris
-  ( f :: RngUPolElt_FldPadExact
-  : Strategy     := "default"    // the default strategy
-  , MainStrategy := Strategy     // the main factorization strategy
-  , Extensions   := false        // when true, include extensions in the certificate
-  ) -> [], FldPadExactElt, []
-  {The factorization of f as a sequence of <factor,multiplicity> pairs, the leading coefficient, and a corresponding sequence of factorization certificates.}
-  if assigned f`factorization_doris then
-    factors, lc := Explode(f`factorization_doris);
-    changed := false;
-  else
-    // get the leading coefficient
-    lc := LeadingCoefficient(f : Strategy:=Strategy);
-    // get the factorization certificates
-    ok, pr, xcerts := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-      // TODO: "APr:=pr" isn't great, use something covariant with shifting and sloping at least? BaselineNewtonPolygonPrecision?
-      xf := Approximation(f : APr:=pr);
-      // now factor
-      try
-        xcerts := Factorization_Doris(xf : Quick);
-      catch err
-        if IS_PREC_ERR(err) then
-          return false, _;
-        else
-          xcerts := Factorization_Doris(xf : Quick);
-        end if;
-      end try;
-      return true, xcerts;
-    end function, MainStrategy);
-    error if not ok, PREC_ERR("could not factorize");
-    // make certificates
-    R := Parent(f);
-    FACTOR := recformat<xcert, xcert2, cert, fac, mult>;
-    CERT := recformat<E, F, Rho, Pi, Extension>;
-    factors := [rec<FACTOR | xcert:=xcert, cert:=rec<CERT | E:=xcert`E, F:=xcert`F, Rho:=WeakApproximation(CAST(R, xcert`rho)), Pi:=WeakApproximation(CAST(R, xcert`pi))>> : xcert in xcerts];
-    // single factor lifting
-    // there is a version of Hensel's lemma which applies immediately; but for now, we just cheat and do single factor lifting enough to apply a weaker version of Hensel's lemma
-    for i in [1..#factors] do
-      ok, _, fac := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-        xf := Approximation(f : APr:=pr);
-        xR := Parent(xf);
-        pr := Precision(BaseRing(xR));
-        xfac := xR ! factors[i]`xcert`g;
-        niters := 0;
-        while true do
-          assert niters lt 20;
-          niters +:= 1;
-          xfac := xR ! [BaseRing(xR) | IsWeaklyZero(c) select 0 else ChangePrecision(c, pr) : c in Coefficients(xfac)];
-          c0 := xf mod xfac;
-          c1 := (xf div xfac) mod xfac;
-          g, c1inv := XGCD(c1, xfac);
-          if not IsWeaklyEqual(g, 1) then
-            return false, _;
-          end if;
-          xfacnew := xfac + ((c0 * c1inv) mod xfac);
-          if WEQ(xfacnew, xfac) then
-            ok, fac := IsHenselLiftable(f, WeakApproximation(CAST(R, xfac)) : Strategy:=Strategy, ShiftValuation, ShiftSlope);
-            if ok then
-              return true, fac;
-            else
-              return false, _;
-            end if;
-          else
-            xfac := xfacnew;
-          end if;
-        end while;
-      end function, MainStrategy);
-      error if not ok, PREC_ERR("could not do initial single factor lifting");
-      factors[i]`fac := fac;
-      factors[i]`mult := 1;
-    end for;
-    changed := true;
-  end if;
-  // get extensions
-  // again, although we already have most information to do this, we just cheat and call Factorization again until we get the right answer...
-  if Extensions then
-    for i in [1..#factors] do
-      if not assigned factors[i]`xcert2 then
-        ok, _, xcert2 := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-          xfac := Approximation(factors[i]`fac : APr:=pr);
-          try
-            xcerts2 := Factorization_Doris(xfac : Extensions);
-          catch err
-            if IS_PREC_ERR(err) then
-              return false, _;
-            else
-              xcerts2 := Factorization_Doris(xfac : Extensions);
-            end if;
-          end try;
-          assert #xcerts2 eq 1;
-          xR := Parent(xfac);
-          xK := BaseRing(xR);
-          xxL := xcerts2[1]`L;
-          if isDefinitelyUnique(xxL, xK) then
-            return true, xcerts2[1];
-          else
-            return false, _;
-          end if;
-        end function, MainStrategy);
-        error if not ok, PREC_ERR("could not find extensions");
-        factors[i]`xcert2 := xcert2;
-        factors[i]`cert`Extension := ExactpAdicField(xcert2`L, xcert2`K, BaseRing(f));
-        changed := true;
-      end if;
-    end for;
-  end if;
-  // done
-  if changed then
-    f`factorization_doris := [* factors, lc *];
-  end if;
-  return [<x`fac, x`mult> : x in factors], lc, [x`cert : x in factors];
-end intrinsic;
+// intrinsic Factorization_Doris
+//   ( f :: RngUPolElt_FldPadExact
+//   : Strategy     := "default"    // the default strategy
+//   , MainStrategy := Strategy     // the main factorization strategy
+//   , Extensions   := false        // when true, include extensions in the certificate
+//   ) -> [], FldPadExactElt, []
+//   {The factorization of f as a sequence of <factor,multiplicity> pairs, the leading coefficient, and a corresponding sequence of factorization certificates.}
+//   if assigned f`factorization_doris then
+//     factors, lc := Explode(f`factorization_doris);
+//     changed := false;
+//   else
+//     // get the leading coefficient
+//     lc := LeadingCoefficient(f : Strategy:=Strategy);
+//     // get the factorization certificates
+//     ok, pr, xcerts := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+//       // TODO: "APr:=pr" isn't great, use something covariant with shifting and sloping at least? BaselineNewtonPolygonPrecision?
+//       xf := Approximation(f : APr:=pr);
+//       // now factor
+//       try
+//         xcerts := Factorization_Doris(xf : Quick);
+//       catch err
+//         if IS_PREC_ERR(err) then
+//           return false, _;
+//         else
+//           xcerts := Factorization_Doris(xf : Quick);
+//         end if;
+//       end try;
+//       return true, xcerts;
+//     end function, MainStrategy);
+//     error if not ok, PREC_ERR("could not factorize");
+//     // make certificates
+//     R := Parent(f);
+//     FACTOR := recformat<xcert, xcert2, cert, fac, mult>;
+//     CERT := recformat<E, F, Rho, Pi, Extension>;
+//     factors := [rec<FACTOR | xcert:=xcert, cert:=rec<CERT | E:=xcert`E, F:=xcert`F, Rho:=WeakApproximation(CAST(R, xcert`rho)), Pi:=WeakApproximation(CAST(R, xcert`pi))>> : xcert in xcerts];
+//     // single factor lifting
+//     // there is a version of Hensel's lemma which applies immediately; but for now, we just cheat and do single factor lifting enough to apply a weaker version of Hensel's lemma
+//     for i in [1..#factors] do
+//       ok, _, fac := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+//         xf := Approximation(f : APr:=pr);
+//         xR := Parent(xf);
+//         pr := Precision(BaseRing(xR));
+//         xfac := xR ! factors[i]`xcert`g;
+//         niters := 0;
+//         while true do
+//           assert niters lt 20;
+//           niters +:= 1;
+//           xfac := xR ! [BaseRing(xR) | IsWeaklyZero(c) select 0 else ChangePrecision(c, pr) : c in Coefficients(xfac)];
+//           c0 := xf mod xfac;
+//           c1 := (xf div xfac) mod xfac;
+//           g, c1inv := XGCD(c1, xfac);
+//           if not IsWeaklyEqual(g, 1) then
+//             return false, _;
+//           end if;
+//           xfacnew := xfac + ((c0 * c1inv) mod xfac);
+//           if WEQ(xfacnew, xfac) then
+//             ok, fac := IsHenselLiftable(f, WeakApproximation(CAST(R, xfac)) : Strategy:=Strategy, ShiftValuation, ShiftSlope);
+//             if ok then
+//               return true, fac;
+//             else
+//               return false, _;
+//             end if;
+//           else
+//             xfac := xfacnew;
+//           end if;
+//         end while;
+//       end function, MainStrategy);
+//       error if not ok, PREC_ERR("could not do initial single factor lifting");
+//       factors[i]`fac := fac;
+//       factors[i]`mult := 1;
+//     end for;
+//     changed := true;
+//   end if;
+//   // get extensions
+//   // again, although we already have most information to do this, we just cheat and call Factorization again until we get the right answer...
+//   if Extensions then
+//     for i in [1..#factors] do
+//       if not assigned factors[i]`xcert2 then
+//         ok, _, xcert2 := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+//           xfac := Approximation(factors[i]`fac : APr:=pr);
+//           try
+//             xcerts2 := Factorization_Doris(xfac : Extensions);
+//           catch err
+//             if IS_PREC_ERR(err) then
+//               return false, _;
+//             else
+//               xcerts2 := Factorization_Doris(xfac : Extensions);
+//             end if;
+//           end try;
+//           assert #xcerts2 eq 1;
+//           xR := Parent(xfac);
+//           xK := BaseRing(xR);
+//           xxL := xcerts2[1]`L;
+//           if isDefinitelyUnique(xxL, xK) then
+//             return true, xcerts2[1];
+//           else
+//             return false, _;
+//           end if;
+//         end function, MainStrategy);
+//         error if not ok, PREC_ERR("could not find extensions");
+//         factors[i]`xcert2 := xcert2;
+//         factors[i]`cert`Extension := ExactpAdicField(xcert2`L, xcert2`K, BaseRing(f));
+//         changed := true;
+//       end if;
+//     end for;
+//   end if;
+//   // done
+//   if changed then
+//     f`factorization_doris := [* factors, lc *];
+//   end if;
+//   return [<x`fac, x`mult> : x in factors], lc, [x`cert : x in factors];
+// end intrinsic;
 
-intrinsic IsIrreducible_Doris(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt, .
-  {True iff f is irreducible. If true, also returns an irreducibility certificate. If false, returns a factor.}
-  if assigned f`is_irreducible_doris then
-    ret := f`is_irreducible_doris;
-  else
-    // TODO: implement a version of Factorization_Doris which terminates as soon as a single factor is found and use this
-    facs, lc, certs := Factorization_Doris(f : Strategy:=Strategy);
-    if #facs eq 1 and facs[1][2] eq 1 then
-      ret := [* true, certs[1] *];
-    else
-      ret := [* false, facs[1][1] *];
-    end if;
-    f`is_irreducible_doris := ret;
-  end if;
-  return Explode(ret);
-end intrinsic;
+// intrinsic IsIrreducible_Doris(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt, .
+//   {True iff f is irreducible. If true, also returns an irreducibility certificate. If false, returns a factor.}
+//   if assigned f`is_irreducible_doris then
+//     ret := f`is_irreducible_doris;
+//   else
+//     // TODO: implement a version of Factorization_Doris which terminates as soon as a single factor is found and use this
+//     facs, lc, certs := Factorization_Doris(f : Strategy:=Strategy);
+//     if #facs eq 1 and facs[1][2] eq 1 then
+//       ret := [* true, certs[1] *];
+//     else
+//       ret := [* false, facs[1][1] *];
+//     end if;
+//     f`is_irreducible_doris := ret;
+//   end if;
+//   return Explode(ret);
+// end intrinsic;
 
 intrinsic ValuationCmpValuation_Lazy(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:="default") -> ExactpAdics_Gettr
   {Respectively <0, 0 or >0 if the valuation of x is less than, equal to or greater than the valuation of y.}
