@@ -4,7 +4,6 @@ section: 4
 headings:
   - Location
   - Arithmetic
-  - Approximation
   - Valuation
   - Val_FldPadElt
   - Printing
@@ -51,64 +50,6 @@ Negation, addition, subtraction, multiplication, division, powering, sum and pro
 **Parameters:**
 
 * `Strategy` (division and powering only): used to determine if the value being divided by is non-zero and its valuation. If this fails, a precision error will occur. (Default: `"default"`)
-
-## Approximation
-
-> **AbsolutePrecision** (x :: *FldPadExactElt*)
->
-> -> *Val_FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-The absolute precision to which `x` is currently known.
-
-> **WeakValuation** (x :: *FldPadExactElt*)
->
-> -> *Val_FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-The valuation of `x`, if known, otherwise the best lower bound `AbsolutePrecision(x)`.
-
-> **IsWeaklyZero** (x :: *FldPadExactElt*)
->
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if `x` is zero to the current precision. That is, true if the valuation of `x` is at least the absolute precision.
-
-> **Precision** (x :: *FldPadExactElt*)
->
-> -> *Val_FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-The relative precision to which `x` is known: `AbsolutePrecision(x) - WeakValuation(x)`. It is zero iff `x` is weakly zero.
-
-> **IsDefinitelyZero** (x :: *FldPadExactElt*)
->
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if `x` is definitely zero: it is weakly zero and has infinite absolute precision.
-
-> **BaselineValuation** (x :: *FldPadExactElt*)
->
-> -> *Val_FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-A fixed lower bound on the valuation of `x`; usually the weak valuation of the initial approximation of `x`.
-
-> **BaselinePrecision** (x :: *FldPadExactElt*)
->
-> -> *Val_FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-The precision of `x` relative to the baseline: `AbsolutePrecision(x)-BaselineValuation(x)`.
 
 ## Valuation
 
@@ -172,6 +113,34 @@ Valuations of p-adic numbers are represented by objects of type `Val_FldPadElt`,
 
 Makes a valuation with the value `v` which must be an integer `RngIntElt`, rational `FldRatElt` or infinity `Infty`.
 
+> **Val_FldPadElt_Infinity**()
+>
+> **Val_FldPadElt_NegInfinity**()
+>
+> **Val_FldPadElt_Zero**()
+>
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
+
+The valuations infinity, negative infinity and zero.
+
+> **Val_FldPadElt_IsCoercible**(v)
+>
+> -> *BoolElt*, *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `v` can be coerced to a `Val_FldPadElt`. If so, also returns the coerced valuation.
+
+> **IsValidAbsolutePrecision**(x :: *FldPadExactElt*, v)
+>
+> -> *BoolElt*, *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `v` can be coerced to a valuation or absolute precision for `x`, and if so, the coerced valuation.
+
 > **Value** (v :: *Val_FldPadElt*)
 >
 > -> *Any*
@@ -188,39 +157,49 @@ The value of the valuation, either an integer `RngIntElt`, rational `FldRatElt` 
 
 The value of the valuation coerced to an integer. The value must be an integer or a rational with denominator 1.
 
+> **IsFinite** (v :: *Val_FldPadElt*)
+>
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `v` is finite, i.e. an integer or rational.
+
+> **IsIntegral** (v :: *Val_FldPadElt*)
+>
+> -> *BoolElt*, *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `v` is an integer (or a rational of denominator 1). If so, returns the value as an integer.
+
+> **Ceiling** (v :: *Val_FldPadElt*)
+>
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
+
+The ceiling of `v`, namely `v` if it is infinite, else the next highest integer.
+
+> **\'-\'**(v :: *Val_FldPadElt*)
+>
 > **\'+\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
 > **\'-\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
-> **\'\*\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
->
-> **\'&+\'**(vs :: [*Val_FldPadElt*])
->
-> **\'&\*\'**(vs :: [*Val_FldPadElt*])
->
-> -> *Val_FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-Add, subtract, multiply, sum, product.
-
-> **Ceiling**(v :: *Val_FldPadElt*)
->
-> -> *Val_FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-The valuation rounded up to the next integer.
-
 > **\'meet\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
 > **\'join\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
+> **\'diff\'**(v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
+>
+> **\'&+\'**(vs :: [*Val_FldPadElt*])
+>
 > -> *Val_FldPadElt*
 > {:.ret}
 {:.intrinsic}
 
-Minimum and maximum. We use `meet` and `join` because more general valuations, such as those for polynomials, are only partially ordered.
+Unary negation, addition, subtraction, intersection (i.e. minimum), union (i.e. maximum), diff (i.e. `v` if `v` is strictly greater than `u`, else negative infinity), summation.
 
 > **\'eq\'** (v :: *Val_FldPadElt*, w :: *Val_FldPadElt*)
 >
@@ -240,13 +219,17 @@ Minimum and maximum. We use `meet` and `join` because more general valuations, s
 
 Comparisons.
 
-> **IsValidAbsolutePrecision** (x :: *FldPadExactElt*, n)
+> **\'\*\'** (v :: *Val_FldPadElt*, n)
 >
-> -> *BoolElt*, *Any*
+> **\'\*\'** (n, v :: *Val_FldPadElt*)
+>
+> **\'/\'** (v :: *Val_FldPadElt*, n)
+>
+> -> *BoolElt*
 > {:.ret}
 {:.intrinsic}
 
-True if `n` can be interpreted as a valuation for `x`. If so, also returns the valuation as a `Val_FldPadElt`. If not, returns an error message.
+Multiplication/division by a scalar `n` which must be an integer or rational.
 
 ## Printing
 
