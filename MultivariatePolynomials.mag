@@ -22,6 +22,7 @@ declare attributes RngMPolElt_FldPadExact
   , id
   , approximation
   , update
+  , update_expecting_apr
   , valuation                       // Valuation(*)
   , base_ring                       // BaseRing(*)
   , min_valuation                   // MinValuation(*)
@@ -291,6 +292,9 @@ intrinsic Update(f :: RngMPolElt_FldPadExact, app :: RngMPolElt)
     require WEQ(app, f`approximation): "inconsistent";
   end if;
   f`approximation := merge_mpolys(f`approximation, app);
+  if assigned f`update_expecting_apr then
+    assert APR(f) ge f`update_expecting_apr;
+  end if;
 end intrinsic;
 
 intrinsic UpdateZero(f :: RngMPolElt_FldPadExact, n :: RngIntElt)

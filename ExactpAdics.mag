@@ -405,6 +405,7 @@ declare attributes FldPadExactElt
   , data                            // element-specific data, used/modified by update
   , approximation                   // the approximation
   , update                          // the update function
+  , update_expecting_apr            // when assigned, Update(*, app) will check that the update is to at least this precision
   , baseline_valuation              // wrt which baseline precision is computed
   // CACHE
   , residue_class                   // ResidueClass(*)
@@ -432,6 +433,7 @@ declare attributes RngUPolElt_FldPadExact
   , id                   // NEXTID()
   , approximation        // approximation polynomial
   , update               // update function
+  , update_expecting_apr // when assigned, Update(*, app) will check that the update is to at least this precision
   , data                 // element-specific data, used/modified by update function
   , baseline_valuation   // wrt which baseline precision is computed
   // CACHE
@@ -1057,6 +1059,9 @@ intrinsic Update(x :: FldPadExactElt, app :: FldPadElt)
   if AbsolutePrecision(app) gt AbsolutePrecision(x`approximation) then
     x`approximation := app;
   end if;
+  if assigned x`update_expecting_apr then
+    assert APR(x) ge x`update_expecting_apr;
+  end if;
 end intrinsic;
 
 intrinsic UpdateZero(x :: FldPadExactElt, apr :: RngIntElt)
@@ -1545,6 +1550,9 @@ intrinsic '&*'(xs :: [FldPadExactElt]) -> FldPadExactElt
       pr := apr - &+[WVAL(x) : x in xs];
       return &cat[Approximation_Lazy(x, WVAL(x)+pr+FUDGE) : x in xs]
       mod function (xxs)
+        loc_xs := xs;
+        loc_FUDGE := FUDGE;
+        loc_pr := pr;
         Update(z, CAP_APR(&*xxs, apr));
         return true;
       end function;
@@ -2245,6 +2253,9 @@ intrinsic Update(f :: RngUPolElt_FldPadExact, app :: RngUPolElt[FldPad])
     require WEQ(f`approximation, app): "inconsistent";
   end if;
   f`approximation := merge_polys(f`approximation, app);
+  if assigned f`update_expecting_apr then
+    assert APR(f) ge f`update_expecting_apr;
+  end if;
 end intrinsic;
 
 intrinsic UpdateZero(f :: RngUPolElt_FldPadExact, aprs :: [RngIntElt])
@@ -3134,8 +3145,11 @@ intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt : St
   // we take an approximation of f and x, compute g(X):=f(x+X), and see if its Newton polygon has a vertex at 1
   // we do this by computing the Newton polygon of the weak valuations of g, and seeing if this has a vertex at 1 and the coefficient is not weakly zero
   ok, _, res := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-    xf, xx := Explode(Evaluate(Flatten([Approximation_Lazy(f, BaselineValuation(f) + pr), Approximation_Lazy(x, BaselineValuation(x) + pr)])));
-    xR := Parent(xf);
+    // approximations for f and x may be in different fields; we also approximate R so that we can cast everything to a common field afterward
+    xR, xf, xx := Explode(Evaluate(Flatten([Approximation_Lazy(R, pr), Approximation_Lazy(f, BaselineValuation(f) + pr), Approximation_Lazy(x, BaselineValuation(x) + pr)])));
+    xK := BaseRing(xR);
+    xf := xR ! xf;
+    xx := xK ! xx;
     xg := Evaluate(xf, xR.1 + xx);
     np := NewtonPolygon([<i, v> : i in [0..Degree(xg)] | v lt OO where v:=VAL(Coefficient(xg, i))] : Faces:="Lower");
     vs := ChangeUniverse(Vertices(np), car<Z,Z>);

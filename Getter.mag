@@ -82,7 +82,9 @@ procedure dep_getDeps(~d, ~deps)
 end procedure;
 
 procedure dep_doUpdate(~d, ~done)
+  d`x`update_expecting_apr := d`apr;
   d`g`getValue(~d`st, ~val);
+  delete d`x`update_expecting_apr;
   done := assigned val;
 end procedure;
 
