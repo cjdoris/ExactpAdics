@@ -40,7 +40,12 @@ Z := IntegerRing();
 Q := RationalField();
 OO := Infinity();
 
-UPDATE_CONSISTENCY_CHECK := true; // when true, Update() checks for consistency (STRONGLY RECOMMENDED)
+// when true, Update() checks for consistency (STRONGLY RECOMMENDED)
+UPDATE_CONSISTENCY_CHECK := true;
+// this is used in two places to try to work around precision issues in totally ramified extensions:
+// 1. each x`update function is modified so that it adds GLOBAL_FUDGE onto its input
+// 2. the Update intrinsic is modified so that is takes precision GLOBAL_FUDGE off its input
+GLOBAL_FUDGE := func<K | 0>;
 
 PRIME := 1; // prime p-adic fields Q_p
 INERT := 2; // unramified extensions defined by inertial polynomials
@@ -836,9 +841,10 @@ end intrinsic;
 function makeElt(F, init, mkupdate)
   x := New(FldPadExactElt);
   x`parent := F;
+  FUDGE := GLOBAL_FUDGE(F);
   case Type(mkupdate):
   when UserProgram:
-    x`update := mkupdate(x);
+    x`update := FUDGE eq 0 select u else func<apr | u(apr + FUDGE)> where u:=mkupdate(x);
   when BoolElt:
     ;
   else
@@ -1041,6 +1047,10 @@ intrinsic Update(x :: FldPadExactElt, app :: FldPadElt)
   F := x`parent;
   ok, app := IS_VALID_APPROX(F, app);
   require ok: "app is in the wrong field";
+  FUDGE := GLOBAL_FUDGE(F);
+  if FUDGE ne 0 then
+    app := CHANGE_APR(app, APR(app) - FUDGE);
+  end if;
   if UPDATE_CONSISTENCY_CHECK then
     require WEQ(x`approximation, app): "inconsistent";
   end if;
@@ -1204,7 +1214,8 @@ intrinsic '&+'(xs :: [FldPadExactElt]) -> FldPadExactElt
         return true;
       end function;
     end function>;
-    return F ! <init, mkupdate>;
+    ret := F ! <init, mkupdate>;
+    return ret;
   end if;
 end intrinsic;
 
@@ -2041,7 +2052,8 @@ end intrinsic;
 function makePoly(R, init, mkupdate)
   f := New(RngUPolElt_FldPadExact);
   f`parent := R;
-  f`update := mkupdate(f);
+  FUDGE := GLOBAL_FUDGE(BaseRing(R));
+  f`update := FUDGE eq 0 select u else func<apr | u(apr + FUDGE)> where u := mkupdate(f);
   f`id := NEXTID();
   case Type(init):
   when RngUPolElt:
@@ -2225,6 +2237,10 @@ intrinsic Update(f :: RngUPolElt_FldPadExact, app :: RngUPolElt[FldPad])
   xR := R`approximation_ring;
   ok, app := IS_VALID_APPROX(R, app);
   require ok: "app is in the wrong ring";
+  FUDGE := GLOBAL_FUDGE(BaseRing(R));
+  if FUDGE ne 0 then
+    app := CHANGE_APR(app, [APR(c)-FUDGE : c in Coefficients(app)]);
+  end if;
   if UPDATE_CONSISTENCY_CHECK then
     require WEQ(f`approximation, app): "inconsistent";
   end if;
@@ -2534,9 +2550,10 @@ function get_approximation(f, apr)
   else
     // any combination of the below is a reasonable reaction
     // error "not known to required precision";
-    print "ERROR: Field is not known to required precision.";
-    print "ERROR: This is a bug in the ExactpAdics package.";
-    print "ERROR: Please report this to github.com/cjdoris/ExactpAdics/issues";
+    print "WARNING: Field is not known to required precision.";
+    print "         This is a bug in the ExactpAdics package.";
+    print "         Please report this to github.com/cjdoris/ExactpAdics/issues";
+    printf "         Applying workaround (%o, %o)\n", apr, APR(f);
     IncreaseAbsolutePrecision(f, apr);
     return f`approximation;
   end if;
@@ -3051,15 +3068,26 @@ end intrinsic;
 
 intrinsic ShiftArgument(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> RngUPol_FldPadExact
   {The polynomial f(x+X).}
+  // common field
   ok, K := ExistsCoveringStructure(BaseRing(f), Parent(x));
   require ok: "Arguments must be defined over a common field";
   f := ChangeRing(f, K);
   x := K ! x;
   R := Parent(f);
+  // trivial cases
+  if IsDefinitelyZero(x) then
+    return f;
+  elif IsDefinitelyZero(f) then
+    return f;
+  elif WeakDegree(f) le 0 then
+    return f;
+  end if;
+  // main case
   xf := Approximation(f, CAPR(f));
   xx := Approximation(x, CAPR(x));
   init := Evaluate(xf, Parent(xf).1 + xx);
   e := AbsoluteRamificationDegree(K);
+  FUDGE := e eq 1 select 0 else 2*e;
   df := WeakDegree(f);
   p := Prime(K);
   binvals := [[Valuation(Binomial(i,j),p)*e : i in [j..df]] : j in [0..df]];
@@ -3073,11 +3101,12 @@ intrinsic ShiftArgument(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> Rng
     // and x to absolute precision val(x) + pr_ij
     vf := WVAL(f);
     vx := WVAL(x);
-    pr := [[apr(j) - vf(i) - binvals[j+1][i-j+1] - vx*(i-j) : i in [j..df]] : j in [0..df]];
+    pr := [[apr(j) - (vf(i) + binvals[j+1][i-j+1] + vx*(i-j)) : i in [j..df]] : j in [0..df]];
     aprx := vx + &join &cat pr;
-    aprf := [<i, vf(i) + &join[pr[j+1][i-j+1] : j in [0..i]]> : i in [0..df]];
+    aprf := [<i, vf(i) + &join[pr[j+1][i-j+1] join 0 : j in [0..i]]> : i in [0..df]];
     return [Approximation_Lazy(f, aprf), Approximation_Lazy(x, aprx)] mod function (xf, xx)
-      Update(z, Parent(xf)![&+[Coefficient(xf,i) * Binomial(i,j) * xx^(i-j) : i in [j..df]] : j in [0..df]]);
+      Update(z, Evaluate(xf, Parent(xf).1 + xx));
+      // Update(z, Parent(xf)![&+[Coefficient(xf,i) * Binomial(i,j) * xx^(i-j) : i in [j..df]] : j in [0..df]]);
       return true;
     end function;
   end function>;
@@ -3136,6 +3165,10 @@ intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt : St
     // otherwise we don't know
     return false, false;
   end function, Strategy);
+  // did we get an answer?
+  if not ok then
+    error "precision error";
+  end if;
   // did we pass?
   if not res[1] then
     return false, _;
@@ -4737,7 +4770,7 @@ function hhtf_from_ramification_polygon(rp, d)
   assert LAST(Vertices(rp))[1] eq d;
   U := [<Q!0, Q!0>];
   for face in Reverse(Faces(rp)) do
-    v1 := -Slope(face);
+    v1 := -(y1-y0)/(x1-x0) where x0,y0:=Explode(xy0) where x1,y1:=Explode(xy1) where xy0,xy1:=Explode(EndVertices(face));
     v0, u0 := Explode(LAST(U));
     e := Z ! EndVertices(face)[2][1];
     assert IsDivisibleBy(d, e);
@@ -6488,3 +6521,42 @@ intrinsic IsIrreducible_Doris(f :: RngUPolElt_FldPadExact : Strategy:="default")
   return Explode(ret);
 end intrinsic;
 
+intrinsic ValuationCmpValuation_Lazy(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:="default") -> ExactpAdics_Gettr
+  {Respectively <0, 0 or >0 if the valuation of x is less than, equal to or greater than the valuation of y.}
+  // NOTE: when we call ExactpAdics_StepPrecisionStrategy(~ok,~pr,~st), we COULD raise a precision error immediately if not ok; however by deferring doing this until the next time 
+  error if AbsoluteRamificationDegree(Parent(x)) ne AbsoluteRamificationDegree(Parent(y)), "not implemented when arguments are in fields of different ramification degree";
+  b := BaselineValuation(x) meet BaselineValuation(y);
+  return Apply(function (x)
+      ok, _, ret := Explode(x);
+      error if not ok, "precision error";
+      return ret;
+    end function,
+    ExactpAdics_ExecutePrecisionStrategy_Lazy(Strategy,
+      procedure (pr, ~getter)
+        getter := Flatten([Approximation_Lazy(x, b+pr), Approximation_Lazy(y, b+pr)]);
+      end procedure,
+      procedure (xxyy, ~value)
+        xx, yy := Explode(xxyy);
+        assert APR(xx) eq APR(yy);
+        if not (WZERO(xx) and WZERO(yy)) then
+          value := VAL(xx) - VAL(yy);
+        end if;
+      end procedure
+    )
+  );
+end intrinsic;
+
+intrinsic ValuationCmpValuation(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:="default") -> RngIntElt
+  {"}
+  return Evaluate(ValuationCmpValuation_Lazy(x, y : Strategy:=Strategy));
+end intrinsic;
+
+intrinsic ValuationGtValuation_Lazy(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:="default") -> ExactpAdics_Gettr
+  {True iff x has greater valuation than y.}
+  return Apply(func<x | x gt 0>, ValuationCmpValuation_Lazy(x, y : Strategy:="default"));
+end intrinsic;
+
+intrinsic ValuationGtValuation(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:="default") -> BoolElt
+  {"}
+  return ValuationCmpValuation(x, y : Strategy:="default") gt 0;
+end intrinsic;

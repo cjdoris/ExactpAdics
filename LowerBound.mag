@@ -1,0 +1,57 @@
+// encapsulates values which are lower bounds on something
+declare type ExactpAdics_BndLow;
+declare attributes ExactpAdics_BndLow: value, is_sharp;
+
+intrinsic ExactpAdics_LowerBound(v : IsSharp:=false) -> ExactpAdics_BndLow
+  {The lower bound v.}
+  require Type(IsSharp) eq BoolElt: "IsSharp must be a boolean";
+  b := New(ExactpAdics_BndLow);
+  b`value := v;
+  b`is_sharp := IsSharp;
+  return b;
+end intrinsic;
+
+intrinsic IsSharp(b :: ExactpAdics_BndLow) -> BoolElt
+  {True if b is a sharp bound.}
+  return b`is_sharp;
+end intrinsic;
+
+intrinsic BoundValue(b :: ExactpAdics_BndLow) -> .
+  {The lower bound.}
+  return b`value;
+end intrinsic;
+
+intrinsic Value(b :: ExactpAdics_BndLow) -> .
+  {The value of b, assuming it is sharp.}
+  require b`is_sharp: "Argument 1 must be sharp";
+  return b`value;
+end intrinsic;
+
+intrinsic Print(b :: ExactpAdics_BndLow, lvl :: Magma)
+  {Print.}
+  case lvl:
+  when "Magma":
+    printf "ExactpAdics_LowerBound(%m : IsSharp:=%m)", b`value, b`is_sharp;
+  else
+    if not b`is_sharp then
+      printf "at least ";
+    end if;
+    printf "%O", b`value, lvl;
+  end case;
+end intrinsic;
+
+intrinsic '&+'(bs :: [ExactpAdics_BndLow]) -> ExactpAdics_BndLow
+  {Lower bound on the sum of the values being bounded.}
+  return ExactpAdics_LowerBound(&+[BoundValue(b) : b in bs] : IsSharp:=forall{b : b in bs | IsSharp(b)});
+end intrinsic;
+
+intrinsic Max(bs :: [ExactpAdics_BndLow]) -> ExactpAdics_BndLow
+  {Lower bound on the maximum of the values being bounded.}
+  return ExactpAdics_LowerBound(Max([BoundValue(b) : b in bs]) : IsSharp:=forall{b : b in bs | IsSharp(b)});
+end intrinsic;
+
+intrinsic Min(bs :: [ExactpAdics_BndLow]) -> ExactpAdics_BndLow
+  {Lower bound on the minimum of the values being bounded.}
+  x := Min([BoundValue(b) : b in bs]);
+  return ExactpAdics_LowerBound(x : IsSharp:=exists{b : b in bs | BoundValue(b) eq x and IsSharp(b)});
+end intrinsic;

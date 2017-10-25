@@ -12,4 +12,5 @@
   Val_RngMPolElt_FldPad.mag
   Roots.mag
   Factorization.mag
+  LowerBound.mag
 }

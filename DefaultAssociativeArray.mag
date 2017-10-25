@@ -9,38 +9,73 @@ declare attributes AssocDflt
   , dflt     // the default value
   ;
 
-intrinsic DefaultAssociativeArray(x, a :: Assoc) -> AssocDflt
-  {Makes an associative array with default value x and special values a.}
-  b := New(AssocDflt);
-  b`array := a;
-  b`dflt := x;
-  return b;
+intrinsic IsCoercible_DefaultAssociativeArray(x) -> BoolElt, AssocDflt
+  {True if we can create a default associative array with default x.}
+  return true, DefaultAssociativeArray(x, AssociativeArray());
 end intrinsic;
 
-intrinsic DefaultAssociativeArray(x, keys :: [], values :: []) -> AssocDflt
-  {An associative array with default value x, and keys and corresponding values.}
-  require #keys eq #values: "Argument 2 must have the same length as argument 3";
+intrinsic IsCoercible_DefaultAssociativeArray(x, keys, values) -> BoolElt, AssocDflt
+  {True if we can create a default associative array with default x and given keys and values.}
+  if not (ISA(Type(keys), {List, SeqEnum}) and ISA(Type(values), {List, SeqEnum})) then
+    return false, "wrong type";
+  end if;
+  if #keys ne #values then
+    return false, "Argument 2 must have the same length as argument 3";
+  end if;
   a := AssociativeArray();
   for i in [1..#keys] do
     v := values[i];
     if v ne x then
       k := keys[i];
-      require not IsDefined(a, k): "repeated key:", k;
+      if IsDefined(a, k) then
+        return false, <"repeated key", k>;
+      end if;
       a[k] := v;
     end if;
   end for;
-  return DefaultAssociativeArray(x, a);
+  return true, DefaultAssociativeArray(x, a);
 end intrinsic;
 
-intrinsic DefaultAssociativeArray(x, contents :: [Tup]) -> AssocDflt
-  {An associative array with default value x, and <key,value> pairs given.}
-  require NumberOfComponents(Universe(contents)) eq 2: "Argument 2 must be a sequence of tuples of length 2";
-  return DefaultAssociativeArray(x, [x[1] : x in contents], [x[2] : x in contents]);
+intrinsic IsCoercible_DefaultAssociativeArray(x, y) -> BoolElt, AssocDflt
+  {True if we can create a default associative array with default x and values y.}
+  return false, "wrong type";
+end intrinsic;
+
+intrinsic IsCoercible_DefaultAssociativeArray(x, y :: Assoc) -> BoolElt, AssocDflt
+  {"}
+  b := New(AssocDflt);
+  b`array := y;
+  b`dflt := x;
+  return true, b;
+end intrinsic;
+
+intrinsic IsCoercible_DefaultAssociativeArray(x, y :: [Tup]) -> BoolElt, AssocDflt
+  {"}
+  if NumberOfComponents(Universe(y)) ne 2 then
+    return false, "Argument 2 must be a sequence of tuples of length 2";
+  end if;
+  return IsCoercible_DefaultAssociativeArray(x, [x[1] : x in y], [x[2] : x in y]);
 end intrinsic;
 
 intrinsic DefaultAssociativeArray(x) -> AssocDflt
-  {Makes an associative array with default value x.}
-  return DefaultAssociativeArray(x, AssociativeArray());
+  {The default associative array with default value x.}
+  ok, a := IsCoercible_DefaultAssociativeArray(x);
+  require ok: a;
+  return a;
+end intrinsic;
+
+intrinsic DefaultAssociativeArray(x, ys) -> AssocDflt
+  {The default associative array with default value x and keys and values specified by ys (an associative array or sequence of <key,value> pairs).}
+  ok, a := IsCoercible_DefaultAssociativeArray(x, ys);
+  require ok: a;
+  return a;
+end intrinsic;
+
+intrinsic DefaultAssociativeArray(x, keys, values) -> AssocDflt
+  {The default associative array with default value x, and given keys and values.}
+  ok, a := IsCoercible_DefaultAssociativeArray(x, keys, values);
+  require ok: a;
+  return a;
 end intrinsic;
 
 intrinsic Print(x :: AssocDflt, lvl :: MonStgElt)

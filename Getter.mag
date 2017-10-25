@@ -527,6 +527,70 @@ intrinsic ExactpAdics_NullGetter() -> ExactpAdics_Gettr
   return ExactpAdics_ConstGetter(true);
 end intrinsic;
 
+intrinsic ShortCircuitReduce(gs :: [ExactpAdics_Gettr], f) -> ExactpAdics_Gettr
+  {Given a function f taking any subsequence of S=[<i, Evaluate(gs[i])> : i in [1..#gs]] and returning either false,_ when the result is unknown or true,val when the result is known, where val is independent of the subsequence of S, returns the getter which evaluates to val. f(S) must return true.}
+  // trivial case
+  ok, x := f([]);
+  if ok then
+    return ExactpAdics_ConstGetter(x);
+  end if;
+  n := #gs;
+  // general case
+  STATE := recformat<g, st, val>;
+  return ExactpAdics_Getter(
+    [rec<STATE | g:=g, st:=g`state> : g in gs],
+    procedure (~st, ~deps)
+      for i in [1..#st] do
+        if not assigned st[i]`val then
+          ds := [**];
+          st[i]`g`getDeps(~st[i]`st, ~ds);
+          deps cat:= ds;
+        end if;
+      end for;
+    end procedure,
+    procedure (~st, ~val)
+      S := [];
+      got_new := false;
+      for i in [1..#st] do
+        if assigned st[i]`val then
+          Append(~S, <i, st[i]`val>);
+        else
+          st[i]`g`getValue(~st[i]`st, ~v);
+          if assigned v then
+            st[i]`val := v;
+            Append(~S, <i, v>);
+            got_new := true;
+            delete v;
+          end if;
+        end if;
+      end for;
+      assert got_new or #S lt n;
+      if got_new then
+        ok, x := f(S);
+        error if #S eq n and not ok, "did not return true";
+        if ok then
+          val := x;
+        end if;
+      end if;
+    end procedure);
+end intrinsic;
+
+intrinsic Exists(gs :: [ExactpAdics_Gettr]) -> ExactpAdics_Gettr
+  {The getter whose value is true iff there exists g in gs so that f(Evaluate(g)) is true.}
+  return ShortCircuitReduce(gs, function (xs)
+    ok := exists{x : x in xs | x[2]};
+    return ok or #xs eq #gs, ok;
+  end function);
+end intrinsic;
+
+intrinsic ForAll(gs :: [ExactpAdics_Gettr]) -> ExactpAdics_Gettr
+  {The getter whose value is true iff for all g in gs f(Evaluate(g)) is true.}
+  return ShortCircuitReduce(gs, function (xs)
+    ok := exists{x : x in xs | not x[2]};
+    return ok or #xs eq #gs, not ok;
+  end function);
+end intrinsic;
+
 // TODO: more general getter, consisting only of
 //       (a) an initial state; and
 //       (b) a procedure(~state, ~deps, ~value)

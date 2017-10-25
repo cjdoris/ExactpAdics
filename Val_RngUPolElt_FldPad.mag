@@ -90,12 +90,8 @@ end intrinsic;
 intrinsic Val_RngUPolElt_FldPad_IsCoercible(dflt :: Val_FldPadElt, v) -> BoolElt, .
   {"}
   reasons := {"wrong type"};
-  ok := true;
-  try
-    x := DefaultAssociativeArray(dflt, v);
-  catch err
-    ok := false;
-  end try;
+  // first try coercing v to a AssocDflt with the given default and then to a Val
+  ok, x := IsCoercible_DefaultAssociativeArray(dflt, v);
   if ok then
     ok, w := Val_RngUPolElt_FldPad_IsCoercible(x);
     if ok then
@@ -103,13 +99,31 @@ intrinsic Val_RngUPolElt_FldPad_IsCoercible(dflt :: Val_FldPadElt, v) -> BoolElt
     else
       Include(~reasons, w);
     end if;
+  else
+    Include(~reasons, x);
   end if;
+  // now try coercing v=[v0,v1,...] to AssocDflt [i]->vi with given default and then to Val
+  if ISA(Type(v), SeqEnum) then
+    ok, x := IsCoercible_DefaultAssociativeArray(dflt, [<i-1, v[i]> : i in [1..#v] | IsDefined(v,i)]);
+    if ok then
+      ok, w := Val_RngUPolElt_FldPad_IsCoercible(x);
+      if ok then
+        return true, w;
+      else
+        Include(~reasons, w);
+      end if;
+    else
+      Include(~reasons, x);
+    end if;
+  end if;
+  // now try coercing v to a AssocDflt and see if it has the right default
   ok, w := Val_RngUPolElt_FldPad_IsCoercible(v);
   if ok and DefaultValue(Value(w)) eq dflt then
     return true, w;
   elif ok then
     Include(~reasons, "wrong default");
   end if;
+  // give up
   return false, Join(SetToSequence(reasons), " or ");
 end intrinsic;
 
@@ -542,4 +556,14 @@ intrinsic ShiftSlope(v :: Val_RngUPolElt_FldPad, s) -> Val_RngUPolElt_FldPad
   require Type(a`dflt`value) eq Infty: "The constant part of argument 1 must be infinite";
   ks := SetToSequence(Keys(a`array));
   return Val_RngUPolElt_FldPad_Make(a`dflt, ks, [a`array[k] + k*s : k in ks]);
+end intrinsic;
+
+intrinsic ExactpAdics_Val(f :: RngUPolElt[FldPad]) -> Val_RngUPolElt_FldPad
+  {The valuation of f.}
+  return Val_RngUPolElt_FldPad_Make(VAL_FLDPADELT_INFINITY, [0..Degree(f)], [Valuation(c) : c in Coefficients(f)]);
+end intrinsic;
+
+intrinsic ExactpAdics_APr(f :: RngUPolElt[FldPad]) -> Val_RngUPolElt_FldPad
+  {The valuation of f.}
+  return Val_RngUPolElt_FldPad_Make(VAL_FLDPADELT_INFINITY, [0..Degree(f)], [AbsolutePrecision(c) : c in Coefficients(f)]);
 end intrinsic;

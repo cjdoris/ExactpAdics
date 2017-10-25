@@ -1,128 +1,156 @@
 import "ExactpAdics.mag": IS_INSTANCE;
 
-STATE := recformat<cb, prec, limit, result, randomize>;
+STATE := recformat<stack, prec, limit, randomize>;
 
 declare verbose ExactpAdics_ExecutePrecisionStrategy, 1;
 
-function execute(state, strat)
+intrinsic ExactpAdics_StartPrecisionStrategy(strategy : InitialPrecision:=0) -> .
+  {An object representing the initial state of the strategy.}
+  return rec<STATE | stack:=[*strategy*], prec:=InitialPrecision, limit:=Infinity(), randomize:=false>;
+end intrinsic;
+
+intrinsic ExactpAdics_StepPrecisionStrategy(~ok, ~pr, ~state)
+  {If the strategy can be stepped further, sets ok to true, sets pr to the next precision and sets state to the next state. Otherwise sets ok to false, pr is unchanged and state may change but can still not be stepped further.}
+
   // limit breached
   if state`prec ge state`limit then
-    return true, false, state;
+    ok := false;
+    return;
   end if;
 
-  case Type(strat):
-
-  // LIST/SEQUENCE: each entry is a strategy; try each in turn until successful
-  when List, SeqEnum:
-    for s in strat do
-      done, ok, state := execute(state, s);
-      if done or ok then
-        return true, ok, state;
-      end if;
-    end for;
-    return false, false, state;
+  // keep popping stuff off the stack until done
+  while #state`stack gt 0 do
     
-  // STRING: use the corresponding global named strategy
-  when MonStgElt:
-    s := ExactpAdics_GetGlobalPrecisionStrategy(strat);
-    return execute(state, s);
+    // pop a strategy off the stack
+    strat := state`stack[#state`stack];
+    state`stack := state`stack[1..#state`stack-1];
 
-  // INTEGER: set this as the precision, and run the callback on it
-  when RngIntElt:
-    if strat le state`prec then
-      error "precision did not increase";
-    end if;
-    state`prec := Min(state`randomize select Random(state`prec+1, strat) else strat, state`limit);
-    vprint ExactpAdics_ExecutePrecisionStrategy: "ExecutePrecisionStrategy:", Cputime(), "pr =", state`prec;
-    ok, result := state`cb(state`prec);
-    if ok then
-      if assigned result then
-        state`result := result;
+    // its type determines how to interpret it
+    case Type(strat):
+
+    // INTEGER: is a precision to return
+    when RngIntElt:
+      if strat le state`prec then
+        error "precision did not increase";
       end if;
-      return true, true, state;
-    else
-      return false, false, state;
-    end if;
+      state`prec := Min(state`randomize select Random(state`prec+1, strat) else strat, state`limit);
+      ok := true;
+      pr := state`prec;
+      return;
 
-  // FUNCTION: keep calling the function, if it returns false then stop, else it returned true and a new strategy, run the strategy and return true if it was successful
-  when UserProgram:
-    repeat
+    // LIST: add to the stack
+    when List:
+      state`stack cat:= Reverse(strat);
+      continue;
+
+    // SEQUENCE: add to the stack
+    when SeqEnum:
+      state`stack cat:= [*x : x in Reverse(strat)*];
+      continue;
+
+    // STRING: use the corresponding global named strategy
+    when MonStgElt:
+      Append(~state`stack, ExactpAdics_GetGlobalPrecisionStrategy(strat));
+      continue;
+
+    // FUNCTION: call it; if it returns false then do nothing, else it returns true and another strategy; push the new strategy and the function back on the stack
+    when UserProgram:
       ok, s := strat(state`prec);
       if ok then
-        done, ok, state := execute(state, s);
-        if done or ok then
-          return true, ok, state;
+        state`stack cat:= [* strat, s *];
+      end if;
+      continue;
+
+    // TUPLE: special instructions
+    when Tup:
+      if #strat ge 1 and Type(strat[1]) eq MonStgElt then
+        case strat[1]:
+        when "limit":
+          if (#strat eq 2)
+          and IS_INSTANCE(strat[2], {RngIntElt,Infty,FldRatElt,FldReElt}) then
+            state`limit := strat[2];
+            continue;
+          end if;
+        when "randomize":
+          if #strat eq 1 then
+            state`randomize := true;
+            continue;
+          elif #strat eq 2 and IS_INSTANCE(strat[2], BoolElt) then
+            state`randomize := strat[2];
+            continue;
+          end if;
+        when "exp":
+          if (#strat ge 2)
+          and (#strat le 3)
+          and IS_INSTANCE(strat[2], {RngIntElt,FldRatElt,FldReElt})
+          and strat[2] gt 1
+          and ((#strat lt 3) or IS_INSTANCE(strat[3], RngIntElt)) then
+            m := strat[2];
+            base := (#strat lt 3) select 0 else strat[3];
+            Append(~state`stack, func<pr | true, base + Max(1, Ceiling((pr-base)*m))>);
+            continue;
+          end if;
+        when "double":
+          Append(~state`stack, <"exp", 2>);
+          continue;
+        end case;
+      end if;
+
+    // ERROR: raise it (only useful for debugging)
+    when Err:
+      error strat;
+      
+    end case;
+    error "bad strategy:", strat;
+
+  end while;
+
+  // stack empty
+  ok := false;
+
+end intrinsic;
+
+intrinsic ExactpAdics_ExecutePrecisionStrategy(cb :: UserProgram, strategy : InitialPrecision:=0) -> BoolElt, RngIntElt, .
+  {Executes the given precision strategy: calls cb(pr) for each pr in the strategy; if it ever returns (true,value) then this returns (true,pr,value), otherwise it returns (false,pr,_) where pr is the last precision used in the strategy.}
+  st := ExactpAdics_StartPrecisionStrategy(strategy : InitialPrecision:=InitialPrecision);
+  while true do
+    ExactpAdics_StepPrecisionStrategy(~ok, ~pr, ~st);
+    if not ok then
+      return false, pr, _;
+    end if;
+    done, result := cb(pr);
+    if done then
+      if assigned result then
+        return true, pr, result;
+      else
+        return true, pr, _;
+      end if;
+    end if;
+  end while;
+end intrinsic;
+
+intrinsic ExactpAdics_ExecutePrecisionStrategy_Lazy(strategy, getDeps :: UserProgram, getValue :: UserProgram) -> ExactpAdics_Gettr
+  {The (general) getter which, for each pr in the strategy calls getDeps(pr, ~getter) to get a dependent getter, which evaluates to gval, then calls getValue(gval, ~val) to get the value.}
+  st := ExactpAdics_StartPrecisionStrategy(strategy);
+  ExactpAdics_StepPrecisionStrategy(~ok, ~pr, ~st);
+  if not ok then
+    return ExactpAdics_ConstGetter([*false,pr,false*]);
+  end if;
+  return ExactpAdics_GeneralGetter([*st,pr*],
+    procedure (~stpr, ~getter)
+      getDeps(stpr[2], ~getter);
+    end procedure,
+    procedure (gval, ~stpr, ~val)
+      getValue(gval, ~val2);
+      if not assigned val2 then
+        ExactpAdics_StepPrecisionStrategy(~ok, ~stpr[2], ~stpr[1]);
+        if not ok then
+          val := [*false, stpr[2], false*];
         end if;
       else
-        return false, false, state;
+        val := [*true, stpr[2], val2*];
       end if;
-    until false;
-
-  // TUPLE: special instructions
-  when Tup:
-    if #strat ge 1 and Type(strat[1]) eq MonStgElt then
-      case strat[1]:
-      when "limit":
-        if (#strat eq 2)
-        and IS_INSTANCE(strat[2], {RngIntElt,Infty,FldRatElt,FldReElt}) then
-          state`limit := strat[2];
-          return false, false, state;
-        end if;
-      when "randomize":
-        if #strat eq 1 then
-          state`randomize := true;
-          return false, false, state;
-        elif #strat eq 2 and IS_INSTANCE(strat[2], BoolElt) then
-          state`randomize := strat[2];
-          return false, false, state;
-        end if;
-      when "exp":
-        if (#strat ge 2)
-        and (#strat le 3)
-        and IS_INSTANCE(strat[2], {RngIntElt,FldRatElt,FldReElt})
-        and strat[2] gt 1
-        and ((#strat lt 3) or IS_INSTANCE(strat[3], RngIntElt)) then
-          m := strat[2];
-          base := (#strat lt 3) select 0 else strat[3];
-          return execute(state, func<pr | true, base + Max(1, Ceiling((pr-base)*m))>);
-        end if;
-      when "double":
-        return execute(state, <"exp", 2>);
-      end case;
-    end if;
-
-  // ERROR: raise it
-  when Err:
-    error strat;
-
-  end case;
-
-  error "bad strategy:", strat;
-end function;
-
-intrinsic ExactpAdics_ExecutePrecisionStrategy(cb :: UserProgram, strategy, prec :: RngIntElt) -> BoolElt, RngIntElt, .
-  {Executes the given precision strategy.}
-  done, ok, state := execute(rec<STATE|cb:=cb, prec:=prec, limit:=Infinity(), randomize:=false>, strategy);
-  if ok and assigned state`result then
-    return ok, state`prec, state`result;
-  else
-    return ok, state`prec, _;
-  end if;
-end intrinsic;
-
-intrinsic ExactpAdics_ExecutePrecisionStrategy(cb :: UserProgram, strategy) -> BoolElt, RngIntElt, .
-  {"}
-  return ExactpAdics_ExecutePrecisionStrategy(cb, strategy, 0);
-end intrinsic;
-
-intrinsic ExactpAdics_PrecisionStrategyHasNext(strategy, prec :: RngIntElt) -> BoolElt, RngIntElt
-  {True if the precision strategy has a next element, and if so, also returns that.}
-  ok, _, pr := ExactpAdics_ExecutePrecisionStrategy(func<pr | pr gt prec, pr>, strategy);
-  if ok then
-    return true, pr;
-  else
-    return false, _;
-  end if;
+    end procedure);
 end intrinsic;
 
 STRATS := NewStore();

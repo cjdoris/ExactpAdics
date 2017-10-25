@@ -1,6 +1,6 @@
 import "Getter.mag": satisfy_deps_list, satisfy_dep;
 import "Promotion.mag": do_binop;
-import "ExactpAdics.mag": APR, CAPR, VAL, WZERO, WEQ, WVAL, NEXTID, IS_VALID_APPROX, UPDATE_CONSISTENCY_CHECK, CHANGE_APR, CAP_APR, MONOMIAL, SHIFT_VAL, VAL_FLDPADELT_MIN, record_time;
+import "ExactpAdics.mag": APR, CAPR, VAL, WZERO, WEQ, WVAL, NEXTID, IS_VALID_APPROX, UPDATE_CONSISTENCY_CHECK, CHANGE_APR, CAP_APR, MONOMIAL, SHIFT_VAL, VAL_FLDPADELT_MIN, record_time, GLOBAL_FUDGE;
 
 Z := Integers();
 Q := Rationals();
@@ -80,7 +80,7 @@ intrinsic PrecisionRequired(f :: RngMPolElt_FldPadExact, apr) -> RngIntElt
   return Max(1, Ceiling(Value(&join(apr - WVAL(f)))));
 end intrinsic;
 
-intrinsic CanChangeRing(f :: RngMPolElt_FldPadExact, K :: FldPadExact) -> RngMPolElt_FldPadExact
+intrinsic CanChangeRing(f :: RngMPolElt_FldPadExact, K :: FldPadExact) -> BoolElt, RngMPolElt_FldPadExact
   {"}
   if BaseRing(f) eq K then
     return true, f;
@@ -91,7 +91,7 @@ intrinsic CanChangeRing(f :: RngMPolElt_FldPadExact, K :: FldPadExact) -> RngMPo
   end if;
 end intrinsic;
 
-intrinsic CanChangeRing(f :: RngMPolElt, K :: FldPadExact) -> RngMPolElt_FldPadExact
+intrinsic CanChangeRing(f :: RngMPolElt, K :: FldPadExact) -> BoolElt, RngMPolElt_FldPadExact
   {"}
   n := Rank(Parent(f));
   return IsCoercible(PolynomialRing(K, n), f);
@@ -185,7 +185,8 @@ end intrinsic;
 function makeMPoly(R, init, mkupdate)
   f := New(RngMPolElt_FldPadExact);
   f`parent := R;
-  f`update := mkupdate(f);
+  FUDGE := GLOBAL_FUDGE(BaseRing(R));
+  f`update := FUDGE eq 0 select u else func<apr | u(apr + FUDGE)> where u := mkupdate(f);
   f`id := NEXTID();
   case Type(init):
   when RngMPolElt:
@@ -282,6 +283,10 @@ intrinsic Update(f :: RngMPolElt_FldPadExact, app :: RngMPolElt)
   xR := R`approximation_ring;
   ok, app := IS_VALID_APPROX(R, app);
   require ok: "app is in the wrong ring";
+  FUDGE := GLOBAL_FUDGE(BaseRing(R));
+  if FUDGE ne 0 then
+    app := Polynomial([CHANGE_APR(c, APR(c) - FUDGE) : c in cs], ms) where cs,ms := CoefficientsAndMonomials(app);
+  end if;
   if UPDATE_CONSISTENCY_CHECK then
     require WEQ(app, f`approximation): "inconsistent";
   end if;
@@ -438,17 +443,6 @@ intrinsic BaseRing(f :: RngMPolElt_FldPadExact) -> FldPadExact
   return f`base_ring;
 end intrinsic;
 
-intrinsic CanChangeRing(f :: RngMPolElt_FldPadExact, K :: FldPadExact) -> BoolElt, RngMPolElt_FldPadExact
-  {True if f can be coerced to be over ring K.}
-  if BaseRing(f) eq K then
-    return true, f;
-  else
-    R := Parent(f);
-    n := Rank(R);
-    return IsCoercible(PolynomialRing(K, n), f);
-  end if;
-end intrinsic;
-
 function satisfy_integer_contraints(S, T)
   n := #S;
   repeat
@@ -469,6 +463,62 @@ function satisfy_integer_contraints(S, T)
   return true, S;
 end function;
 
+function intvl_make(a, b)
+  return <a, b>;
+end function;
+
+function intvl_make_pt(a)
+  return intvl_make(a, a);
+end function;
+
+function intvl_is_pt(x)
+  return x[1] eq x[2];
+end function;
+
+function intvl_is_empty(x)
+  return x[1] gt x[2];
+end function;
+
+function intvl_meet(x, y)
+  return intvl_make(Max(x[1], y[1]), Min(x[2], y[2]));
+end function;
+
+function intvl_neg(x)
+  return intvl_make(-x[2], -x[1]);
+end function;
+
+function intvl_add(x, y)
+  return intvl_make(x[1] + y[1], x[2] + y[2]);
+end function;
+
+function intvl_sub(x, y)
+  return intvl_make(x[1] - y[2], x[2] - y[1]);
+end function;
+
+function intvl_subset(x, y)
+  return x[1] ge y[1] and x[2] le y[2];
+end function;
+
+function intvl_smul(x, y)
+  return y ge 0 select intvl_make(x[1]*y, x[2]*y) else intvl_make(x[2]*y, x[1]*y);
+end function;
+
+function intvl_make_wval(x)
+  v := VAL(x);
+  return intvl_make(v, WZERO(x) select OO else v);
+end function;
+
+function intvl_sum(xs)
+  return intvl_make(&+[x[1] : x in xs], &+[x[2] : x in xs]);
+end function;
+
+// dot product
+function dprod(xs, ys)
+  n := #xs;
+  assert #ys eq n;
+  return &+[xs[i] * ys[i] : i in [1..n]];
+end function;
+
 intrinsic IsHenselLiftable(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt] : Strategy:="default") -> BoolElt, []
   {True if xs are Hensel liftable to roots of fs.}
   require #fs eq Rank(Universe(fs)): "Length of argument 1 must equal the rank of its universe";
@@ -482,15 +532,16 @@ intrinsic IsHenselLiftable(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt
   assert BaseRing(R) eq K;
   n := Rank(R);
   // check the hensel condition
-  ok, _, res := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+  ok, pr, res := ExactpAdics_ExecutePrecisionStrategy(function (pr)
     // get approximations
     xfs, xxs := Explode(Evaluate(Flatten([&cat[Approximation_Lazy(f, BaselineValuation(f)+pr) : f in fs], &cat[Approximation_Lazy(x, BaselineValuation(x)+pr) : x in xs]])));
     // shift
     xR := Universe(xfs);
-    zeromial := Monomial(xR, [0 : i in [1..n]]);
-    oneomials := [Monomial(xR, [i eq j select 1 else 0 : j in [1..n]]) : i in [1..n]];
     xK := BaseRing(xR);
-    xgs := [Evaluate(f, [xR.i + xxs[i] : i in [1..n]]) : f in xfs];
+    zeromial := Polynomial([xK!1], [Monomial(xR, [0 : i in [1..n]])]);
+    oneomials := [Polynomial([xK!1], [Monomial(xR, [i eq j select 1 else 0 : j in [1..n]])]) : i in [1..n]];
+    xK := BaseRing(xR);
+    xgs := [Evaluate(f, [oneomials[i] + xxs[i] : i in [1..n]]) : f in xfs];
     // compute the jacobian matrix
     J := Matrix([[MonomialCoefficient(g, oneomials[i]) : i in [1..n]] : g in xgs]);
     // it needs to be invertible
@@ -503,125 +554,119 @@ intrinsic IsHenselLiftable(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt
     xhs := [&+[row[i] * xgs[i] : i in [1..n]] : row in Rows(Jinv)];
     assert forall{i : i in [1..n], j in [1..n] | i eq j or WZERO(MonomialCoefficient(xhs[i], oneomials[j]))};
     assert forall{i : i in [1..n] | WEQ(MonomialCoefficient(xhs[i], oneomials[i]), xK!1)};
-    // find the integral conditions we need to satisfy
-    S := [];
-    T := [];
+    // check necessary and sufficient conditions
+    // we want s[i] = VAL(xhs[i](0)) - t
+    // and see if it is impossible for such a t to exist (necessary condition => not liftable)
+    // and see if there is a t such that s[i] = WVAL(xhs[i](0)) - t is valid (sufficient condition => liftable)
+    t := OO;
+    vxh0s := [VAL(MonomialCoefficient(xh, zeromial)) : xh in xhs];
+    vixh0s := [intvl_make_wval(MonomialCoefficient(xh, zeromial)) : xh in xhs];
     for i in [1..n] do
-      for m in Monomials(xhs[i]) do
-        if &+Exponents(m) eq 0 then
-          S[i] := VAL(MonomialCoefficient(xhs[i], m));
-        elif &+Exponents(m) eq 1 then
-          ;
-        else
-          Append(~T, <i, VAL(MonomialCoefficient(xhs[i], m)), Exponents(m)>);
+      xh := xhs[i];
+      for m in Monomials(xh) do
+        c := MonomialCoefficient(xh, m);
+        e := Exponents(m);
+        wt := &+e;
+        if wt eq 0 or (wt eq 1 and e[i] eq 1) then
+          continue;
         end if;
-      end for;
-    end for;
-    // are they satisfiable?
-    ok, s := satisfy_integer_contraints(S, T);
-    if ok then
-      return true, [* true, s, Jinv *];
-    end if;
-    // find stricter integral conditions
-    S := [ExtendedReals()| Infinity() : i in [1..n]];
-    T := [];
-    for i in [1..n] do
-      for m in Monomials(xhs[i]) do
-        c := MonomialCoefficient(xhs[i], m);
-        if not WZERO(c) then
-          if &+Exponents(m) eq 0 then
-            S[i] := VAL(MonomialCoefficient(xhs[i], m));
-          elif &+Exponents(m) eq 1 then
-            ;
+        wv := VAL(c) + &+[vxh0s[j] * (e[j] - (j eq i select 1 else 0)) : j in [1..n]];
+        vi := intvl_add(intvl_make_wval(c), intvl_sum([intvl_smul(vixh0s[j], ej) : j in [1..n] | ej ne 0 where ej:=e[j] - (j eq i select 1 else 0)]));
+        if wt eq 1 then
+          // need v ge 0
+          if vi[2] lt 0 then
+            return true, [*false*];
+          elif wv lt 0 then
+            t := 0;
+            break i;
+          end if;
+        else
+          // need v gt 0
+          assert wt ge 2;
+          if vi[2] le 0 then
+            return true, [*false*];
+          elif wv le 0 then
+            t := 0;
+            break i;
           else
-            Append(~T, <i, VAL(MonomialCoefficient(xhs[i], m)), Exponents(m)>);
+            t := Min(t, wv/(wt-1));
           end if;
         end if;
       end for;
     end for;
-    // are they satisfiable?
-    ok, s := satisfy_integer_contraints(S, T);
-    if not ok then
-      return true, [* false *];
+    assert t lt OO;
+    if t gt 0 then
+      return true, [*true, [v-t : v in vxh0s], t*];
     end if;
-    // don't know
+    // or else we don't know the answer
     return false, _;
   end function, Strategy);
   // precision error?
   if not ok then
     error "precision error";
   end if;
-  // liftable?
+  // not liftable?
   if not res[1] then
     return false, _;
   end if;
-  // hooray! now find the lift
+  // now lift
   S := res[2];
-  Jinv := res[3];
-  gs := [ShiftArgument(f, xs) : f in fs];
-  // hs := [&+[gs[i] * WeakApproximation(K!row[i]) : i in [1..n]] : row in Rows(Jinv)];
-  hs := [DotProduct(gs, [WeakApproximation(K!row[i]) : i in [1..n]]) : row in Rows(Jinv)];
-  ks := [ShiftValuation(ShiftSlope(hs[i], S), -S[i]) : i in [1..n]];
-  // check ks looks how we expect
-  // that is, ks[i] = constant + R.i + O(pi)
-  IncreaseAbsolutePrecisions([<k,1> : k in ks]);
-  assert forall{i : i in [1..n]
-    | forall{m : m in Monomials(k`approximation)
-      | e eq z select v ge 0 else 
-        e eq y select v eq 0 else
-        v gt 0
-      where v:=VAL(c)
-      where e:=Exponents(m)
-      where c:=MonomialCoefficient(k`approximation, m)
-    }
-    where z:=[0 : j in [1..n]]
-    where y:=[i eq j select 1 else 0 : j in [1..n]]
-    where k:=ks[i]
-  };
-  // hensel lift
-  // we are returning a sequence of values whose updates are dependent; perhaps it would be more appropriate to have a vector type
-  xR := R`approximation_ring;
-  init := [-MonomialCoefficient(kx, Monomial(xR, [0 : j in [1..n]])) / MonomialCoefficient(kx, Monomial(xR, [i eq j select 1 else 0 : j in [1..n]])) where kx:=k`approximation where k:=ks[i] : i in [1..n]];
-  // first make a list of roots with correct initial value; the first root does not have its update function set yet, and the others defer to the first
-  rs := [K ! <init[i], i eq 1 select false else func<z | func<apr | IncreaseAbsolutePrecision_Lazy(Self(1), apr)>>> : i in [1..n]];
-  // now we have all the roots, set the first's update function to update them all
-  rs[1]`update := function (apr)
-    N := IntegerValue(apr);
-    assert N gt 0;
-    K_loc := K;
-    ks_loc := ks;
-    return [Approximation_Lazy(K,N), &cat[Approximation_Lazy(k, apr) : k in ks]] mod function (xK, xks)
-      Q := quo<Integers(xK) | ShiftValuation(xK!1, N)>;
-      QR := PolynomialRing(Q, n);
-      qks := [QR ! xk : xk in xks];
-      qrs := [Q ! r`approximation : r in rs];
-      dqkss := [[Derivative(k, j) : j in [1..n]] : k in qks];
-      while true do
-        qkrs := [Evaluate(qk, qrs) : qk in qks];
-        dqkrs := [[Evaluate(dqk, qrs) : dqk in dqks] : dqks in dqkss];
-        s := Min([VAL(qkr) : qkr in qkrs]);
-        t := VAL(Determinant(Matrix(dqkrs)));
-        assert s gt 0;
-        assert t eq 0;
-        if s eq N then
-          break;
-        else
-          Jinv := Matrix(dqkrs)^-1;
-          delta := [&+[row[i] * qkrs[i] : i in [1..n]] : row in Rows(Jinv)];
-          qrs2 := [qrs[i] - delta[i] : i in [1..n]];
-          s2 := Min([VAL(Evaluate(qk, qrs2)) : qk in qks]);
-          assert s2 ge Min(N, 2*s);
-          qrs := qrs2;
-        end if;
-      end while;
-      for i in [1..n] do
-        Update(rs[i], xK ! qrs[i]);
-      end for;
-      return true;
-    end function;
+  t := res[3];
+  ok, splust := CanChangeUniverse([s+t : s in S], Z);
+  assert ok;
+  assert forall{i : i in [1..n] | APR(xs[i]) ge splust[i]};
+  inits := [CAP_APR(xs[i]`approximation, splust[i]) : i in [1..n]];
+  // the roots cannel all their updates through the first root
+  // TODO: better would be to have a type "vector of p-adics" in a similar sense to polynomials of p-adics
+  //       (more generally, we should implement sequences, sets, lists, and other aggregate types in generality, i.e. they can take any p-adic type recursively)
+  roots := [i eq 1 select K ! <inits[i], false, <[x`approximation : x in xs], 0>> else K ! <inits[i], func<z | func<apr | r1`update(apr - S[i] + S[1])>> where r1:=Self(1)> : i in [1..n]];
+  r1 := roots[1];
+  // we could, in principle, compute the precision required in f to compute the lift in one go, in a predetermined number of iterations; but we cheat and just take a guess at the precision required, and then increase this precision if it turns out it was not high enough; this will result in more updates than necessary, though for most purposes is good enough.
+  r1`update := function (apr)
+    t_target := Value(apr) - S[1];
+    assert t_target gt t;
+    // initial guess at the precision required
+    xxs0, pr_base := Explode(GetData(r1));
+    return ExactpAdics_GeneralGetter(Ceiling(t_target + pr_base),
+      procedure (~pr, ~getter)
+        getter := &cat[Approximation_Lazy(f, BaselineValuation(f) + pr) : f in fs];
+      end procedure,
+      procedure (xfs, ~pr, ~val)
+        xR := Universe(xfs);
+        xK := BaseRing(xR);
+        xxs := [xK| WZERO(xx) select 0 else CHANGE_APR(xx, VAL(xx)+pr) : xx in ChangeUniverse(xxs0, xK)];
+        xdfs := [[Derivative(xfs[i], j) : j in [1..n]] : i in [1..n]];
+        while true do
+          xfxs := Vector([Evaluate(xfs[i], xxs) : i in [1..n]]);
+          J := Matrix([[Evaluate(xdfs[i][j], xxs) : j in [1..n]] : i in [1..n]]);
+          ok, Jinv := IsInvertible(J);
+          if not ok then
+            pr +:= 2*Floor(pr - t_target)+1;
+            return;
+          end if;
+          xxs_diff := xfxs * Transpose(Jinv);
+          xxs_new := Eltseq(Vector(xxs) - xxs_diff);
+          if forall{i : i in [1..n] | WEQ(xxs_new[i], xxs[i])} then
+            t_new := Min([VAL(xxs_diff[i]) - S[i] : i in [1..n]]);
+            t_diff := t_target - t_new;
+            if t_diff gt 0 then
+              pr +:= Ceiling(t_diff);
+            else
+              for i in [1..n] do
+                Update(roots[i], CAP_APR(xxs[i], Ceiling(S[i] + t_new)));
+              end for;
+              SetData(r1, <xxs, Floor(pr - t_target)>);
+              val := true;
+            end if;
+            return;
+          else
+            xxs := xxs_new;
+          end if;
+        end while;
+      end procedure
+    );
   end function;
-  // now translate back to a solution of the original system
-  return true, [xs[i] + ShiftValuation(rs[i], S[i]) : i in [1..n]];
+  return true, roots;
 end intrinsic;
 
 intrinsic DotProduct(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt]) -> RngMPolElt_FldPadExact
