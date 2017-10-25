@@ -8,7 +8,7 @@ chapter: 2
 
 ## Download
 
-* **Option 1:** Download the latest release from [here](https://github.com/cjdoris/ExactpAdics/releases).
+* **Option 1:** Download the latest release from [here](https://github.com/cjdoris/ExactpAdics/releases/latest).
 
 * **Option 2:** Clone a copy of the git repository [here](https://github.com/cjdoris/ExactpAdics).
 
