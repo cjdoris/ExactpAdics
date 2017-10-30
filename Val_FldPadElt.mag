@@ -10,13 +10,13 @@
 ///
 /// In this package, we define new types to represent valuations of p-adic numbers and polynomials. These are also used to represent precisions.
 /// 
-/// The valuation of a p-adic number is represented by the type `Val_FldPadElt`, whose value is either an integer, or positive or negative infinity. Mathematically its values are in $Z := \ZZ \cup \{\pm\infty\}$. Addition of valuations corresponds to multiplications of p-adics, so we define this. On the other hand, multiplication of two valuations has no natural interpretation, so we do not define this. Taking the minimum of two valuations is defined, since this bounds the valuation of the sum of the corresponding p-adics. Hence $Z$ is more like the *tropical ring of integers* than the usual ring of integers $\ZZ$. Multiplying by an ordinary integer (*scalar multiplication*) is defined because this corresponds to exponentiation of p-adic numbers. They are also totally ordered. For convenience, we extend $Z$ to include 
+/// The valuation of a p-adic number is represented by the type `Val_FldPadElt`, whose value is either an integer, or positive or negative infinity. Mathematically its values are in $Z := \ZZ \cup \{\pm\infty\}$. Addition of valuations corresponds to multiplications of p-adics, so we define this. On the other hand, multiplication of two valuations has no natural interpretation, so we do not define this. Taking the minimum of two valuations is defined, since this bounds the valuation of the sum of the corresponding p-adics. Hence $Z$ is more like the *tropical ring of integers* than the usual ring of integers $\ZZ$. Multiplying by an ordinary integer (*scalar multiplication*) is defined because this corresponds to exponentiation of p-adic numbers. They are also totally ordered. For convenience, we extend $Z$ to include the rationals $\QQ$ too.
 /// 
 /// The valuation of a polynomial is (by definition in the package) a function taking an exponent vector to the valuation of the corresponding coefficient. That is, for polynomials of rank $n$, it is a function $\NN^n \to Z^n$, i.e. an element of $Z^{\NN^n}$. They are represented by the type `Val_RngUPolElt_FldPad` for univariate polynomials and `Val_RngMPolElt_FldPad` for multivariate polynomials over p-adic fields. Since polynomials by definition have only finitely many non-zero coefficients, the function is constant except for finitely many inputs. We can define a partial ordering on these valuations: $v_1 < v_2$ iff for all $n \in \NN$ then $v_1(n) < v_2(n)$. This partial ordering gives us suprema and infema (defined pointwise), and we can also define addition and scalar multiplication pointwise.
 
 ///## Generic intrinsics
 ///
-/// In this section we document intrinsics common to all valuations. Generally the inputs must be valuations of the same type.
+/// In this section we document intrinsics common to all valuations. Where there are multiple `Val` inputs, it suffices for only one to be a `Val` and for them all to be coercible to a common `Val` type.
 
 /// Negation, addition and subtraction.
 /// 
@@ -58,9 +58,10 @@
 ///~intrinsic IsValidAbsolutePrecision(x, v) -> Val {"} end intrinsic;
 
 /// True if `v` may be coerced to a valuation for `x`. If so also returns the coerced valuation. Differs from `IsValidAbsolutePrecision` in that, for example, for polynomials, if the constant value is not implied by `v`, then it is taken to be 0 instead of infinity.
-///~intrinsic IsValidAbsolutePrecision(x, v) -> Val {"} end intrinsic;
+///~intrinsic IsValidAbsolutePrecisionDiff(x, v) -> Val {"} end intrinsic;
 
 ///## Val_FldPadElt
+/// Represents the valuation of a p-adic number.
 
 import "Promotion.mag": do_binop;
 

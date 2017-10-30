@@ -5,6 +5,7 @@
 
 ///# Valuations
 ///## Val_RngMPolElt_FldPad
+/// Represents the valuation of a multivariate polynomial over a p-adic field.
 
 import "Promotion.mag": do_binop;
 import "Val_FldPadElt.mag": VAL_FLDPADELT_INFINITY, VAL_FLDPADELT_NEGINFINITY, VAL_FLDPADELT_ZERO;
