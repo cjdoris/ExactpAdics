@@ -1,3 +1,5 @@
+///# Multivariate polynomials
+
 import "Getter.mag": satisfy_deps_list, satisfy_dep;
 import "Promotion.mag": do_binop;
 import "ExactpAdics.mag": APR, CAPR, VAL, WZERO, WEQ, WVAL, NEXTID, IS_VALID_APPROX, UPDATE_CONSISTENCY_CHECK, CHANGE_APR, CAP_APR, MONOMIAL, SHIFT_VAL, VAL_FLDPADELT_MIN, record_time, GLOBAL_FUDGE;
@@ -29,6 +31,7 @@ declare attributes RngMPolElt_FldPadExact
   , baseline_valuation              // BaselineValuation(*)
   ;
 
+///hide
 intrinsic _ExactpAdics_IsValidApproximation(R :: RngMPol_FldPadExact, app :: RngMPolElt) -> BoolElt, RngMPolElt
   {"}
   assert Type(BaseRing(Parent(app))) eq FldPad;
@@ -46,11 +49,13 @@ intrinsic _ExactpAdics_IsValidApproximation(R :: RngMPol_FldPadExact, app :: Rng
   end if;
 end intrinsic;
 
+///hide
 intrinsic _ExactpAdics_IsWeaklyZero(f :: RngMPolElt) -> BoolElt
   {"}
   return forall{c : c in Coefficients(f) | WZERO(c)};
 end intrinsic;
 
+///hide
 intrinsic _ExactpAdics_IsWeaklyEqual(x :: RngMPolElt, y :: RngMPolElt) -> BoolElt
   {"}
   assert Parent(x) eq Parent(y);
@@ -63,11 +68,13 @@ intrinsic _ExactpAdics_IsWeaklyEqual(x :: RngMPolElt, y :: RngMPolElt) -> BoolEl
     and forall{m : m in mys diff mxs | WZERO(C(y,m))};
 end intrinsic;
 
+///hide
 intrinsic _ExactpAdics_ChangeAbsolutePrecision(f :: RngMPolElt, n :: Val_RngMPolElt_FldPad) -> RngMPolElt
   {"}
   return Polynomial([CHANGE_APR(MonomialCoefficient(f,m), n(m)) : m in ms], ms) where ms:=Monomials(f);
 end intrinsic;
 
+///hide
 intrinsic _ExactpAdics_CapAbsolutePrecision(f :: RngMPolElt, n :: Val_RngMPolElt_FldPad) -> RngMPolElt
   {"}
   // <HACK>
@@ -116,6 +123,7 @@ intrinsic PolynomialRing(F :: FldPadExact, n :: RngIntElt) -> RngMPol_FldPadExac
   return R;
 end intrinsic;
 
+///hide
 intrinsic Print(R :: RngMPol_FldPadExact, lvl :: MonStgElt)
   {Prints R.}
   case lvl:

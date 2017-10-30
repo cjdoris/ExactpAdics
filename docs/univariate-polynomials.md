@@ -1,4 +1,4 @@
-# Exact p-adic fields
+# Univariate polynomials
 
 ## Root-finding and factorization
 

@@ -5,6 +5,7 @@ declare attributes ExactpAdics_Store: nextId;
 STORE := New(ExactpAdics_Store);
 STORE`nextId := 0;
 
+///hide
 intrinsic ExactpAdics_NextId() -> .
   {The next available id.}
   s := STORE;

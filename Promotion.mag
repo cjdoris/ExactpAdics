@@ -1,7 +1,8 @@
 // TO ATTACH THIS FILE YOU MUST ALSO ATTACH:
 // - nothing
 
-// PROMOTION
+///# Miscellany
+///## Promotion
 
 intrinsic IsPromotable(x, y) -> BoolElt, ., .
   {True if x and y are promotable to the same parent.}

@@ -1,6 +1,6 @@
 // Suppose we have f(x), g(x), Pi(x), Rho(x) such that g(x) approximates an irreducible factor of f(x) uniquely, and Pi(x) is a uniformizer of and Rho(x) generates the residue class field of the extension defined by the factor. Can we prove that g(x) is close to an irreducible factor? Can we (Hensel) lift it to be closer to the factor? Consider f mod g in the basis {Rho^i * Pi^j mod g : i<F, j<E}, we should be able to Hensel-lift this directly.
 
-///# Exact p-adic fields
+///# Univariate polynomials
 ///## Root-finding and factorization
 
 import "ExactpAdics.mag": CAP_APR, CHANGE_APR, WZERO, WVAL, VAL, APR;

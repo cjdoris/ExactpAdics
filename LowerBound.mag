@@ -1,3 +1,6 @@
+///# Miscellany
+///## Lower bounds
+
 // encapsulates values which are lower bounds on something
 declare type ExactpAdics_BndLow;
 declare attributes ExactpAdics_BndLow: value, is_sharp;

@@ -1,6 +1,10 @@
 // TO ATTACH THIS FILE YOU MUST ALSO ATTACH
 // - nothing
 
+///# Miscellany
+///toc
+///## Default associative arrays
+
 // an associative array with default value
 // it is indexed like x(i) and if the index is not defined, it returns the default value
 declare type AssocDflt;
