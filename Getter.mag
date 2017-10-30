@@ -400,7 +400,7 @@ intrinsic Compose(g :: ExactpAdics_Gettr, f) -> ExactpAdics_Gettr
 end intrinsic;
 
 intrinsic ApplyProcedure(f, g :: ExactpAdics_Gettr : Value:=true) -> ExactpAdics_Gettr
-  {Applies the procedure f to the output of g, and sets the output to the given value.}
+  {Applies the procedure f to the output of g, and sets the output Value.}
   return ExactpAdics_Getter(g`state, g`getDeps, procedure (~st, ~val)
     g`getValue(~st, ~val);
     if assigned val then
@@ -416,7 +416,7 @@ intrinsic ComposeProcedure(g :: ExactpAdics_Gettr, f : Value:=true) -> ExactpAdi
 end intrinsic;
 
 intrinsic ApplyGetter(f, g :: ExactpAdics_Gettr : AllowConst:=false) -> ExactpAdics_Gettr
-  {The getter which returns the return value of f(return value of g).}
+  {The getter which returns the return value of f(return value of g). If AllowConst is false then f must return a getter; if true then f may return a non-getter, in which case this is the value of the returned getter.}
   return ExactpAdics_Getter([*false, g`state, false*], procedure (~st, ~deps)
     if st[1] then
       st[2]`getDeps(~st[3], ~deps);
@@ -472,7 +472,7 @@ end intrinsic;
 ///## Reductions
 
 intrinsic Flatten(gs :: [ExactpAdics_Gettr] : Sequence:=false, Universe:=false) -> ExactpAdics_Gettr
-  {The ExactpAdics_Gettr whose value is the list of values of the given gettrs.}
+  {The getter whose value is the list of values of the given gettrs. If Sequence is true, the value is coerced to a sequence. If Universe is given, the value is coerced to a sequence with this universe.}
   if #gs eq 0 then
     return ExactpAdics_ConstGetter([**]);
   elif #gs eq 1 then
