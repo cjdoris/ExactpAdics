@@ -15,12 +15,12 @@ Please direct any bugs, comments or queries to [the GitHub issue tracker](https:
 
 ## Contents
 
-* [Overview]({{site.baseurl}}overview)
-* [Getting started]({{site.baseurl}}getting-started)
-* [Exact p-adic fields]({{site.baseurl}}exact-p-adic-fields)
-* [Univariate polynomials]({{site.baseurl}}univariate-polynomials)
-* [Multivariate polynomials]({{site.baseurl}}multivariate-polynomials)
-* [Getters]({{site.baseurl}}getters)
-* [Valuations]({{site.baseurl}}valuations)
-* [Precision strategies]({{site.baseurl}}precision-strategies)
-* [Types]({{site.baseurl}}types)
+* [Overview]({{site.baseurl}}/overview)
+* [Getting started]({{site.baseurl}}/getting-started)
+* [Exact p-adic fields]({{site.baseurl}}/exact-p-adic-fields)
+* [Univariate polynomials]({{site.baseurl}}/univariate-polynomials)
+* [Multivariate polynomials]({{site.baseurl}}/multivariate-polynomials)
+* [Getters]({{site.baseurl}}/getters)
+* [Valuations]({{site.baseurl}}/valuations)
+* [Precision strategies]({{site.baseurl}}/precision-strategies)
+* [Types]({{site.baseurl}}/types)
