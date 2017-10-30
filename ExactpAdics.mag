@@ -31,6 +31,8 @@ A field element is represented by a (precision,approximation) pair, with the pre
 
 // freeze;
 
+///# Exact p-adic fields
+
 import "Getter.mag": satisfy_deps_list, satisfy_dep;
 import "Promotion.mag": do_binop;
 
@@ -525,8 +527,6 @@ declare attributes HomFldPadExact
   , basis_images           // images of the standard basis of E1/F (derived from generator_images)
   , inverse                // Inverse(*) (if invertible)
   ;
-
-///# Exact p-adic fields
 
 procedure add_embedding(F, emb)
   if not assigned F`embeddings then

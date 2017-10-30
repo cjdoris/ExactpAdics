@@ -24,3 +24,4 @@ Please direct any bugs, comments or queries to [the GitHub issue tracker](https:
 * [Valuations]({{site.baseurl}}/valuations)
 * [Precision strategies]({{site.baseurl}}/precision-strategies)
 * [Types]({{site.baseurl}}/types)
+* [Miscellany]({{site.baseurl}}/miscellany)
