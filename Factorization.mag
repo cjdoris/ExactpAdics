@@ -1,5 +1,8 @@
 // Suppose we have f(x), g(x), Pi(x), Rho(x) such that g(x) approximates an irreducible factor of f(x) uniquely, and Pi(x) is a uniformizer of and Rho(x) generates the residue class field of the extension defined by the factor. Can we prove that g(x) is close to an irreducible factor? Can we (Hensel) lift it to be closer to the factor? Consider f mod g in the basis {Rho^i * Pi^j mod g : i<F, j<E}, we should be able to Hensel-lift this directly.
 
+///# Exact p-adic fields
+///## Root-finding and factorization
+
 import "ExactpAdics.mag": CAP_APR, CHANGE_APR, WZERO, WVAL, VAL, APR;
 OO := Infinity();
 Z := Integers();
@@ -46,6 +49,15 @@ end function;
 
 CERT := recformat<E, F, Pi, Rho, IdealGen1, IdealGen2, Extension>;
 
+/// The factorization of f as a sequence of `<factor, multiplicity>` pairs.
+/// 
+/// It is only possible to factorize squarefree polynomials, so `multiplicity` is always 1. The factors are monic; also returns the leading coefficient of `f`.
+/// 
+/// **Parameters.**
+/// - `Strategy`: the precision strategy.
+/// - `Certificates`: when `true`, also returns a corresponding sequence of certificates including fields `F`, `E`, `Rho` and `Pi`.
+/// - `Extensions`: when `true` implies `Certificates` and also includes `Extension` in each certificate.
+/// - `Ideals`: when `true` implies `Certificates` and also includes `IdealGen1` and `IdealGen2` in each certificate.
 intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certificates:=false, Extensions:=false, Ideals:=false) -> [], FldPadElt, []
   {The factorization of f.}
   Certificates or:= Extensions or Ideals;
@@ -206,6 +218,12 @@ intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certi
   end if;
 end intrinsic;
 
+/// The roots of `f` as a sequence of `<root, multiplicity>` pairs.
+/// 
+/// `f` must not have repeated roots, and hence `multiplicity` will always be 1.
+/// 
+/// **Parameters.**
+/// - `Strategy`: The strategy to use.
 intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default") -> []
   {The roots of f.}
   R := Parent(f);

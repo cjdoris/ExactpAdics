@@ -31,8 +31,6 @@ A field element is represented by a (precision,approximation) pair, with the pre
 
 // freeze;
 
-///# Misc
-
 import "Getter.mag": satisfy_deps_list, satisfy_dep;
 import "Promotion.mag": do_binop;
 
@@ -362,7 +360,6 @@ end intrinsic;
 
 
 // TYPE DECLARATIONS
-///# Types
 
 declare type FldPadExact[FldPadExactElt];
 declare attributes FldPadExact
@@ -539,13 +536,6 @@ procedure add_embedding(F, emb)
   end if;
 end procedure;
 
-///## Creation of fields
-
-///### Prime fields
-
-/// intrinsic ExactpAdicField(p :: RngIntElt) -> FldPadExact
-/// 
-/// The exact p-adic field.
 intrinsic ExactpAdicField(p :: RngIntElt) -> FldPadExact
   {The exact p-adic field.}
   require (p gt 0) and IsPrime(p): "p must be prime";
@@ -557,11 +547,6 @@ intrinsic ExactpAdicField(p :: RngIntElt) -> FldPadExact
   return F;
 end intrinsic;
 
-///## Basic operations on fields
-
-///### Basic invariants
-
-/// intrinsic Prime(F :: FldPadExact) -> RngIntElt
 intrinsic Prime(F :: FldPadExact) -> RngIntElt
   {The p in p-adic.}
   if not assigned F`prime then
