@@ -3,6 +3,9 @@
 // - DefaultAssociativeArray.mag
 // - Val_FldPadElt.mag
 
+///# Valuations
+///## Val_RngMPolElt_FldPad
+
 import "Promotion.mag": do_binop;
 import "Val_FldPadElt.mag": VAL_FLDPADELT_INFINITY, VAL_FLDPADELT_NEGINFINITY, VAL_FLDPADELT_ZERO;
 
@@ -91,6 +94,7 @@ intrinsic Val_RngMPolElt_FldPad_IsCoercible(dflt :: Val_FldPadElt, v) -> BoolElt
   {"}
   reasons := {"wrong type"};
   ok := true;
+  print "WARNING: Val_RngMPolElt_FldPad_IsCoercible: try";
   try
     x := DefaultAssociativeArray(dflt, v);
   catch err
@@ -199,6 +203,7 @@ intrinsic Val_RngMPolElt_FldPad_Zero() -> Val_RngMPolElt_FldPad
   return VAL_RNGMPOLELT_FLDPAD_ZERO;
 end intrinsic;
 
+///hide
 intrinsic Print(v :: Val_RngMPolElt_FldPad, lvl :: MonStgElt)
   {Print.}
   case lvl:
@@ -213,6 +218,7 @@ intrinsic Print(v :: Val_RngMPolElt_FldPad, lvl :: MonStgElt)
   end case;
 end intrinsic;
 
+///hide
 intrinsic Value(v :: Val_RngMPolElt_FldPad) -> AssocDflt
   {The underlying associative array of values.}
   return v`values;
@@ -223,316 +229,379 @@ intrinsic Ceiling(v :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise(Ceiling, Value(v)));
 end intrinsic;
 
+///hide
 intrinsic '-'(v :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   {Negation.}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise('-', Value(v)));
 end intrinsic;
 
+///hide
 intrinsic '&+'(vs :: [Val_RngMPolElt_FldPad]) -> Val_RngMPolElt_FldPad
   {Sum.}
   return Val_RngMPolElt_FldPad_Make(ZipApplyPointwise('&+', [Value(v) : v in vs]));
 end intrinsic;
 
+///hide
 intrinsic '+'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   {Add.}
   return &+[v,w];
 end intrinsic;
 
+///hide
 intrinsic '+'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('+', v, w);
 end intrinsic;
 
+///hide
 intrinsic '+'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('+', v, w);
 end intrinsic;
 
+///hide
 intrinsic '+'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('+', v, w);
 end intrinsic;
 
+///hide
 intrinsic '+'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('+', v, w);
 end intrinsic;
 
+///hide
 intrinsic '-'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   {Subtract.}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise('-', Value(v), Value(w)));
 end intrinsic;
 
+///hide
 intrinsic '-'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('-', v, w);
 end intrinsic;
 
+///hide
 intrinsic '-'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('-', v, w);
 end intrinsic;
 
+///hide
 intrinsic '-'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('-', v, w);
 end intrinsic;
 
+///hide
 intrinsic '-'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('-', v, w);
 end intrinsic;
 
+///hide
 intrinsic '*'(v :: Val_RngMPolElt_FldPad, w :: RngIntElt) -> Val_RngMPolElt_FldPad
   {Multiply.}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise(func<u | u*w>, Value(v)));
 end intrinsic;
 
+///hide
 intrinsic '*'(v :: Val_RngMPolElt_FldPad, w :: FldRatElt) -> Val_RngMPolElt_FldPad
   {"}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise(func<u | u*w>, Value(v)));
 end intrinsic;
 
+///hide
 intrinsic '*'(v :: RngIntElt, w :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   {"}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise(func<u | v*u>, Value(w)));
 end intrinsic;
 
+///hide
 intrinsic '*'(v :: FldRatElt, w :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   {"}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise(func<u | v*u>, Value(w)));
 end intrinsic;
 
+///hide
 intrinsic '/'(v :: Val_RngMPolElt_FldPad, w :: RngIntElt) -> Val_RngMPolElt_FldPad
   {Divide.}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise(func<u | u/w>, Value(v)));
 end intrinsic;
 
+///hide
 intrinsic '/'(v :: Val_RngMPolElt_FldPad, w :: FldRatElt) -> Val_RngMPolElt_FldPad
   {"}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise(func<u | u/w>, Value(v)));
 end intrinsic;
 
+///hide
 intrinsic 'join'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   {The smallest u with u ge v and u ge w. That is, pointwise join.}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise('join', Value(v), Value(w)));
 end intrinsic;
 
+///hide
 intrinsic 'join'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('join', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'join'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('join', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'join'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('join', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'join'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('join', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'meet'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   {The largest u with u le v and u le w. That is, pointwise meet.}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise('meet', Value(v), Value(w)));
 end intrinsic;
 
+///hide
 intrinsic 'meet'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('meet', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'meet'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('meet', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'meet'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('meet', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'meet'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('meet', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'diff'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> Val_RngMPolElt_FldPad
   {v wherever v is larger than w, and -OO elsewhere. That is, pointwise diff.}
   return Val_RngMPolElt_FldPad_Make(ApplyPointwise('diff', Value(v), Value(w)));
 end intrinsic;
 
+///hide
 intrinsic 'diff'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('diff', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'diff'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('diff', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'diff'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('diff', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'diff'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('diff', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'eq'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> BoolElt
   {Equality.}
   return ForAll(Value(v), Value(w), 'eq');
 end intrinsic;
 
+///hide
 intrinsic 'eq'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('eq', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'eq'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('eq', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'eq'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('eq', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'eq'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('eq', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'ne'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> BoolElt
   {Inequality.}
   return not (v eq w);
 end intrinsic;
 
+///hide
 intrinsic 'ne'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('ne', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'ne'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('ne', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'ne'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('ne', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'ne'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('ne', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'le'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> BoolElt
   {Test if v is less than or equal to w everywhere. That is, pointwise 'le'.}
   return ForAll(Value(v), Value(w), 'le');
 end intrinsic;
 
+///hide
 intrinsic 'le'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('le', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'le'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('le', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'le'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('le', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'le'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('le', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'lt'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> BoolElt
   {Test if v is less than w everywhere. That is, pointwise 'lt'.}
   return (v le w) and (v ne w);
 end intrinsic;
 
+///hide
 intrinsic 'lt'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('lt', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'lt'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('lt', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'lt'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('lt', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'lt'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('lt', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'ge'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> BoolElt
   {Test if v is greater than or equal to w everywhere. That is, pointwise 'ge'.}
   return ForAll(Value(v), Value(w), 'ge');
 end intrinsic;
 
+///hide
 intrinsic 'ge'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('ge', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'ge'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('ge', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'ge'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('ge', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'ge'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('ge', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'gt'(v :: Val_RngMPolElt_FldPad, w :: Val_RngMPolElt_FldPad) -> BoolElt
   {Test if v is greater than w everywhere. That is, pointwise 'gt'.}
   return (v ge w) and (v ne w);
 end intrinsic;
 
+///hide
 intrinsic 'gt'(v :: Val_RngMPolElt_FldPad, w) -> .
   {"}
   return do_binop('gt', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'gt'(v, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('gt', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'gt'(v :: Val_RngMPolElt_FldPad, w :: Infty) -> .
   {"}
   return do_binop('gt', v, w);
 end intrinsic;
 
+///hide
 intrinsic 'gt'(v :: Infty, w :: Val_RngMPolElt_FldPad) -> .
   {"}
   return do_binop('gt', v, w);
