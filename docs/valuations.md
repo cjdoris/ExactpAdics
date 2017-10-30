@@ -5,8 +5,17 @@
 * [Introduction](#introduction)
 * [Generic intrinsics](#generic-intrinsics)
 * [Val_FldPadElt](#val_fldpadelt)
+  * [Creation](#creation)
+  * [Special values](#special-values)
+  * [Other operations](#other-operations)
 * [Val_RngUPolElt_FldPad](#val_rngupolelt_fldpad)
+  * [Creation](#creation)
+  * [Special values](#special-values)
+  * [Other operations](#other-operations)
 * [Val_RngMPolElt_FldPad](#val_rngmpolelt_fldpad)
+  * [Creation](#creation)
+  * [Special values](#special-values)
+  * [Other operations](#other-operations)
 
 
 ## Introduction
@@ -139,6 +148,8 @@ True if `v` may be coerced to a valuation for `x`. If so also returns the coerce
 
 Represents the valuation of a p-adic number.
 
+### Creation
+
 > **Val_FldPadElt_IsCoercible** (v)
 > 
 > **Val_FldPadElt_IsCoercible** (v :: *Val_FldPadElt*)
@@ -183,6 +194,8 @@ True if v and w are promotable to a common type.
 
 A Val_FldPadElt with value v.
 
+### Special values
+
 > **Val_FldPadElt_Infinity** ()
 > 
 > -> *Val_FldPadElt*
@@ -206,6 +219,8 @@ The valuation -Infinity.
 {:.intrinsic}
 
 The valuation 0.
+
+### Other operations
 
 > **IsFinite** (v :: *Val_FldPadElt*)
 > 
@@ -242,6 +257,8 @@ The integer valuation larger than v, or just v if infinite.
 ## Val_RngUPolElt_FldPad
 
 Represents the valuation of a univariate polynomial over a p-adic field.
+
+### Creation
 
 > **Val_RngUPolElt_FldPad_IsCoercible** (v)
 > 
@@ -303,6 +320,8 @@ Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
 
 Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z)).
 
+### Special values
+
 > **Val_RngUPolElt_FldPad_Infinity** ()
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -326,6 +345,8 @@ The valuation -Infinity.
 {:.intrinsic}
 
 The valuation 0.
+
+### Other operations
 
 > **Value** (v :: *Val_RngUPolElt_FldPad*)
 > 
@@ -394,6 +415,8 @@ The valuation of f.
 ## Val_RngMPolElt_FldPad
 
 Represents the valuation of a multivariate polynomial over a p-adic field.
+
+### Creation
 
 > **Val_RngMPolElt_FldPad_IsCoercible** (v)
 > 
@@ -479,6 +502,8 @@ Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
 
 Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z)).
 
+### Special values
+
 > **Val_RngMPolElt_FldPad_Infinity** ()
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -502,6 +527,8 @@ The valuation -Infinity.
 {:.intrinsic}
 
 The valuation 0.
+
+### Other operations
 
 > **Ceiling** (v :: *Val_RngMPolElt_FldPad*)
 > 

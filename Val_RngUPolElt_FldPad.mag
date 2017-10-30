@@ -27,6 +27,8 @@ VAL_RNGUPOLELT_FLDPAD_NEGINFINITY`values := DefaultAssociativeArray(VAL_FLDPADEL
 VAL_RNGUPOLELT_FLDPAD_ZERO := New(Val_RngUPolElt_FldPad);
 VAL_RNGUPOLELT_FLDPAD_ZERO`values := DefaultAssociativeArray(VAL_FLDPADELT_ZERO);
 
+///### Creation
+
 intrinsic Val_RngUPolElt_FldPad_IsCoercible(v) -> BoolElt, .
   {True if v is coercible to a Val_RngUPolElt_FldPad.}
   ok, v2 := Val_FldPadElt_IsCoercible(v);
@@ -186,6 +188,8 @@ intrinsic Val_RngUPolElt_FldPad_Make(x, y, z) -> Val_RngUPolElt_FldPad
   return Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z));
 end intrinsic;
 
+///### Special values
+
 intrinsic Val_RngUPolElt_FldPad_Infinity() -> Val_RngUPolElt_FldPad
   {The valuation Infinity.}
   return VAL_RNGUPOLELT_FLDPAD_INFINITY;
@@ -215,6 +219,8 @@ intrinsic Print(v :: Val_RngUPolElt_FldPad, lvl :: MonStgElt)
     end if;
   end case;
 end intrinsic;
+
+///### Other operations
 
 intrinsic Value(v :: Val_RngUPolElt_FldPad) -> AssocDflt
   {The underlying associative array of values.}

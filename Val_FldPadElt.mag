@@ -83,6 +83,8 @@ VAL_FLDPADELT_NEGINFINITY`value := -OO;
 VAL_FLDPADELT_ZERO := New(Val_FldPadElt);
 VAL_FLDPADELT_ZERO`value := 0;
 
+///### Creation
+
 intrinsic Val_FldPadElt_IsCoercible(v) -> BoolElt, .
   {True if v is coercible to a Val_FldPadElt, and the coerced value.}
   return false, "wrong type";
@@ -147,6 +149,8 @@ intrinsic Val_FldPadElt_Make(v) -> Val_FldPadElt
   return v;
 end intrinsic;
 
+///### Special values
+
 intrinsic Val_FldPadElt_Infinity() -> Val_FldPadElt
   {The valuation Infinity.}
   return VAL_FLDPADELT_INFINITY;
@@ -178,6 +182,8 @@ intrinsic Value(v :: Val_FldPadElt) -> .
   {The value of v.}
   return v`value;
 end intrinsic;
+
+///### Other operations
 
 intrinsic IsFinite(v :: Val_FldPadElt) -> BoolElt
   {True if v is finite, i.e. an integer or rational.}
