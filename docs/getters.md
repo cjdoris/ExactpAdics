@@ -3,6 +3,18 @@
 
 *Advanced users only.* You only need to know about getters if you wish to implement a new exact p-adic algorithm at a low-level (i.e. not built entirely out of intrinsics already supplied by this package) or implement a new compound p-adic type.
 
+**Contents**
+* [Overview](#overview)
+* [Creation](#creation)
+* [Evaluation](#evaluation)
+* [Composition](#composition)
+* [Reductions](#reductions)
+* [Short-circuit reductions](#short-circuit-reductions)
+
+
+## Overview
+
+
 In this package, a *getter* is a computation which has p-adic dependencies in the sense that it requires certain p-adic values to be known to certain precisions before it can be evaluated. Getters underpin the whole package: a `FldPadExactElt` has a field `update` which is a function taking as input an absolute precision and returning a getter; evaluating this getter has the side-effect of increasing the absolute precision of the element to at least the given precision.
 
 We encapsulate getters into the new type `ExactpAdics_Gettr`, and intrinsics which directly deal with getters are documented here.
