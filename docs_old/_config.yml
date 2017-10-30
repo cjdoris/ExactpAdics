@@ -3,3 +3,8 @@ description: A Magma package for exact p-adic computation
 permalink: pretty
 baseurl: /ExactpAdics
 markdown: kramdown
+defaults:
+  - scope:
+      path: ""
+    values:
+      section: 0

@@ -15,12 +15,15 @@ Please direct any bugs, comments or queries to [the GitHub issue tracker](https:
 
 ## Contents
 
-* [Overview]({{site.baseurl}}overview)
-* [Getting started]({{site.baseurl}}getting-started)
-* [Exact p-adic fields]({{site.baseurl}}exact-p-adic-fields)
-* [Univariate polynomials]({{site.baseurl}}univariate-polynomials)
-* [Multivariate polynomials]({{site.baseurl}}multivariate-polynomials)
-* [Getters]({{site.baseurl}}getters)
-* [Valuations]({{site.baseurl}}valuations)
-* [Precision strategies]({{site.baseurl}}precision-strategies)
-* [Types]({{site.baseurl}}types)
+{% assign ps = site.pages | sort:"section" | sort:"chapter" %}
+
+{% for p in ps %}
+{% if p.chapter > 0 %}
+{% if p.section > 0 %}
+{% else %}
+
+* [{{p.title}}]({{site.baseurl}}{{p.url}})
+
+{% endif %}
+{% endif %}
+{% endfor %}

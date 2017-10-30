@@ -1,3 +1,5 @@
+///# Getters
+
 // freeze;
 
 Z := Integers();
@@ -22,6 +24,7 @@ STORE`updates := [];
 
 PROFILE_UPDATE := recformat<id, initial_apr, apr>;
 
+///hide
 intrinsic ExactpAdics_SetProfile(doProfile :: BoolElt : Reset:=false)
   {Starts or stops profiling the exact p-adics updates.}
   s := STORE;
@@ -31,12 +34,14 @@ intrinsic ExactpAdics_SetProfile(doProfile :: BoolElt : Reset:=false)
   end if;
 end intrinsic;
 
+///hide
 intrinsic ExactpAdics_ResetProfile()
   {Resets the profiling data for the exact p-adics updates.}
   s := STORE;
   s`updates := [];
 end intrinsic;
 
+///hide
 intrinsic ExactpAdics_GetProfileUpdates() -> []
   {Gets a list of records, one per update, with fields recording the element, the initial precision, the target precision, and the time to perform the update.}
   return STORE`updates;
@@ -282,27 +287,9 @@ declare attributes ExactpAdics_Gettr: state, getDeps, getValue, explode;
 //   end case;
 // end function;
 
-intrinsic Evaluate(g :: ExactpAdics_Gettr) -> .
-  {Evaluates the getter and retuns its value.}
-  st := g`state;
-  repeat
-    ds := [**];
-    g`getDeps(~st, ~ds);
-    satisfy_deps_list(ds, Infinity());
-    g`getValue(~st, ~val);
-  until assigned val;
-  if assigned g`explode then
-    return Explode(val);
-  else
-    return val;
-  end if;
-end intrinsic;
+///## Creation
 
-intrinsic Print(g :: ExactpAdics_Gettr)
-  {Prints g.}
-  printf "Getter";
-end intrinsic;
-
+/// Creates a new getter with initial state `state`. `getDeps` must be a `procedure(~state, ~deps)` assigning to `deps` a list of `<x,apr>` pairs such that the computation depends on the absolute precision of `x` being at least `apr`. `getValue` must be a `procedure(~state, ~value)` which either assigns to `value`, giving the value of the getter, or does not assign to `value` meaning that the computation has more dependencies, and hence `getDeps` needs to be called again.
 intrinsic ExactpAdics_Getter(state, getDeps, getValue) -> ExactpAdics_Gettr
   {Makes a new ExactpAdics_Gettr.}
   g := New(ExactpAdics_Gettr);
@@ -323,6 +310,58 @@ intrinsic ExactpAdics_ConstGetter(X) -> ExactpAdics_Gettr
       val := X;
     end procedure);
 end intrinsic;
+
+intrinsic ExactpAdics_NullGetter() -> ExactpAdics_Gettr
+  {The getter with no dependencies that does nothing.}
+  return ExactpAdics_ConstGetter(true);
+end intrinsic;
+
+/// A new getter with more general dependencies. `getGetter` must be a `procedure(~state, ~getter)` assigning to `getter` a getter, which is a dependency. `getValue` must be a `procedure(gvalue, ~state, ~value)` which is like `getValue` for `ExactpAdics_Getter` except it now takes the extra input `gvalue` shich is the value of the getter assigned by `getGetter`.
+intrinsic ExactpAdics_GeneralGetter(state, getGetter, getValue) -> ExactpAdics_Gettr
+  {Alternative getter where getGetter(~st,~g) gets a getter g which is evaluated to gval before calling getValue(gval,~st,~val).}
+  return ExactpAdics_Getter(rec<recformat<gg,st,g,gst>|gg:=true,st:=state,g:=false,gst:=false>,
+    procedure (~st, ~deps)
+      if st`gg then
+        getGetter(~st`st, ~st`g);
+        st`gst := st`g`state;
+        st`gg := false;
+      end if;
+      st`g`getDeps(~st`gst, ~deps);
+    end procedure,
+    procedure (~st, ~val)
+      st`g`getValue(~st`gst, ~gval);
+      if assigned gval then
+        getValue(gval, ~st`st, ~val);
+        st`gg := true;
+      end if;
+    end procedure);
+end intrinsic;
+
+///## Evaluation
+
+intrinsic Evaluate(g :: ExactpAdics_Gettr) -> .
+  {Evaluates the getter and retuns its value.}
+  st := g`state;
+  repeat
+    ds := [**];
+    g`getDeps(~st, ~ds);
+    satisfy_deps_list(ds, Infinity());
+    g`getValue(~st, ~val);
+  until assigned val;
+  if assigned g`explode then
+    return Explode(val);
+  else
+    return val;
+  end if;
+end intrinsic;
+
+///hide
+intrinsic Print(g :: ExactpAdics_Gettr)
+  {Prints g.}
+  printf "Getter";
+end intrinsic;
+
+///## Composition
 
 CALL_LIST :=
   [ func<f, x | f()>
@@ -354,17 +393,6 @@ intrinsic Apply(f, g :: ExactpAdics_Gettr) -> ExactpAdics_Gettr
     end if;
   end procedure);
 end intrinsic;
-
-// intrinsic Apply(f :: Tup, g :: ExactpAdics_Gettr) -> ExactpAdics_Gettr
-//   {"}
-//   f := wrappedFunction(f);
-//   return ExactpAdics_Getter(g`state, g`getDeps, procedure (~st, ~val)
-//     g`getValue(~st, ~val);
-//     if assigned val then
-//       val := callWrappedFunction_InList(f, val);
-//     end if;
-//   end procedure);
-// end intrinsic;
 
 intrinsic Compose(g :: ExactpAdics_Gettr, f) -> ExactpAdics_Gettr
   {"}
@@ -441,6 +469,8 @@ intrinsic ComposeGetter(g :: ExactpAdics_Gettr, f) -> ExactpAdics_Gettr
   return ApplyGetter(f, g);
 end intrinsic;
 
+///## Reductions
+
 intrinsic Flatten(gs :: [ExactpAdics_Gettr] : Sequence:=false, Universe:=false) -> ExactpAdics_Gettr
   {The ExactpAdics_Gettr whose value is the list of values of the given gettrs.}
   if #gs eq 0 then
@@ -498,36 +528,14 @@ intrinsic '&cat'(gs :: [ExactpAdics_Gettr]) -> ExactpAdics_Gettr
   return Flatten(gs : Sequence);
 end intrinsic;
 
-intrinsic ExactpAdics_GeneralGetter(state, getGetter, getValue) -> ExactpAdics_Gettr
-  {Alternative getter where getGetter(~st,~g) gets a getter g which is evaluated to gval before calling getValue(gval,~st,~val).}
-  return ExactpAdics_Getter(rec<recformat<gg,st,g,gst>|gg:=true,st:=state,g:=false,gst:=false>,
-    procedure (~st, ~deps)
-      if st`gg then
-        getGetter(~st`st, ~st`g);
-        st`gst := st`g`state;
-        st`gg := false;
-      end if;
-      st`g`getDeps(~st`gst, ~deps);
-    end procedure,
-    procedure (~st, ~val)
-      st`g`getValue(~st`gst, ~gval);
-      if assigned gval then
-        getValue(gval, ~st`st, ~val);
-        st`gg := true;
-      end if;
-    end procedure);
-end intrinsic;
-
+///hide
 intrinsic '/'(g :: ExactpAdics_Gettr, n :: RngIntElt) -> ExactpAdics_Gettr
   {Modifies g so that it returns the first n values of its return value.}
   g`explode := n;
   return g;
 end intrinsic;
 
-intrinsic ExactpAdics_NullGetter() -> ExactpAdics_Gettr
-  {The getter with no dependencies that does nothing.}
-  return ExactpAdics_ConstGetter(true);
-end intrinsic;
+///## Short-circuit reductions
 
 intrinsic ShortCircuitReduce(gs :: [ExactpAdics_Gettr], f) -> ExactpAdics_Gettr
   {Given a function f taking any subsequence of S=[<i, Evaluate(gs[i])> : i in [1..#gs]] and returning either false,_ when the result is unknown or true,val when the result is known, where val is independent of the subsequence of S, returns the getter which evaluates to val. f(S) must return true.}

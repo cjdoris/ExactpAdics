@@ -1,7 +1,10 @@
 ---
+chapter: 2
 ---
 
 # Getting started
+
+{% include prev-next.md %}
 
 ## Download
 

@@ -543,6 +543,9 @@ end procedure;
 
 ///### Prime fields
 
+/// intrinsic ExactpAdicField(p :: RngIntElt) -> FldPadExact
+/// 
+/// The exact p-adic field.
 intrinsic ExactpAdicField(p :: RngIntElt) -> FldPadExact
   {The exact p-adic field.}
   require (p gt 0) and IsPrime(p): "p must be prime";
@@ -558,6 +561,7 @@ end intrinsic;
 
 ///### Basic invariants
 
+/// intrinsic Prime(F :: FldPadExact) -> RngIntElt
 intrinsic Prime(F :: FldPadExact) -> RngIntElt
   {The p in p-adic.}
   if not assigned F`prime then

@@ -1,139 +1,144 @@
----
-chapter: 20
-headings:
-  - Creation
-  - Evaluation
-  - Composition
----
-
-# Getters: recursive computations
-
-{% include jump-list.md %}
-
-The new type `ExactpAdics_Gettr` encapsulates a computation which, when evaluated, yields a value. The computation may depend on other computations which in turn recursively depend on the value of some p-adic objects being known to some precision. Evaluating a Getter entails finding all of these dependencies recursively, merging them so that there is only one dependency per object, and then satisfying the tree of dependencies in order, before findally evaluating the root.
-
-Getters underlie the whole ExactpAdics package: every p-adic number or polynomial carries with it an *update function* taking an absolute precision and returning a Getter which, when evaluated, has the side-effect of updating the approximation to the given precision.
-
-Knowledge of Getters is not required by the casual user. However, the programmer who wants to create new p-adic values directly without using the higher functionality elsewhere in the package will need to be familiar with them.
+# Getters
 
 ## Creation
 
 > **ExactpAdics_Getter** (state, getDeps, getValue)
->
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-A Getter where:
-- `state` is the initial value of a state variable.
-- `getDeps` is a `procedure(~state, ~deps)` which assigns to `deps` a list of dependencies, which are pairs `<x,apr>` of p-adic values `x` (of type `FldPadExactElt`, `RngUPolElt_FldPadExact` or `RngMPolElt_FldPadExact`) and corresponding absolute precisions that the computation depends on.
-- `getValue` is a `procedure(~state, ~val)` which assigns to `val` the value of the Getter if possible.
-- Both procedures are free to modify the `state` parameter.
-- If `getValue` does not assign to `val`, then this means the computation has more dependencies, and the depdendency resolving framework will go on to call `getDeps` again.
+Creates a new getter with initial state `state`. `getDeps` must be a `procedure(~state, ~deps)` assigning to `deps` a list of `<x,apr>` pairs such that the computation depends on the absolute precision of `x` being at least `apr`. `getValue` must be a `procedure(~state, ~value)` which either assigns to `value`, giving the value of the getter, or does not assign to `value` meaning that the computation has more dependencies, and hence `getDeps` needs to be called again.
 
-> **ExactpAdics_ConstGetter** (x)
->
+> **ExactpAdics_ConstGetter** (X)
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-A Getter with no dependencies and which evaluates to `x`.
+The getter returning X.
+
+> **ExactpAdics_NullGetter** ()
+> 
+> -> *ExactpAdics_Gettr*
+> {:.ret}
+{:.intrinsic}
+
+The getter with no dependencies that does nothing.
 
 > **ExactpAdics_GeneralGetter** (state, getGetter, getValue)
->
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-Similar to `ExactpAdics_Getter` except the dependency is a getter:
-- `getGetter` replaces `getDeps` and is a `procedure(~state, ~g)` which assigns a getter to `g`.
-- `getValue` is now a `procedure(gval, ~state, ~val)` where `gval` is the value of the getter assigned to `g` in `getGetter`.
+A new getter with more general dependencies. `getGetter` must be a `procedure(~state, ~getter)` assigning to `getter` a getter, which is a dependency. `getValue` must be a `procedure(gvalue, ~state, ~value)` which is like `getValue` for `ExactpAdics_Getter` except it now takes the extra input `gvalue` shich is the value of the getter assigned by `getGetter`.
 
 ## Evaluation
 
 > **Evaluate** (g :: *ExactpAdics_Gettr*)
->
-> -> *Any*
+> 
+> -> Any
 > {:.ret}
 {:.intrinsic}
 
-Evaluates the Getter `g` and returns its value.
+Evaluates the getter and retuns its value.
 
 ## Composition
 
 > **Apply** (f, g :: *ExactpAdics_Gettr*)
->
+> 
 > **Compose** (g :: *ExactpAdics_Gettr*, f)
->
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-The getter `g` with the function `f` applied to its output.
+Applies f to the output of g.
+
+
 
 > **ApplyProcedure** (f, g :: *ExactpAdics_Gettr*)
->
+> 
 > **ComposeProcedure** (g :: *ExactpAdics_Gettr*, f)
->
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-The getter `g` which calls the procedure `f` on its return value.
+Applies the procedure f to the output of g, and sets the output to the given value.
 
-**Parameters.**
-- `Value := true`: The value returned by the new getter.
+
 
 > **ApplyGetter** (f, g :: *ExactpAdics_Gettr*)
->
-> **ComposeGetter** (g :: ExactpAdics_Gettr*, f)
->
+> 
+> **\'mod\'** (g :: *ExactpAdics_Gettr*, f)
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-The getter with value `Evaluate(f(Evaluate(g)))`. `f` must be a function returning a getter.
+The getter which returns the return value of f(return value of g).
 
-**Parameters.**
-- `AllowConst := false`: When true, if `f` does not return a getter, then behave as if `f` returned a ConstGetter with this value. That is, the new getter returns the return value of `f`.
+
 
 > **ApplyGetter** (f, gs :: [*ExactpAdics_Gettr*])
->
+> 
+> **\'mod\'** (gs :: [*ExactpAdics_Gettr*], f)
+> 
+> **ComposeGetter** (g :: *ExactpAdics_Gettr*, f)
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-The getter with value `Evaluate(f(Evaluate(gs[1]), Evaluate(gs[2]), ...))`. `f` must be a function with `#gs` inputs returning a getter.
+The getter which returns the return value of f(return value of gs[1], ...).
 
-**Parameters.** As for previous intrinsic.
 
-> **\'mod\'** (g :: *ExactpAdics_Gettr*, f)
->
-> **\'mod\'** (g :: [*ExactpAdics_Gettr*], f)
->
-> -> *ExactpAdics_Gettr*
-> {:.ret}
-{:.intrinsic}
 
-Same as `ApplyGetter(f, g : AllowConst)`.
+
+
+## Reductions
 
 > **Flatten** (gs :: [*ExactpAdics_Gettr*])
->
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-The getter with value `[* Evaluate(gs[1]), Evaluate(gs[2]), ... *]`.
-
-**Parameters.**
-- `Sequence := false`: When true, the value is a sequence not a list.
-- `Universe`: When given, the value is a sequence with the given universe (implies `Sequence := true`).
+The ExactpAdics_Gettr whose value is the list of values of the given gettrs.
 
 > **\'&cat\'** (gs :: [*ExactpAdics_Gettr*])
->
+> 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
 {:.intrinsic}
 
-Same as `Flatten(gs : Sequence)`.
+The getter whose value is the sequence of values of gs.
+
+## Short-circuit reductions
+
+> **ShortCircuitReduce** (gs :: [*ExactpAdics_Gettr*], f)
+> 
+> -> *ExactpAdics_Gettr*
+> {:.ret}
+{:.intrinsic}
+
+Given a function f taking any subsequence of S=[<i, Evaluate(gs[i])> : i in [1..#gs]] and returning either false,_ when the result is unknown or true,val when the result is known, where val is independent of the subsequence of S, returns the getter which evaluates to val. f(S) must return true.
+
+> **Exists** (gs :: [*ExactpAdics_Gettr*])
+> 
+> -> *ExactpAdics_Gettr*
+> {:.ret}
+{:.intrinsic}
+
+The getter whose value is true iff there exists g in gs so that f(Evaluate(g)) is true.
+
+> **ForAll** (gs :: [*ExactpAdics_Gettr*])
+> 
+> -> *ExactpAdics_Gettr*
+> {:.ret}
+{:.intrinsic}
+
+The getter whose value is true iff for all g in gs f(Evaluate(g)) is true.
 
