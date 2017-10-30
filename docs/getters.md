@@ -1,5 +1,16 @@
 # Getters
 
+
+*Advanced users only.* You only need to know about getters if you wish to implement a new exact p-adic algorithm at a low-level (i.e. not built entirely out of intrinsics already supplied by this package) or implement a new compound p-adic type.
+
+In this package, a *getter* is a computation which has p-adic dependencies in the sense that it requires certain p-adic values to be known to certain precisions before it can be evaluated. Getters underpin the whole package: a `FldPadExactElt` has a field `update` which is a function taking as input an absolute precision and returning a getter; evaluating this getter has the side-effect of increasing the absolute precision of the element to at least the given precision.
+
+We encapsulate getters into the new type `ExactpAdics_Gettr`, and intrinsics which directly deal with getters are documented here.
+
+A getter is essentially represented by a function `getDeps` returning a list of dependencies, and a function `getValue` which computes the value assuming the dependencies are met. There is also a state which is passed around by these functions so they can be stateful. A dependency is simply a pair `<x,apr>` of a p-adic value `x` (a `FldPadExactElt` or `RngUPolElt_FldPadExact`, etc.) and an absolute precision `apr` (a `Val_FldPadExact`, etc.), meaning that `x` is required to be known to absolute precision `apr`. Note that these dependencies may themselves have dependencies, and so we have a tree of dependencies. Evaluating the getter therefore involves traversing this tree from the leaves upward, satisfying dependencies as we go and computing values.
+
+As an optimization, if two dependencies `<x,apr1>`, `<x,apr2>` in the tree are for the same p-adic value `x`, then the nodes are fused into the node `<x, apr1 join apr2>`. Also if `<x,apr>` is a dependency and the absolute precision of `x` is already `apr` then we may immediately trim the whole subtree.
+
 ## Creation
 
 > **ExactpAdics_Getter** (state, getDeps, getValue)
@@ -66,7 +77,7 @@ Applies f to the output of g.
 > {:.ret}
 {:.intrinsic}
 
-Applies the procedure f to the output of g, and sets the output to the given value.
+Applies the procedure f to the output of g, and sets the output Value.
 
 
 
@@ -78,7 +89,7 @@ Applies the procedure f to the output of g, and sets the output to the given val
 > {:.ret}
 {:.intrinsic}
 
-The getter which returns the return value of f(return value of g).
+The getter which returns the return value of f(return value of g). If AllowConst is false then f must return a getter; if true then f may return a non-getter, in which case this is the value of the returned getter.
 
 
 
@@ -106,7 +117,7 @@ The getter which returns the return value of f(return value of gs[1], ...).
 > {:.ret}
 {:.intrinsic}
 
-The ExactpAdics_Gettr whose value is the list of values of the given gettrs.
+The getter whose value is the list of values of the given gettrs. If Sequence is true, the value is coerced to a sequence. If Universe is given, the value is coerced to a sequence with this universe.
 
 > **\'&cat\'** (gs :: [*ExactpAdics_Gettr*])
 > 
