@@ -478,6 +478,8 @@ intrinsic IncreaseAbsolutePrecision_Lazy(f :: RngMPolElt_FldPadExact, n) -> Exac
   return ExactpAdics_Getter(false, procedure (~st, ~deps) deps := [*[*f,n*]*]; end procedure, procedure (~st, ~val) assert n le AbsolutePrecision(f); val := true; end procedure);
 end intrinsic;
 
+///param Quick /hide
+///param FixPr /hide
 intrinsic Approximation_Lazy(f :: RngMPolElt_FldPadExact, APr : Quick:=false, FixPr:=false) -> ExactpAdics_Gettr
   {An approximation to `f` of absolute precision `APr`.}
   ok, apr := IsValidAbsolutePrecisionDiff(f, APr);
@@ -576,6 +578,8 @@ intrinsic Print(R :: RngMPol_FldPadExact, lvl :: MonStgElt)
 end intrinsic;
 
 /// A string representation of `f`.
+/// 
+///param APr Output to this absolute precision.
 intrinsic Format(f :: RngMPolElt_FldPadExact : APr:=false) -> MonStgElt
   {Returns a string representation of `f`.}
   ok, APr := IsValidAbsolutePrecision(f, APr);

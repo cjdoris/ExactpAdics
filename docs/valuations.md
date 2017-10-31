@@ -50,6 +50,7 @@ This is as normal for `Val_FldPadElt`, and defined pointwise otherwise. For conv
 
 
 
+
 > **\'\*\'** (v :: *Val*, n)
 > 
 > **\'\*\'** (n, v :: *Val*)
@@ -61,6 +62,7 @@ This is as normal for `Val_FldPadElt`, and defined pointwise otherwise. For conv
 {:.intrinsic}
 
 Scalar multiplication and division. `n` must be an integer or rational.
+
 
 
 
@@ -96,6 +98,7 @@ This is as normal for `Val_FldPadElt` (i.e. a total ordering), and defined point
 
 
 
+
 > **\'join\'** (v :: *Val*, w :: *Val*)
 > 
 > **\'meet\'** (v :: *Val*, w :: *Val*)
@@ -110,6 +113,7 @@ This is just maximum and minimum for `Val_FldPadElt`, and defined pointwise othe
 
 
 
+
 > **\'diff\'** (v :: *Val*, w :: *Val*)
 > 
 > -> *Val*
@@ -120,6 +124,7 @@ Diff. For `Val_FldPadElt`, `v diff w` is defined to be `v` if `v gt w` and other
 
 If you view the valuation of a compound structure like a multiset, except where the multiplicities on each element are tropical integers instead of normal integers, then `diff` is like set difference defined via a universal property.
 
+
 > **Value** (v :: *Val*)
 > 
 > -> Any
@@ -127,6 +132,7 @@ If you view the valuation of a compound structure like a multiset, except where 
 {:.intrinsic}
 
 Retrieves the value of the valuation. For `Val_FldPadElt` this is an integer, rational or infinite. For compound structures it is the underlying function, e.g. for polynomials it is an `AssocDflt` representing a function which is constant almost everywhere.
+
 
 > **IsValidAbsolutePrecision** (x, v)
 > 
@@ -136,6 +142,7 @@ Retrieves the value of the valuation. For `Val_FldPadElt` this is an integer, ra
 
 True if `v` may be coerced to a valuation for `x`. If so, also returns the coerced valuation.
 
+
 > **IsValidAbsolutePrecisionDiff** (x, v)
 > 
 > -> *Val*
@@ -143,6 +150,7 @@ True if `v` may be coerced to a valuation for `x`. If so, also returns the coerc
 {:.intrinsic}
 
 True if `v` may be coerced to a valuation for `x`. If so also returns the coerced valuation. Differs from `IsValidAbsolutePrecision` in that, for example, for polynomials, if the constant value is not implied by `v`, then it is taken to be 0 instead of infinity.
+
 
 ## Val_FldPadElt
 
@@ -178,6 +186,7 @@ True if v is coercible to a Val_FldPadElt, and the coerced value.
 
 
 
+
 > **IsPromotable** (v :: *Val_FldPadElt*, w)
 > 
 > -> *BoolElt*, Any
@@ -186,6 +195,7 @@ True if v is coercible to a Val_FldPadElt, and the coerced value.
 
 True if v and w are promotable to a common type.
 
+
 > **Val_FldPadElt_Make** (v)
 > 
 > -> *Val_FldPadElt*
@@ -193,6 +203,7 @@ True if v and w are promotable to a common type.
 {:.intrinsic}
 
 A Val_FldPadElt with value v.
+
 
 ### Special values
 
@@ -204,6 +215,7 @@ A Val_FldPadElt with value v.
 
 The valuation Infinity.
 
+
 > **Val_FldPadElt_NegInfinity** ()
 > 
 > -> *Val_FldPadElt*
@@ -212,6 +224,7 @@ The valuation Infinity.
 
 The valuation -Infinity.
 
+
 > **Val_FldPadElt_Zero** ()
 > 
 > -> *Val_FldPadElt*
@@ -219,6 +232,7 @@ The valuation -Infinity.
 {:.intrinsic}
 
 The valuation 0.
+
 
 ### Other operations
 
@@ -230,6 +244,7 @@ The valuation 0.
 
 True if v is finite, i.e. an integer or rational.
 
+
 > **IsIntegral** (v :: *Val_FldPadElt*)
 > 
 > -> *BoolElt*, *RngIntElt*
@@ -237,6 +252,7 @@ True if v is finite, i.e. an integer or rational.
 {:.intrinsic}
 
 True if v has an integer value, and the value if so.
+
 
 > **IntegerValue** (v :: *Val_FldPadElt*)
 > 
@@ -246,6 +262,7 @@ True if v has an integer value, and the value if so.
 
 The value of v coerced to an integer.
 
+
 > **Ceiling** (v :: *Val_FldPadElt*)
 > 
 > -> *Val_FldPadElt*
@@ -253,6 +270,7 @@ The value of v coerced to an integer.
 {:.intrinsic}
 
 The integer valuation larger than v, or just v if infinite.
+
 
 ## Val_RngUPolElt_FldPad
 
@@ -276,6 +294,7 @@ True if v is coercible to a Val_RngUPolElt_FldPad.
 
 
 
+
 > **IsPromotable** (v :: *Val_RngUPolElt_FldPad*, w)
 > 
 > -> *BoolElt*, Any
@@ -283,6 +302,7 @@ True if v is coercible to a Val_RngUPolElt_FldPad.
 {:.intrinsic}
 
 True if v and w are promotable to a common type.
+
 
 > **Val_RngUPolElt_FldPad_IsCoercible** (dflt, v)
 > 
@@ -296,6 +316,7 @@ True if v is coercible to a Val_RngUPolElt_FldPad with given default.
 
 
 
+
 > **Val_RngUPolElt_FldPad_Make** (v)
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -303,6 +324,7 @@ True if v is coercible to a Val_RngUPolElt_FldPad with given default.
 {:.intrinsic}
 
 A Val_RngUPolElt_FldPad with value v.
+
 
 > **Val_RngUPolElt_FldPad_Make** (x, y)
 > 
@@ -312,6 +334,7 @@ A Val_RngUPolElt_FldPad with value v.
 
 Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
 
+
 > **Val_RngUPolElt_FldPad_Make** (x, y, z)
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -319,6 +342,7 @@ Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
 {:.intrinsic}
 
 Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z)).
+
 
 ### Special values
 
@@ -330,6 +354,7 @@ Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z)).
 
 The valuation Infinity.
 
+
 > **Val_RngUPolElt_FldPad_NegInfinity** ()
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -338,6 +363,7 @@ The valuation Infinity.
 
 The valuation -Infinity.
 
+
 > **Val_RngUPolElt_FldPad_Zero** ()
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -345,6 +371,7 @@ The valuation -Infinity.
 {:.intrinsic}
 
 The valuation 0.
+
 
 ### Other operations
 
@@ -356,6 +383,7 @@ The valuation 0.
 
 The underlying associative array of values.
 
+
 > **Ceiling** (v :: *Val_RngUPolElt_FldPad*)
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -363,6 +391,7 @@ The underlying associative array of values.
 {:.intrinsic}
 
 The integer valuation larger than v, or just v if infinite.
+
 
 > **\'&join\'** (v :: *Val_RngUPolElt_FldPad*)
 > 
@@ -372,6 +401,7 @@ The integer valuation larger than v, or just v if infinite.
 
 The join of the valuations at each coefficient. Equivalent to "&join Image(Value(v))".
 
+
 > **\'&meet\'** (v :: *Val_RngUPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -379,6 +409,7 @@ The join of the valuations at each coefficient. Equivalent to "&join Image(Value
 {:.intrinsic}
 
 The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value(v))".
+
 
 > **\'@\'** (i :: *RngIntElt*, v :: *Val_RngUPolElt_FldPad*)
 > 
@@ -388,6 +419,7 @@ The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value
 
 The valuation of coefficient i.
 
+
 > **ShiftSlope** (v :: *Val_RngUPolElt_FldPad*, s)
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -395,6 +427,7 @@ The valuation of coefficient i.
 {:.intrinsic}
 
 Adds i*s onto v(i).
+
 
 > **ExactpAdics_Val** (f :: *RngUPolElt*[*FldPad*])
 > 
@@ -404,6 +437,7 @@ Adds i*s onto v(i).
 
 The valuation of f.
 
+
 > **ExactpAdics_APr** (f :: *RngUPolElt*[*FldPad*])
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -411,6 +445,7 @@ The valuation of f.
 {:.intrinsic}
 
 The valuation of f.
+
 
 ## Val_RngMPolElt_FldPad
 
@@ -434,6 +469,7 @@ True if v is coercible to a Val_RngMPolElt_FldPad.
 
 
 
+
 > **IsPromotable** (v :: *Val_RngMPolElt_FldPad*, w)
 > 
 > -> *BoolElt*, Any
@@ -441,6 +477,7 @@ True if v is coercible to a Val_RngMPolElt_FldPad.
 {:.intrinsic}
 
 True if v and w are promotable to a common type.
+
 
 > **Val_RngMPolElt_FldPad_IsCoercible** (dflt, v)
 > 
@@ -454,6 +491,7 @@ True if v is coercible to a Val_RngMPolElt_FldPad with given default.
 
 
 
+
 > **IsValidAbsolutePrecision** (x :: *RngMPolElt_FldPadExact*, v)
 > 
 > -> *BoolElt*, Any
@@ -461,6 +499,7 @@ True if v is coercible to a Val_RngMPolElt_FldPad with given default.
 {:.intrinsic}
 
 True if v is coercible to an absolute precision for x. Also returns the coerced value.
+
 
 > **IsValidAbsolutePrecisionDiff** (x :: *RngMPolElt_FldPadExact*, v)
 > 
@@ -470,6 +509,7 @@ True if v is coercible to an absolute precision for x. Also returns the coerced 
 
 True if v is coercible to an absolute precision diff for x. Also returns the coerced value.
 
+
 > **IsValidRelativePrecision** (x :: *RngMPolElt_FldPadExact*, v)
 > 
 > -> *BoolElt*, Any
@@ -477,6 +517,7 @@ True if v is coercible to an absolute precision diff for x. Also returns the coe
 {:.intrinsic}
 
 True if v is coercible to a relative precision for x. Also returns the coerced value.
+
 
 > **Val_RngMPolElt_FldPad_Make** (v)
 > 
@@ -486,6 +527,7 @@ True if v is coercible to a relative precision for x. Also returns the coerced v
 
 A Val_RngMPolElt_FldPad with value v.
 
+
 > **Val_RngMPolElt_FldPad_Make** (x, y)
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -494,6 +536,7 @@ A Val_RngMPolElt_FldPad with value v.
 
 Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
 
+
 > **Val_RngMPolElt_FldPad_Make** (x, y, z)
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -501,6 +544,7 @@ Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
 {:.intrinsic}
 
 Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z)).
+
 
 ### Special values
 
@@ -512,6 +556,7 @@ Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z)).
 
 The valuation Infinity.
 
+
 > **Val_RngMPolElt_FldPad_NegInfinity** ()
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -520,6 +565,7 @@ The valuation Infinity.
 
 The valuation -Infinity.
 
+
 > **Val_RngMPolElt_FldPad_Zero** ()
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -527,6 +573,7 @@ The valuation -Infinity.
 {:.intrinsic}
 
 The valuation 0.
+
 
 ### Other operations
 
@@ -538,6 +585,7 @@ The valuation 0.
 
 The integer valuation larger than v, or just v if infinite.
 
+
 > **\'&join\'** (v :: *Val_RngMPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -545,6 +593,7 @@ The integer valuation larger than v, or just v if infinite.
 {:.intrinsic}
 
 The join of the valuations at each coefficient. Equivalent to "&join Image(Value(v))".
+
 
 > **\'&meet\'** (v :: *Val_RngMPolElt_FldPad*)
 > 
@@ -554,6 +603,7 @@ The join of the valuations at each coefficient. Equivalent to "&join Image(Value
 
 The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value(v))".
 
+
 > **\'@\'** (i :: [*RngIntElt*], v :: *Val_RngMPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -561,6 +611,7 @@ The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value
 {:.intrinsic}
 
 The valuation of coefficient i.
+
 
 > **\'@\'** (m :: *RngMPolElt*, v :: *Val_RngMPolElt_FldPad*)
 > 
@@ -570,11 +621,13 @@ The valuation of coefficient i.
 
 The valuation of coefficient Exponents(m).
 
-> **ShiftSlope** (v :: *Val_RngMPolElt_FldPad*, s :: [Any])
+
+> **ShiftSlope** (v :: *Val_RngMPolElt_FldPad*, s :: [])
 > 
 > -> *Val_RngMPolElt_FldPad*
 > {:.ret}
 {:.intrinsic}
 
 Adds i.s onto v(i).
+
 

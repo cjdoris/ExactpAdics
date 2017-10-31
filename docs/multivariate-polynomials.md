@@ -315,13 +315,10 @@ Increases the absolute precision of `f` to `n`.
 > {:.ret}
 {:.intrinsic}
 
-An approximation to `f` of absolute precision `APr`.
 
 
 
-**Parameters**
-- `Quick`
-- `FixPr`
+
 
 ## Printing
 
@@ -333,8 +330,9 @@ An approximation to `f` of absolute precision `APr`.
 
 A string representation of `f`.
 
+
 **Parameters**
-- `APr`
+- `APr`: Output to this absolute precision.
 
 ## Hensel lifting
 

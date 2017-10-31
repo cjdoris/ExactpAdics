@@ -15,6 +15,7 @@
 
 True if we can create a default associative array with default x.
 
+
 > **IsCoercible_DefaultAssociativeArray** (x, keys, values)
 > 
 > -> *BoolElt*, *AssocDflt*
@@ -22,6 +23,7 @@ True if we can create a default associative array with default x.
 {:.intrinsic}
 
 True if we can create a default associative array with default x and given keys and values.
+
 
 > **IsCoercible_DefaultAssociativeArray** (x, y)
 > 
@@ -39,6 +41,7 @@ True if we can create a default associative array with default x and values y.
 
 
 
+
 > **DefaultAssociativeArray** (x)
 > 
 > -> *AssocDflt*
@@ -46,6 +49,7 @@ True if we can create a default associative array with default x and values y.
 {:.intrinsic}
 
 The default associative array with default value x.
+
 
 > **DefaultAssociativeArray** (x, ys)
 > 
@@ -55,6 +59,7 @@ The default associative array with default value x.
 
 The default associative array with default value x and keys and values specified by ys (an associative array or sequence of <key,value> pairs).
 
+
 > **DefaultAssociativeArray** (x, keys, values)
 > 
 > -> *AssocDflt*
@@ -63,10 +68,12 @@ The default associative array with default value x and keys and values specified
 
 The default associative array with default value x, and given keys and values.
 
+
 > **Print** (x :: *AssocDflt*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
 Print.
+
 
 > **\'@\'** (i, x :: *AssocDflt*)
 > 
@@ -76,6 +83,7 @@ Print.
 
 The value at index i of x.
 
+
 > **ApplyPointwise** (f, x :: *AssocDflt*, y :: *AssocDflt*)
 > 
 > -> *AssocDflt*
@@ -83,6 +91,7 @@ The value at index i of x.
 {:.intrinsic}
 
 Applies the function f pointwise to values of x and y.
+
 
 > **ApplyPointwise** (f, x :: *AssocDflt*)
 > 
@@ -92,6 +101,7 @@ Applies the function f pointwise to values of x and y.
 
 Applies the function f pointwise to values of x.
 
+
 > **Image** (x :: *AssocDflt*)
 > 
 > -> {}
@@ -99,6 +109,7 @@ Applies the function f pointwise to values of x.
 {:.intrinsic}
 
 The set of possible output values.
+
 
 > **DefaultValue** (x :: *AssocDflt*)
 > 
@@ -108,6 +119,7 @@ The set of possible output values.
 
 The default value of x.
 
+
 > **SpecialAssociativeArray** (x :: *AssocDflt*)
 > 
 > -> *Assoc*
@@ -115,6 +127,7 @@ The default value of x.
 {:.intrinsic}
 
 The associative array of the special values of x.
+
 
 > **SpecialKeys** (x :: *AssocDflt*)
 > 
@@ -124,6 +137,7 @@ The associative array of the special values of x.
 
 The keys of special values of x.
 
+
 > **Zip** (xs :: [*AssocDflt*])
 > 
 > -> *AssocDflt*
@@ -131,6 +145,7 @@ The keys of special values of x.
 {:.intrinsic}
 
 The array [i] -> [x(i) : x in xs]. The inputs must have compatible indices.
+
 
 > **ZipApplyPointwise** (f, xs :: [*AssocDflt*])
 > 
@@ -140,6 +155,7 @@ The array [i] -> [x(i) : x in xs]. The inputs must have compatible indices.
 
 The array [i] -> f([x(i) : x in xs]). Equivalent to ApplyPointwise(f,Zip(xs)).
 
+
 > **ForAll** (x :: *AssocDflt*, f)
 > 
 > -> *BoolElt*
@@ -148,6 +164,7 @@ The array [i] -> f([x(i) : x in xs]). Equivalent to ApplyPointwise(f,Zip(xs)).
 
 True if f(x(i)) is true for all i.
 
+
 > **ForAll** (x :: *AssocDflt*, y :: *AssocDflt*, f)
 > 
 > -> *BoolElt*
@@ -155,6 +172,7 @@ True if f(x(i)) is true for all i.
 {:.intrinsic}
 
 True if f(x(i),y(i)) is true for all i.
+
 
 ## Promotion
 
@@ -166,6 +184,7 @@ True if f(x(i),y(i)) is true for all i.
 
 True if x and y are promotable to the same parent.
 
+
 > **Promote** (x, y)
 > 
 > -> Any, Any
@@ -173,6 +192,7 @@ True if x and y are promotable to the same parent.
 {:.intrinsic}
 
 Promotes x and y to a common type.
+
 
 ## Lower bounds
 
@@ -184,6 +204,9 @@ Promotes x and y to a common type.
 
 The lower bound v.
 
+**Parameters**
+- `IsSharp`
+
 > **IsSharp** (b :: *ExactpAdics_BndLow*)
 > 
 > -> *BoolElt*
@@ -191,6 +214,7 @@ The lower bound v.
 {:.intrinsic}
 
 True if b is a sharp bound.
+
 
 > **BoundValue** (b :: *ExactpAdics_BndLow*)
 > 
@@ -200,6 +224,7 @@ True if b is a sharp bound.
 
 The lower bound.
 
+
 > **Value** (b :: *ExactpAdics_BndLow*)
 > 
 > -> Any
@@ -208,10 +233,12 @@ The lower bound.
 
 The value of b, assuming it is sharp.
 
+
 > **Print** (b :: *ExactpAdics_BndLow*, lvl :: *Magma*)
 {:.intrinsic}
 
 Print.
+
 
 > **\'&+\'** (bs :: [*ExactpAdics_BndLow*])
 > 
@@ -221,6 +248,7 @@ Print.
 
 Lower bound on the sum of the values being bounded.
 
+
 > **Max** (bs :: [*ExactpAdics_BndLow*])
 > 
 > -> *ExactpAdics_BndLow*
@@ -229,6 +257,7 @@ Lower bound on the sum of the values being bounded.
 
 Lower bound on the maximum of the values being bounded.
 
+
 > **Min** (bs :: [*ExactpAdics_BndLow*])
 > 
 > -> *ExactpAdics_BndLow*
@@ -236,4 +265,5 @@ Lower bound on the maximum of the values being bounded.
 {:.intrinsic}
 
 Lower bound on the minimum of the values being bounded.
+
 
