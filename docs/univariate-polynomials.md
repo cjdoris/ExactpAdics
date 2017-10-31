@@ -1,5 +1,24 @@
 # Univariate polynomials
 
+**Contents**
+* [Creation of rings](#creation-of-rings)
+* [Ring basics](#ring-basics)
+* [Creation of polynomials](#creation-of-polynomials)
+  * [From coefficients](#from-coefficients)
+  * [Coersion](#coersion)
+* [Polynomial basics](#polynomial-basics)
+* [Arithmetic](#arithmetic)
+* [Discriminant and Resultant](#discriminant-and-resultant)
+* [Newton polygon](#newton-polygon)
+* [Hensel lifting](#hensel-lifting)
+* [Ramification polynomials and polygons](#ramification-polynomials-and-polygons)
+* [Hasse-Herbrand transition function](#hasse-herbrand-transition-function)
+  * [Creation](#creation)
+  * [Operations](#operations)
+* [Approximation](#approximation)
+* [Internals](#internals)
+* [Root-finding and factorization](#root-finding-and-factorization)
+
 ## Creation of rings
 
 > **PolynomialRing** (F :: *FldPadExact*)

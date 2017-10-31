@@ -1,5 +1,40 @@
 # Exact p-adic fields
 
+**Contents**
+* [Creation of p-adic fields](#creation-of-p-adic-fields)
+  * [Prime fields](#prime-fields)
+  * [Extensions](#extensions)
+  * [Completions](#completions)
+  * [From approximate fields](#from-approximate-fields)
+* [Basic operations on p-adic fields](#basic-operations-on-p-adic-fields)
+* [Extensions](#extensions)
+  * [Basic information](#basic-information)
+  * [Invariants](#invariants)
+  * [Ramification predicates](#ramification-predicates)
+  * [Printing](#printing)
+  * [Standard form](#standard-form)
+* [Creation of p-adic numbers](#creation-of-p-adic-numbers)
+  * [Distinguished elements](#distinguished-elements)
+  * [From coefficients](#from-coefficients)
+  * [Coersion](#coersion)
+  * [Random](#random)
+* [Basic operations on p-adic numbers](#basic-operations-on-p-adic-numbers)
+* [Arithmetic](#arithmetic)
+* [Valuation](#valuation)
+  * [Comparison to constant](#comparison-to-constant)
+  * [Comparison between elements](#comparison-between-elements)
+  * [Smallest and closest](#smallest-and-closest)
+* [Residue class field](#residue-class-field)
+* [Primitivity and minimal polynomials](#primitivity-and-minimal-polynomials)
+* [Quotient ring](#quotient-ring)
+* [Homomorphisms (incomplete feature)](#homomorphisms-(incomplete-feature))
+* [Temporary field (incomplete feature)](#temporary-field-(incomplete-feature))
+* [Integer ring (incomplete feature)](#integer-ring-(incomplete-feature))
+* [Approximation](#approximation)
+* [Internals](#internals)
+  * [FldPadExactElt](#fldpadexactelt)
+  * [ExtDataFldPadExact](#extdatafldpadexact)
+
 ## Creation of p-adic fields
 
 ### Prime fields

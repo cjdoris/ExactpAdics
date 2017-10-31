@@ -538,6 +538,7 @@ procedure add_embedding(F, emb)
 end procedure;
 
 ///# Exact p-adic fields
+///toc
 ///## Creation of p-adic fields
 ///### Prime fields
 
@@ -3737,6 +3738,7 @@ intrinsic BaseField(x :: ExtDataFldPadExact) -> FldPadExact
 end intrinsic;
 
 ///# Univariate polynomials
+///toc
 
 ///## Creation of rings
 
