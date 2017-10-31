@@ -3,6 +3,7 @@
 
 *Advanced users only.* You only need to know about getters if you wish to implement a new exact p-adic algorithm at a low-level (i.e. not built entirely out of intrinsics already supplied by this package) or implement a new compound p-adic type.
 
+
 **Contents**
 * [Overview](#overview)
 * [Creation](#creation)

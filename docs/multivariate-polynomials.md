@@ -1,5 +1,6 @@
 # Multivariate polynomials
 
+
 **Contents**
 * [Creation of rings](#creation-of-rings)
 * [Basic operations on rings](#basic-operations-on-rings)

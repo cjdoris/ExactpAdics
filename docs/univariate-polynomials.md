@@ -1,5 +1,6 @@
 # Univariate polynomials
 
+
 **Contents**
 * [Creation of rings](#creation-of-rings)
 * [Ring basics](#ring-basics)

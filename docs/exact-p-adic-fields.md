@@ -1,18 +1,12 @@
 # Exact p-adic fields
 
+
 **Contents**
 * [Creation of p-adic fields](#creation-of-p-adic-fields)
   * [Prime fields](#prime-fields)
   * [Extensions](#extensions)
   * [Completions](#completions)
   * [From approximate fields](#from-approximate-fields)
-* [Basic operations on p-adic fields](#basic-operations-on-p-adic-fields)
-* [Extensions](#extensions)
-  * [Basic information](#basic-information)
-  * [Invariants](#invariants)
-  * [Ramification predicates](#ramification-predicates)
-  * [Printing](#printing)
-  * [Standard form](#standard-form)
 * [Creation of p-adic numbers](#creation-of-p-adic-numbers)
   * [Distinguished elements](#distinguished-elements)
   * [From coefficients](#from-coefficients)
@@ -24,6 +18,12 @@
   * [Comparison to constant](#comparison-to-constant)
   * [Comparison between elements](#comparison-between-elements)
   * [Smallest and closest](#smallest-and-closest)
+* [Extensions](#extensions)
+  * [Basic information](#basic-information)
+  * [Invariants](#invariants)
+  * [Ramification predicates](#ramification-predicates)
+  * [Printing](#printing)
+  * [Standard form](#standard-form)
 * [Residue class field](#residue-class-field)
 * [Ramification polynomials and polygons](#ramification-polynomials-and-polygons)
 * [Hasse-Herbrand transition function](#hasse-herbrand-transition-function)
@@ -194,309 +194,6 @@ Given xxL/xK where xK is the approximation field of K, returns L/K isomorphic to
 
 **Parameters**
 - `NoCheckUnique`
-
-## Basic operations on p-adic fields
-
-## Extensions
-
-> **BaseField** (F :: *FldPadExact*)
-> 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The base field of F.
-
-
-> **IsPrimeField** (F :: *FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if F is a prime p-adic field.
-
-
-> **PrimeField** (F :: *FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-The prime field of F.
-
-
-> **IsExtensionOf** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *BoolElt*, *ExtDataFldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-True if E is an extension of F. If so, also returns an object representing the extension.
-
-
-> **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *RngInt*)
-> 
-> **ExistsCoveringStructure** (E :: *RngInt*, F :: *FldPadExact*)
-> 
-> **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *FldRat*)
-> 
-> **ExistsCoveringStructure** (E :: *FldRat*, F :: *FldPadExact*)
-> 
-> -> *BoolElt*, Any
-> {:.ret}
-{:.intrinsic}
-
-True if there is a structure containing E and F, and the common structure.
-
-
-
-
-
-
-
-
-
-
-### Basic information
-
-> **DefiningPolynomial** (K :: *FldPadExact*)
-> 
-> -> *RngUPolElt_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The defining polynomial of K.
-
-
-> **AssignNames** (~F :: *FldPadExact*, names :: [*MonStgElt*])
-{:.intrinsic}
-
-Assigns a name to the generator of F.
-
-
-> **Name** (F :: *FldPadExact*, i :: *RngIntElt*)
-> 
-> **\'.\'** (F :: *FldPadExact*, i :: *RngIntElt*)
-> 
-> -> *FldPadExactElt*
-> {:.ret}
-{:.intrinsic}
-
-The ith generator of F.
-
-
-
-
-> **Generator** (F :: *FldPadExact*)
-> 
-> -> *FldPadExactElt*
-> {:.ret}
-{:.intrinsic}
-
-The generating element of F.
-
-
-> **\'eq\'** (F :: *FldPadExact*, E :: *FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-Equality.
-
-
-### Invariants
-
-> **Prime** (F :: *FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The p in p-adic.
-
-
-> **Degree** (E :: *FldPadExact*)
-> 
-> **Degree** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The degree of `E` over its base field or `F`.
-
-
-
-
-> **AbsoluteDegree** (F :: *FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The degree of F over its prime field.
-
-
-> **InertiaDegree** (E :: *FldPadExact*)
-> 
-> **InertiaDegree** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The inertia degree of `E` over its base field or `F`.
-
-
-
-
-> **AbsoluteInertiaDegree** (F :: *FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The inertia degree of F over its prime field.
-
-
-> **RamificationDegree** (E :: *FldPadExact*)
-> 
-> **RamificationDegree** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The ramification degree of `E` over its base field or `F`.
-
-
-
-
-> **AbsoluteRamificationDegree** (F :: *FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The ramification degree of F over its prime field.
-
-
-> **DiscriminantValuation** (E :: *FldPadExact*)
-> 
-> **DiscriminantValuation** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The valuation of the discriminant of `E` over its base field or `F`.
-
-
-
-
-### Ramification predicates
-
-> **IsUnramified** (E)
-> 
-> **IsUnramified** (E, F)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if `E` is unramified over its base field or `F`; that is, if the ramification degree is 1.
-
-
-
-
-> **IsRamified** (E)
-> 
-> **IsRamified** (E, F)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if `E` is ramified over its base field or `F`; that is, if the ramification degree is not 1.
-
-
-
-
-> **IsTotallyRamified** (E)
-> 
-> **IsTotallyRamified** (E, F)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if `E` is totally ramified over its base field or `F`; that is, if the inertia degree is 1.
-
-
-
-
-> **IsWildlyRamified** (E)
-> 
-> **IsWildlyRamified** (E, F)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if `E` is wildly ramified over its base field or `F`; that is, if the ramification degree is divisible by the prime p.
-
-
-
-
-> **IsTotallyWildlyRamified** (E)
-> 
-> **IsTotallyWildlyRamified** (E, F)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if `E` is totally wildly ramified over its base field or `F`; that is, if it is totally ramified and the ramification degree is a power of the prime p.
-
-
-
-
-### Printing
-
-> **DescribeExtension** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *MonStgElt*
-> {:.ret}
-{:.intrinsic}
-
-A string describing the extension E/F with F described as FName.
-
-**Parameters**
-- `BaseName`
-
-### Standard form
-
-> **IsInStandardForm** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if E/F is in standard form: E is a totally ramified extension of an unramified extension of F.
-
-
-> **StandardForm** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-Returns a standard form version of E/F (that is, a totally ramified extension of an unramified extension of F).
-
 
 ## Creation of p-adic numbers
 
@@ -897,6 +594,307 @@ The closest element y of ys to x and its index.
 **Parameters**
 - `Strategy`
 - `Unique`
+
+## Extensions
+
+> **BaseField** (F :: *FldPadExact*)
+> 
+> -> *FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The base field of F.
+
+
+> **IsPrimeField** (F :: *FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if F is a prime p-adic field.
+
+
+> **PrimeField** (F :: *FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+The prime field of F.
+
+
+> **IsExtensionOf** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *BoolElt*, *ExtDataFldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+True if E is an extension of F. If so, also returns an object representing the extension.
+
+
+> **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *RngInt*)
+> 
+> **ExistsCoveringStructure** (E :: *RngInt*, F :: *FldPadExact*)
+> 
+> **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *FldRat*)
+> 
+> **ExistsCoveringStructure** (E :: *FldRat*, F :: *FldPadExact*)
+> 
+> -> *BoolElt*, Any
+> {:.ret}
+{:.intrinsic}
+
+True if there is a structure containing E and F, and the common structure.
+
+
+
+
+
+
+
+
+
+
+### Basic information
+
+> **DefiningPolynomial** (K :: *FldPadExact*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The defining polynomial of K.
+
+
+> **AssignNames** (~F :: *FldPadExact*, names :: [*MonStgElt*])
+{:.intrinsic}
+
+Assigns a name to the generator of F.
+
+
+> **Name** (F :: *FldPadExact*, i :: *RngIntElt*)
+> 
+> **\'.\'** (F :: *FldPadExact*, i :: *RngIntElt*)
+> 
+> -> *FldPadExactElt*
+> {:.ret}
+{:.intrinsic}
+
+The ith generator of F.
+
+
+
+
+> **Generator** (F :: *FldPadExact*)
+> 
+> -> *FldPadExactElt*
+> {:.ret}
+{:.intrinsic}
+
+The generating element of F.
+
+
+> **\'eq\'** (F :: *FldPadExact*, E :: *FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+Equality.
+
+
+### Invariants
+
+> **Prime** (F :: *FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The p in p-adic.
+
+
+> **Degree** (E :: *FldPadExact*)
+> 
+> **Degree** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The degree of `E` over its base field or `F`.
+
+
+
+
+> **AbsoluteDegree** (F :: *FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The degree of F over its prime field.
+
+
+> **InertiaDegree** (E :: *FldPadExact*)
+> 
+> **InertiaDegree** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The inertia degree of `E` over its base field or `F`.
+
+
+
+
+> **AbsoluteInertiaDegree** (F :: *FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The inertia degree of F over its prime field.
+
+
+> **RamificationDegree** (E :: *FldPadExact*)
+> 
+> **RamificationDegree** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The ramification degree of `E` over its base field or `F`.
+
+
+
+
+> **AbsoluteRamificationDegree** (F :: *FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The ramification degree of F over its prime field.
+
+
+> **DiscriminantValuation** (E :: *FldPadExact*)
+> 
+> **DiscriminantValuation** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The valuation of the discriminant of `E` over its base field or `F`.
+
+
+
+
+### Ramification predicates
+
+> **IsUnramified** (E)
+> 
+> **IsUnramified** (E, F)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `E` is unramified over its base field or `F`; that is, if the ramification degree is 1.
+
+
+
+
+> **IsRamified** (E)
+> 
+> **IsRamified** (E, F)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `E` is ramified over its base field or `F`; that is, if the ramification degree is not 1.
+
+
+
+
+> **IsTotallyRamified** (E)
+> 
+> **IsTotallyRamified** (E, F)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `E` is totally ramified over its base field or `F`; that is, if the inertia degree is 1.
+
+
+
+
+> **IsWildlyRamified** (E)
+> 
+> **IsWildlyRamified** (E, F)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `E` is wildly ramified over its base field or `F`; that is, if the ramification degree is divisible by the prime p.
+
+
+
+
+> **IsTotallyWildlyRamified** (E)
+> 
+> **IsTotallyWildlyRamified** (E, F)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if `E` is totally wildly ramified over its base field or `F`; that is, if it is totally ramified and the ramification degree is a power of the prime p.
+
+
+
+
+### Printing
+
+> **DescribeExtension** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *MonStgElt*
+> {:.ret}
+{:.intrinsic}
+
+A string describing the extension E/F with F described as FName.
+
+**Parameters**
+- `BaseName`
+
+### Standard form
+
+> **IsInStandardForm** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if E/F is in standard form: E is a totally ramified extension of an unramified extension of F.
+
+
+> **StandardForm** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+Returns a standard form version of E/F (that is, a totally ramified extension of an unramified extension of F).
+
 
 ## Residue class field
 

@@ -876,639 +876,6 @@ intrinsic ExactpAdicField(xxL :: FldPad, K :: FldPadExact : NoCheckUnique:=false
   return ExactpAdicField(xxL, mK, K : NoCheckUnique:=NoCheckUnique);
 end intrinsic;
 
-///## Basic operations on p-adic fields
-
-///## Extensions
-
-intrinsic BaseField(F :: FldPadExact) -> FldPadExact
-  {The base field of F.}
-  if not assigned F`base_field then
-    case F`type:
-    when INERT, EISEN:
-      F0 := BaseRing(DefiningPolynomial(F));
-    when EMBED:
-      m := F`defining_embedding;
-      F0 := Image(Restriction(m, BaseField(Domain(m))));
-    when PRIME:
-      error "F must be an extension";
-    else
-      error "not implemented";
-    end case;
-    F`base_field := F0;
-  end if;
-  return F`base_field;
-end intrinsic;
-
-intrinsic IsPrimeField(F :: FldPadExact) -> BoolElt
-  {True if F is a prime p-adic field.}
-  return (F`type eq PRIME) or (F`type eq EMBED and IsPrimeField(Domain(F`defining_embedding)));
-end intrinsic;
-
-intrinsic PrimeField(F :: FldPadExact) -> BoolElt
-  {The prime field of F.}
-  if not assigned F`prime_field then
-    F`prime_field := IsPrimeField(F) select F else PrimeField(BaseField(F));
-  end if;
-  return F`prime_field;
-end intrinsic;
-
-intrinsic IsExtensionOf(E :: FldPadExact, F :: FldPadExact) -> BoolElt, ExtDataFldPadExact
-  {True if E is an extension of F. If so, also returns an object representing the extension.}
-  // check if already cached
-  if not assigned E`subfield_data then
-    E`subfield_data := AssociativeArray();
-  end if;
-  ok, x := IsDefined(E`subfield_data, F`id);
-  if ok then
-    return true, x;
-  end if;
-  // E = F
-  if E eq F then
-    x := New(ExtDataFldPadExact);
-    x`top_field := E;
-    x`base_field := F;
-    x`type := COMPOUND;
-    x`list := [];
-    E`subfield_data[F`id] := x;
-    return true, x;
-  end if;
-  // consider base field E0 of E
-  if not IsPrimeField(E) then
-    E0 := BaseField(E);
-    // E0 = F
-    if E0 eq F then
-      x := New(ExtDataFldPadExact);
-      x`top_field := E;
-      x`base_field := F;
-      x`type := deep_type(E) where deep_type := function (E)
-        while E`type eq EMBED do
-          E := Domain(E`defining_embedding);
-        end while;
-        return E`type;
-      end function;
-      E`subfield_data[F`id] := x;
-      return true, x;
-    end if;
-    // E0 / F
-    ok, x0 := IsExtensionOf(E0, F);
-    if ok then
-      ok, x1 := IsExtensionOf(E, E0);
-      assert ok;
-      x := New(ExtDataFldPadExact);
-      x`top_field := E;
-      x`base_field := F;
-      x`type := COMPOUND;
-      x`list := [x0, x1];
-      E`subfield_data[F`id] := x;
-      return true, x;
-    end if;
-  end if;
-  // F -> E
-  if F`type eq EMBED and Codomain(F`defining_embedding) eq E then
-    x := New(ExtDataFldPadExact);
-    x`top_field := E;
-    x`base_field := F;
-    x`type := EMBED;
-    E`subfield_data[F`id] := x;
-    return true, x;
-  end if;
-  // false
-  return false, _;
-end intrinsic;
-
-intrinsic ExistsCoveringStructure(E :: FldPadExact, F :: FldPadExact) -> BoolElt, .
-  {True if there is a structure containing E and F, and the common structure.}
-  if E eq F then
-    return true, E;
-  elif IsExtensionOf(E, F) then
-    return true, E;
-  elif IsExtensionOf(F, E) then
-    return true, F;
-  else
-    return false, _;
-  end if;
-end intrinsic;
-
-intrinsic ExistsCoveringStructure(E :: FldPadExact, F :: RngInt) -> BoolElt, .
-  {"}
-  return true, E;
-end intrinsic;
-
-intrinsic ExistsCoveringStructure(E :: RngInt, F :: FldPadExact) -> BoolElt, .
-  {"}
-  return true, F;
-end intrinsic;
-
-intrinsic ExistsCoveringStructure(E :: FldPadExact, F :: FldRat) -> BoolElt, .
-  {"}
-  return true, E;
-end intrinsic;
-
-intrinsic ExistsCoveringStructure(E :: FldRat, F :: FldPadExact) -> BoolElt, .
-  {"}
-  return true, F;
-end intrinsic;
-
-///### Basic information
-
-intrinsic DefiningPolynomial(K :: FldPadExact) -> RngUPolElt_FldPadExact
-  {The defining polynomial of K.}
-  if assigned K`defining_polynomial then
-    return K`defining_polynomial;
-  else
-    assert IsPrimeField(K);
-    error "K is a prime field";
-  end if;
-end intrinsic;
-
-intrinsic AssignNames(~F :: FldPadExact, names :: [MonStgElt])
-  {Assigns a name to the generator of F.}
-  require not IsPrimeField(F): "F must be an extension";
-  require #names eq 1: "names must have one element";
-  F`varname := names[1];
-  AssignNames(~F`approximation_field, names);
-end intrinsic;
-
-intrinsic Name(F :: FldPadExact, i :: RngIntElt) -> FldPadExactElt
-  {The ith generator of F.}
-  require i eq 1: "i must be 1";
-  return Generator(F);
-end intrinsic;
-
-intrinsic '.'(F :: FldPadExact, i :: RngIntElt) -> FldPadExactElt
-  {"}
-  require i eq 1: "i must be 1";
-  return Generator(F);
-end intrinsic;
-
-intrinsic Generator(F :: FldPadExact) -> FldPadExactElt
-  {The generating element of F.}
-  if not assigned F`generator then
-    require not IsPrimeField(F): "F must be an extension";
-    F`generator := CAST(F, [0, 1]);
-  end if;
-  return F`generator;
-end intrinsic;
-
-intrinsic 'eq'(F :: FldPadExact, E :: FldPadExact) -> BoolElt
-  {Equality.}
-  return F`id eq E`id;
-end intrinsic;
-
-///### Invariants
-
-intrinsic Prime(F :: FldPadExact) -> RngIntElt
-  {The p in p-adic.}
-  if not assigned F`prime then
-    F`prime := Prime(BaseField(F));
-  end if;
-  return F`prime;
-end intrinsic;
-
-/// The degree of `E` over its base field or `F`.
-intrinsic Degree(E :: FldPadExact) -> RngIntElt
-  {The degree of E over its base field.}
-  if not assigned E`degree then
-    case E`type:
-    when INERT, EISEN:
-      d := Degree(DefiningPolynomial(E));
-    when EMBED:
-      m := E`defining_embedding;
-      return Degree(Domain(m));
-    when PRIME:
-      error "E must be an extension";
-    else
-      error "not implemented";
-    end case;
-    E`degree := d;
-  end if;
-  return E`degree;
-end intrinsic;
-
-///ditto
-intrinsic Degree(E :: FldPadExact, F :: FldPadExact) -> RngIntElt
-  {The degree of E over F.}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return Degree(x);
-end intrinsic;
-
-///hide
-intrinsic Degree(x :: ExtDataFldPadExact) -> RngIntElt
-  {The degree of the extension.}
-  if not assigned x`degree then
-    case x`type:
-    when COMPOUND:
-      d := &*[Z| Degree(y) : y in x`list];
-    when INERT, EISEN:
-      d := Degree(x`top_field);
-    when EMBED:
-      ok, d := IsDivisibleBy(AbsoluteDegree(x`top_field), AbsoluteDegree(x`base_field));
-      assert ok;
-    else
-      error "not implemented";
-    end case;
-    x`degree := d;
-  end if;
-  return x`degree;
-end intrinsic;
-
-intrinsic AbsoluteDegree(F :: FldPadExact) -> RngIntElt
-  {The degree of F over its prime field.}
-  if not assigned F`absolute_degree then
-    case F`type:
-    when PRIME:
-      d := 1;
-    when INERT, EISEN:
-      d := Degree(F) * AbsoluteDegree(BaseField(F));
-    when EMBED:
-      m := F`defining_embedding;
-      d := AbsoluteDegree(Domain(m));
-    else
-      error "not implemented";
-    end case;
-    F`absolute_degree := d;
-  end if;
-  return F`absolute_degree;
-end intrinsic;
-
-/// The inertia degree of `E` over its base field or `F`.
-intrinsic InertiaDegree(E :: FldPadExact) -> RngIntElt
-  {The inertia degree of E over its base field.}
-  if not assigned E`inertia_degree then
-    case E`type:
-    when INERT:
-      d := Degree(E);
-    when EISEN:
-      d := 1;
-    when EMBED:
-      m := E`defining_embedding;
-      d := InertiaDegree(Domain(m));
-    when PRIME:
-      error "E must be an extension";
-    else
-      error "not implemented";
-    end case;
-    E`inertia_degree := d;
-  end if;
-  return E`inertia_degree;
-end intrinsic;
-
-///ditto
-intrinsic InertiaDegree(E :: FldPadExact, F :: FldPadExact) -> RngIntElt
-  {The inertia degree of E over F.}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return InertiaDegree(x);
-end intrinsic;
-
-///hide
-intrinsic InertiaDegree(x :: ExtDataFldPadExact) -> RngIntElt
-  {The inertia degree.}
-  if not assigned x`inertia_degree then
-    case x`type:
-    when COMPOUND:
-      d := &*[Z| InertiaDegree(y) : y in x`list];
-    when INERT, EISEN:
-      d := InertiaDegree(x`top_field);
-    when EMBED:
-      ok, d := IsDivisibleBy(AbsoluteInertiaDegree(x`top_field), AbsoluteInertiaDegree(x`base_field));
-      assert ok;
-    else
-      error "not implemented";
-    end case;
-    x`inertia_degree := d;
-  end if;
-  return x`inertia_degree;
-end intrinsic;
-
-intrinsic AbsoluteInertiaDegree(F :: FldPadExact) -> RngIntElt
-  {The inertia degree of F over its prime field.}
-  if not assigned F`absolute_inertia_degree then
-    case F`type:
-    when PRIME:
-      d := 1;
-    when INERT, EISEN:
-      d := InertiaDegree(F) * AbsoluteInertiaDegree(BaseField(F));
-    when EMBED:
-      m := F`defining_embedding;
-      d := AbsoluteInertiaDegree(Domain(m));
-    else
-      error "not implemented";
-    end case;
-    F`absolute_inertia_degree := d;
-  end if;
-  return F`absolute_inertia_degree;
-end intrinsic;
-
-/// The ramification degree of `E` over its base field or `F`.
-intrinsic RamificationDegree(E :: FldPadExact) -> RngIntElt
-  {The ramificationd degree of E over its base field.}
-  if not assigned E`ramification_degree then
-    case E`type:
-    when EISEN:
-      d := Degree(E);
-    when INERT:
-      d := 1;
-    when EMBED:
-      m := E`defining_embedding;
-      d := RamificationDegree(Domain(m));
-    when PRIME:
-      error "E must be an extension";
-    else
-      error "not implented";
-    end case;
-    E`ramification_degree := d;
-  end if;
-  return E`ramification_degree;
-end intrinsic;
-
-///ditto
-intrinsic RamificationDegree(E :: FldPadExact, F :: FldPadExact) -> RngIntElt
-  {The ramification degree of E over F.}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return RamificationDegree(x);
-end intrinsic;
-
-///hide
-intrinsic RamificationDegree(x :: ExtDataFldPadExact) -> RngIntElt
-  {The ramification degree of the extension.}
-  if not assigned x`ramification_degree then
-    case x`type:
-    when COMPOUND:
-      d := &*[Z| RamificationDegree(y) : y in x`list];
-    when INERT, EISEN:
-      d := RamificationDegree(x`top_field);
-    when EMBED:
-      ok, d := IsDivisibleBy(AbsoluteRamificationDegree(x`top_field), AbsoluteRamificationDegree(x`base_field));
-      assert ok;
-    else
-      error "not implemented";
-    end case;
-    x`ramification_degree := d;
-  end if;
-  return x`ramification_degree;
-end intrinsic;
-
-intrinsic AbsoluteRamificationDegree(F :: FldPadExact) -> RngIntElt
-  {The ramification degree of F over its prime field.}
-  if not assigned F`absolute_ramification_degree then
-    case F`type:
-    when EISEN, INERT:
-      d := RamificationDegree(F) * AbsoluteRamificationDegree(BaseField(F));
-    when PRIME:
-      d := 1;
-    when EMBED:
-      m := F`defining_embedding;
-      d := AbsoluteRamificationDegree(Domain(m));
-    else
-      error "not implemented";
-    end case;
-    F`absolute_ramification_degree := d;
-  end if;
-  return F`absolute_ramification_degree;
-end intrinsic;
-
-/// The valuation of the discriminant of `E` over its base field or `F`.
-intrinsic DiscriminantValuation(E :: FldPadExact) -> RngIntElt
-  {The valuation of the discriminant of E over its base field.}
-  if not assigned E`discriminant_valuation then
-    rp := RamificationPolygon(E);
-    i0, v0 := Explode(Vertices(rp)[1]);
-    assert i0 eq 1;
-    E`discriminant_valuation := v0;
-  end if;
-  return E`discriminant_valuation;
-end intrinsic;
-
-///ditto
-intrinsic DiscriminantValuation(E :: FldPadExact, F :: FldPadExact) -> RngIntElt
-  {The valuation of the discriminant of E/F.}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return DiscriminantValuation(x);
-end intrinsic;
-
-///hide
-intrinsic DiscriminantValuation(x :: ExtDataFldPadExact) -> RngIntElt
-  {The valuation of the discriminant.}
-  if not assigned x`discriminant_valuation then
-    rp := RamificationPolygon(x);
-    i0, v0 := Explode(Vertices(rp)[1]);
-    assert i0 eq 1;
-    x`discriminant_valuation := v0;
-  end if;
-  return x`discriminant_valuation;
-end intrinsic;
-
-///### Ramification predicates
-
-/// True if `E` is unramified over its base field or `F`; that is, if the ramification degree is 1.
-intrinsic IsUnramified(E) -> BoolElt
-  {True if E is unramified.}
-  return RamificationDegree(E) eq 1;
-end intrinsic;
-
-///ditto
-intrinsic IsUnramified(E, F) -> BoolElt
-  {True if E/F is unramified.}
-  return RamificationDegree(E, F) eq 1;
-end intrinsic;
-
-/// True if `E` is ramified over its base field or `F`; that is, if the ramification degree is not 1.
-intrinsic IsRamified(E) -> BoolElt
-  {True if E is ramified.}
-  return RamificationDegree(E) ne 1;
-end intrinsic;
-
-///ditto
-intrinsic IsRamified(E, F) -> BoolElt
-  {True if E/F is ramified.}
-  return RamificationDegree(E, F) ne 1;
-end intrinsic;
-
-/// True if `E` is totally ramified over its base field or `F`; that is, if the inertia degree is 1.
-intrinsic IsTotallyRamified(E) -> BoolElt
-  {True if E is totally ramified.}
-  return InertiaDegree(E) eq 1;
-end intrinsic;
-
-///ditto
-intrinsic IsTotallyRamified(E, F) -> BoolElt
-  {True if E/F is totally ramified.}
-  return InertiaDegree(E, F) eq 1;
-end intrinsic;
-
-/// True if `E` is wildly ramified over its base field or `F`; that is, if the ramification degree is divisible by the prime p.
-intrinsic IsWildlyRamified(E) -> BoolElt
-  {True if E is wildly ramified.}
-  return IsDivisibleBy(RamificationDegree(E), Prime(E));
-end intrinsic;
-
-///ditto
-intrinsic IsWildlyRamified(E, F) -> BoolElt
-  {True if E/F is wildly ramified.}
-  return IsDivisibleBy(RamificationDegree(E, F), Prime(F));
-end intrinsic;
-
-/// True if `E` is totally wildly ramified over its base field or `F`; that is, if it is totally ramified and the ramification degree is a power of the prime p.
-intrinsic IsTotallyWildlyRamified(E) -> BoolElt
-  {True if E is totally wildly ramified.}
-  return IsTotallyRamified(E) and IsPowerOf(RamificationDegree(E), Prime(E));
-end intrinsic;
-
-///ditto
-intrinsic IsTotallyWildlyRamified(E, F) -> BoolElt
-  {True if E/F is totally wildly ramified.}
-  return IsTotallyRamified(E,F) and IsPowerOf(RamificationDegree(E,F), Prime(F));
-end intrinsic;
-
-
-
-///### Printing
-
-///hide
-intrinsic DescribeExtension(X :: ExtDataFldPadExact : BaseName:="") -> MonStgElt
-  {A string describing the extension E/F with F described as FName.}
-  if not assigned X`describe_extension then
-    case X`type:
-    when COMPOUND:
-      d := Join([DescribeExtension(Y) : Y in Reverse(X`list)], " over ");
-    when INERT:
-      d := Sprintf("Unramified extension of degree %o", Degree(X));
-    when EISEN:
-      d := Sprintf("Totally ramified extension of degree %o", Degree(X));
-    when EMBED:
-      d := Sprintf("Extension of embedding of degree %o", Degree(X));
-    else
-      error "not implemented";
-    end case;
-    X`describe_extension := d;
-  end if;
-  d := X`describe_extension;
-  if #BaseName eq 0 then
-    return d;
-  elif #d eq 0 then
-    return BaseName;
-  else
-    return Sprintf("%o over %o", d, BaseName);
-  end if;
-end intrinsic;
-
-intrinsic DescribeExtension(E :: FldPadExact, F :: FldPadExact : BaseName:="") -> MonStgElt
-  {A string describing the extension E/F with F described as FName.}
-  ok, X := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return DescribeExtension(X : BaseName:=BaseName);
-end intrinsic;
-
-///hide
-intrinsic Print(F :: FldPadExact, lvl :: MonStgElt)
-  {Print.}
-  case lvl:
-  when "Magma":
-    case F`type:
-    when PRIME:
-      printf "ExactpAdicField(%m)", Prime(F);
-    when INERT:
-      printf "UnramifiedExtension(%m)", DefiningPolynomial(F);
-    when EISEN:
-      printf "TotallyRamifiedExtension(%m)", DefiningPolynomial(F);
-    when EMBED:
-      error "Image(%m)", F`defining_embedding;
-    else
-      error "not implemented";
-    end case;
-  else
-    printf "%o", DescribeExtension(F, PrimeField(F) : BaseName:=Sprintf("Exact %o-adic field", Prime(F)));
-  end case;
-end intrinsic;
-
-///hide
-intrinsic Print(x :: FldPadExactElt, lvl :: MonStgElt)
-  {"}
-  case lvl:
-  when "Magma":
-    printf "%o", Format(x : APr := APR(x));
-  else
-    printf "%o", Format(x : APr := CAPR(x));
-  end case;
-end intrinsic;
-
-///### Standard form
-
-///hide
-intrinsic IsInStandardForm(x :: ExtDataFldPadExact) -> BoolElt
-  {True if E/F is in standard form.}
-  if not assigned x`is_in_standard_form then
-    x2 := Flatten(x);
-    case #x2`list:
-    when 0:
-      ok := true;
-    when 1:
-      ok := x2`list[1] in [INERT, EISEN];
-    when 2:
-      ok := x2`list[1]`type eq INERT and x2`list[2]`type eq EISEN;
-    else
-      ok := false;
-    end case;
-    x`is_in_standard_form := ok;
-  end if;
-  return x`is_in_standard_form;
-end intrinsic;
-
-intrinsic IsInStandardForm(E :: FldPadExact, F :: FldPadExact) -> BoolElt
-  {True if E/F is in standard form: E is a totally ramified extension of an unramified extension of F.}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return IsInStandardForm(x);
-end intrinsic;
-
-///hide
-intrinsic StandardForm(x :: ExtDataFldPadExact) -> ExtDataFldPadExact
-  {Returns a standard form of x.}
-  if not assigned x`standard_form then
-    if IsInStandardForm(x) then
-      y := x;
-    elif IsUnramified(x) then
-      K := BaseField(x);
-      L := TopField(x);
-      d := Degree(x);
-      y := UnramifiedExtension(K, d) / K;
-    elif IsTotallyRamified(x) then
-      K := BaseField(x);
-      L := TopField(x);
-      m := MinimalPolynomial(UniformizingElement(L), x);
-      y := TotallyRamifiedExtension(K, m) / K;
-    else
-      K := BaseField(x);
-      L := TopField(x);
-      d := Degree(x);
-      e := RamificationDegree(x);
-      f := InertiaDegree(x);
-      m := MinimalPolynomial(UniformizingElement(L) + InertiaGenerator(L), x);
-      U := UnramifiedExtension(K, f);
-      Ubar, bar := ResidueClassField(U);
-      u := Roots(Polynomial([Ubar | ResidueClass(c) : c in Coefficients(m)]))[1][1] @@ bar @ WeakApproximation;
-      mu := Polynomial([&+[U| &*[U| Binomial(i,j), Coefficient(m, i), u^(i-j)] : i in [j..d]] : j in [0..d]]); // f(x+u)
-      facs := NewtonPolygonFactorization(mu);
-      mi := THE([fac : fac in facs | Degree(fac) eq e and IsEisenstein(fac)]);
-      y := TotallyRamifiedExtension(U, mi) / K;
-    end if;
-    assert IsInStandardForm(y);
-    x`standard_form := y;
-  end if;
-  return x`standard_form;
-end intrinsic;
-
-intrinsic StandardForm(E :: FldPadExact, F :: FldPadExact) -> FldPadExact
-  {Returns a standard form version of E/F (that is, a totally ramified extension of an unramified extension of F).}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return StandardForm(x)`top_field;
-end intrinsic;
-
 ///## Creation of p-adic numbers
 
 ///### Distinguished elements
@@ -2496,6 +1863,637 @@ intrinsic Closest(x :: FldPadExactElt, ys :: [FldPadExactElt] : Strategy:="defau
   {The closest element y of ys to x and its index.}
   i := IndexOfClosest(x, ys : Strategy:=Strategy, Unique:=Unique);
   return ys[i], i;
+end intrinsic;
+
+///## Extensions
+
+intrinsic BaseField(F :: FldPadExact) -> FldPadExact
+  {The base field of F.}
+  if not assigned F`base_field then
+    case F`type:
+    when INERT, EISEN:
+      F0 := BaseRing(DefiningPolynomial(F));
+    when EMBED:
+      m := F`defining_embedding;
+      F0 := Image(Restriction(m, BaseField(Domain(m))));
+    when PRIME:
+      error "F must be an extension";
+    else
+      error "not implemented";
+    end case;
+    F`base_field := F0;
+  end if;
+  return F`base_field;
+end intrinsic;
+
+intrinsic IsPrimeField(F :: FldPadExact) -> BoolElt
+  {True if F is a prime p-adic field.}
+  return (F`type eq PRIME) or (F`type eq EMBED and IsPrimeField(Domain(F`defining_embedding)));
+end intrinsic;
+
+intrinsic PrimeField(F :: FldPadExact) -> BoolElt
+  {The prime field of F.}
+  if not assigned F`prime_field then
+    F`prime_field := IsPrimeField(F) select F else PrimeField(BaseField(F));
+  end if;
+  return F`prime_field;
+end intrinsic;
+
+intrinsic IsExtensionOf(E :: FldPadExact, F :: FldPadExact) -> BoolElt, ExtDataFldPadExact
+  {True if E is an extension of F. If so, also returns an object representing the extension.}
+  // check if already cached
+  if not assigned E`subfield_data then
+    E`subfield_data := AssociativeArray();
+  end if;
+  ok, x := IsDefined(E`subfield_data, F`id);
+  if ok then
+    return true, x;
+  end if;
+  // E = F
+  if E eq F then
+    x := New(ExtDataFldPadExact);
+    x`top_field := E;
+    x`base_field := F;
+    x`type := COMPOUND;
+    x`list := [];
+    E`subfield_data[F`id] := x;
+    return true, x;
+  end if;
+  // consider base field E0 of E
+  if not IsPrimeField(E) then
+    E0 := BaseField(E);
+    // E0 = F
+    if E0 eq F then
+      x := New(ExtDataFldPadExact);
+      x`top_field := E;
+      x`base_field := F;
+      x`type := deep_type(E) where deep_type := function (E)
+        while E`type eq EMBED do
+          E := Domain(E`defining_embedding);
+        end while;
+        return E`type;
+      end function;
+      E`subfield_data[F`id] := x;
+      return true, x;
+    end if;
+    // E0 / F
+    ok, x0 := IsExtensionOf(E0, F);
+    if ok then
+      ok, x1 := IsExtensionOf(E, E0);
+      assert ok;
+      x := New(ExtDataFldPadExact);
+      x`top_field := E;
+      x`base_field := F;
+      x`type := COMPOUND;
+      x`list := [x0, x1];
+      E`subfield_data[F`id] := x;
+      return true, x;
+    end if;
+  end if;
+  // F -> E
+  if F`type eq EMBED and Codomain(F`defining_embedding) eq E then
+    x := New(ExtDataFldPadExact);
+    x`top_field := E;
+    x`base_field := F;
+    x`type := EMBED;
+    E`subfield_data[F`id] := x;
+    return true, x;
+  end if;
+  // false
+  return false, _;
+end intrinsic;
+
+intrinsic ExistsCoveringStructure(E :: FldPadExact, F :: FldPadExact) -> BoolElt, .
+  {True if there is a structure containing E and F, and the common structure.}
+  if E eq F then
+    return true, E;
+  elif IsExtensionOf(E, F) then
+    return true, E;
+  elif IsExtensionOf(F, E) then
+    return true, F;
+  else
+    return false, _;
+  end if;
+end intrinsic;
+
+intrinsic ExistsCoveringStructure(E :: FldPadExact, F :: RngInt) -> BoolElt, .
+  {"}
+  return true, E;
+end intrinsic;
+
+intrinsic ExistsCoveringStructure(E :: RngInt, F :: FldPadExact) -> BoolElt, .
+  {"}
+  return true, F;
+end intrinsic;
+
+intrinsic ExistsCoveringStructure(E :: FldPadExact, F :: FldRat) -> BoolElt, .
+  {"}
+  return true, E;
+end intrinsic;
+
+intrinsic ExistsCoveringStructure(E :: FldRat, F :: FldPadExact) -> BoolElt, .
+  {"}
+  return true, F;
+end intrinsic;
+
+///### Basic information
+
+intrinsic DefiningPolynomial(K :: FldPadExact) -> RngUPolElt_FldPadExact
+  {The defining polynomial of K.}
+  if assigned K`defining_polynomial then
+    return K`defining_polynomial;
+  else
+    assert IsPrimeField(K);
+    error "K is a prime field";
+  end if;
+end intrinsic;
+
+intrinsic AssignNames(~F :: FldPadExact, names :: [MonStgElt])
+  {Assigns a name to the generator of F.}
+  require not IsPrimeField(F): "F must be an extension";
+  require #names eq 1: "names must have one element";
+  F`varname := names[1];
+  AssignNames(~F`approximation_field, names);
+end intrinsic;
+
+intrinsic Name(F :: FldPadExact, i :: RngIntElt) -> FldPadExactElt
+  {The ith generator of F.}
+  require i eq 1: "i must be 1";
+  return Generator(F);
+end intrinsic;
+
+intrinsic '.'(F :: FldPadExact, i :: RngIntElt) -> FldPadExactElt
+  {"}
+  require i eq 1: "i must be 1";
+  return Generator(F);
+end intrinsic;
+
+intrinsic Generator(F :: FldPadExact) -> FldPadExactElt
+  {The generating element of F.}
+  if not assigned F`generator then
+    require not IsPrimeField(F): "F must be an extension";
+    F`generator := CAST(F, [0, 1]);
+  end if;
+  return F`generator;
+end intrinsic;
+
+intrinsic 'eq'(F :: FldPadExact, E :: FldPadExact) -> BoolElt
+  {Equality.}
+  return F`id eq E`id;
+end intrinsic;
+
+///### Invariants
+
+intrinsic Prime(F :: FldPadExact) -> RngIntElt
+  {The p in p-adic.}
+  if not assigned F`prime then
+    F`prime := Prime(BaseField(F));
+  end if;
+  return F`prime;
+end intrinsic;
+
+/// The degree of `E` over its base field or `F`.
+intrinsic Degree(E :: FldPadExact) -> RngIntElt
+  {The degree of E over its base field.}
+  if not assigned E`degree then
+    case E`type:
+    when INERT, EISEN:
+      d := Degree(DefiningPolynomial(E));
+    when EMBED:
+      m := E`defining_embedding;
+      return Degree(Domain(m));
+    when PRIME:
+      error "E must be an extension";
+    else
+      error "not implemented";
+    end case;
+    E`degree := d;
+  end if;
+  return E`degree;
+end intrinsic;
+
+///ditto
+intrinsic Degree(E :: FldPadExact, F :: FldPadExact) -> RngIntElt
+  {The degree of E over F.}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return Degree(x);
+end intrinsic;
+
+///hide
+intrinsic Degree(x :: ExtDataFldPadExact) -> RngIntElt
+  {The degree of the extension.}
+  if not assigned x`degree then
+    case x`type:
+    when COMPOUND:
+      d := &*[Z| Degree(y) : y in x`list];
+    when INERT, EISEN:
+      d := Degree(x`top_field);
+    when EMBED:
+      ok, d := IsDivisibleBy(AbsoluteDegree(x`top_field), AbsoluteDegree(x`base_field));
+      assert ok;
+    else
+      error "not implemented";
+    end case;
+    x`degree := d;
+  end if;
+  return x`degree;
+end intrinsic;
+
+intrinsic AbsoluteDegree(F :: FldPadExact) -> RngIntElt
+  {The degree of F over its prime field.}
+  if not assigned F`absolute_degree then
+    case F`type:
+    when PRIME:
+      d := 1;
+    when INERT, EISEN:
+      d := Degree(F) * AbsoluteDegree(BaseField(F));
+    when EMBED:
+      m := F`defining_embedding;
+      d := AbsoluteDegree(Domain(m));
+    else
+      error "not implemented";
+    end case;
+    F`absolute_degree := d;
+  end if;
+  return F`absolute_degree;
+end intrinsic;
+
+/// The inertia degree of `E` over its base field or `F`.
+intrinsic InertiaDegree(E :: FldPadExact) -> RngIntElt
+  {The inertia degree of E over its base field.}
+  if not assigned E`inertia_degree then
+    case E`type:
+    when INERT:
+      d := Degree(E);
+    when EISEN:
+      d := 1;
+    when EMBED:
+      m := E`defining_embedding;
+      d := InertiaDegree(Domain(m));
+    when PRIME:
+      error "E must be an extension";
+    else
+      error "not implemented";
+    end case;
+    E`inertia_degree := d;
+  end if;
+  return E`inertia_degree;
+end intrinsic;
+
+///ditto
+intrinsic InertiaDegree(E :: FldPadExact, F :: FldPadExact) -> RngIntElt
+  {The inertia degree of E over F.}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return InertiaDegree(x);
+end intrinsic;
+
+///hide
+intrinsic InertiaDegree(x :: ExtDataFldPadExact) -> RngIntElt
+  {The inertia degree.}
+  if not assigned x`inertia_degree then
+    case x`type:
+    when COMPOUND:
+      d := &*[Z| InertiaDegree(y) : y in x`list];
+    when INERT, EISEN:
+      d := InertiaDegree(x`top_field);
+    when EMBED:
+      ok, d := IsDivisibleBy(AbsoluteInertiaDegree(x`top_field), AbsoluteInertiaDegree(x`base_field));
+      assert ok;
+    else
+      error "not implemented";
+    end case;
+    x`inertia_degree := d;
+  end if;
+  return x`inertia_degree;
+end intrinsic;
+
+intrinsic AbsoluteInertiaDegree(F :: FldPadExact) -> RngIntElt
+  {The inertia degree of F over its prime field.}
+  if not assigned F`absolute_inertia_degree then
+    case F`type:
+    when PRIME:
+      d := 1;
+    when INERT, EISEN:
+      d := InertiaDegree(F) * AbsoluteInertiaDegree(BaseField(F));
+    when EMBED:
+      m := F`defining_embedding;
+      d := AbsoluteInertiaDegree(Domain(m));
+    else
+      error "not implemented";
+    end case;
+    F`absolute_inertia_degree := d;
+  end if;
+  return F`absolute_inertia_degree;
+end intrinsic;
+
+/// The ramification degree of `E` over its base field or `F`.
+intrinsic RamificationDegree(E :: FldPadExact) -> RngIntElt
+  {The ramificationd degree of E over its base field.}
+  if not assigned E`ramification_degree then
+    case E`type:
+    when EISEN:
+      d := Degree(E);
+    when INERT:
+      d := 1;
+    when EMBED:
+      m := E`defining_embedding;
+      d := RamificationDegree(Domain(m));
+    when PRIME:
+      error "E must be an extension";
+    else
+      error "not implented";
+    end case;
+    E`ramification_degree := d;
+  end if;
+  return E`ramification_degree;
+end intrinsic;
+
+///ditto
+intrinsic RamificationDegree(E :: FldPadExact, F :: FldPadExact) -> RngIntElt
+  {The ramification degree of E over F.}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return RamificationDegree(x);
+end intrinsic;
+
+///hide
+intrinsic RamificationDegree(x :: ExtDataFldPadExact) -> RngIntElt
+  {The ramification degree of the extension.}
+  if not assigned x`ramification_degree then
+    case x`type:
+    when COMPOUND:
+      d := &*[Z| RamificationDegree(y) : y in x`list];
+    when INERT, EISEN:
+      d := RamificationDegree(x`top_field);
+    when EMBED:
+      ok, d := IsDivisibleBy(AbsoluteRamificationDegree(x`top_field), AbsoluteRamificationDegree(x`base_field));
+      assert ok;
+    else
+      error "not implemented";
+    end case;
+    x`ramification_degree := d;
+  end if;
+  return x`ramification_degree;
+end intrinsic;
+
+intrinsic AbsoluteRamificationDegree(F :: FldPadExact) -> RngIntElt
+  {The ramification degree of F over its prime field.}
+  if not assigned F`absolute_ramification_degree then
+    case F`type:
+    when EISEN, INERT:
+      d := RamificationDegree(F) * AbsoluteRamificationDegree(BaseField(F));
+    when PRIME:
+      d := 1;
+    when EMBED:
+      m := F`defining_embedding;
+      d := AbsoluteRamificationDegree(Domain(m));
+    else
+      error "not implemented";
+    end case;
+    F`absolute_ramification_degree := d;
+  end if;
+  return F`absolute_ramification_degree;
+end intrinsic;
+
+/// The valuation of the discriminant of `E` over its base field or `F`.
+intrinsic DiscriminantValuation(E :: FldPadExact) -> RngIntElt
+  {The valuation of the discriminant of E over its base field.}
+  if not assigned E`discriminant_valuation then
+    rp := RamificationPolygon(E);
+    i0, v0 := Explode(Vertices(rp)[1]);
+    assert i0 eq 1;
+    E`discriminant_valuation := v0;
+  end if;
+  return E`discriminant_valuation;
+end intrinsic;
+
+///ditto
+intrinsic DiscriminantValuation(E :: FldPadExact, F :: FldPadExact) -> RngIntElt
+  {The valuation of the discriminant of E/F.}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return DiscriminantValuation(x);
+end intrinsic;
+
+///hide
+intrinsic DiscriminantValuation(x :: ExtDataFldPadExact) -> RngIntElt
+  {The valuation of the discriminant.}
+  if not assigned x`discriminant_valuation then
+    rp := RamificationPolygon(x);
+    i0, v0 := Explode(Vertices(rp)[1]);
+    assert i0 eq 1;
+    x`discriminant_valuation := v0;
+  end if;
+  return x`discriminant_valuation;
+end intrinsic;
+
+///### Ramification predicates
+
+/// True if `E` is unramified over its base field or `F`; that is, if the ramification degree is 1.
+intrinsic IsUnramified(E) -> BoolElt
+  {True if E is unramified.}
+  return RamificationDegree(E) eq 1;
+end intrinsic;
+
+///ditto
+intrinsic IsUnramified(E, F) -> BoolElt
+  {True if E/F is unramified.}
+  return RamificationDegree(E, F) eq 1;
+end intrinsic;
+
+/// True if `E` is ramified over its base field or `F`; that is, if the ramification degree is not 1.
+intrinsic IsRamified(E) -> BoolElt
+  {True if E is ramified.}
+  return RamificationDegree(E) ne 1;
+end intrinsic;
+
+///ditto
+intrinsic IsRamified(E, F) -> BoolElt
+  {True if E/F is ramified.}
+  return RamificationDegree(E, F) ne 1;
+end intrinsic;
+
+/// True if `E` is totally ramified over its base field or `F`; that is, if the inertia degree is 1.
+intrinsic IsTotallyRamified(E) -> BoolElt
+  {True if E is totally ramified.}
+  return InertiaDegree(E) eq 1;
+end intrinsic;
+
+///ditto
+intrinsic IsTotallyRamified(E, F) -> BoolElt
+  {True if E/F is totally ramified.}
+  return InertiaDegree(E, F) eq 1;
+end intrinsic;
+
+/// True if `E` is wildly ramified over its base field or `F`; that is, if the ramification degree is divisible by the prime p.
+intrinsic IsWildlyRamified(E) -> BoolElt
+  {True if E is wildly ramified.}
+  return IsDivisibleBy(RamificationDegree(E), Prime(E));
+end intrinsic;
+
+///ditto
+intrinsic IsWildlyRamified(E, F) -> BoolElt
+  {True if E/F is wildly ramified.}
+  return IsDivisibleBy(RamificationDegree(E, F), Prime(F));
+end intrinsic;
+
+/// True if `E` is totally wildly ramified over its base field or `F`; that is, if it is totally ramified and the ramification degree is a power of the prime p.
+intrinsic IsTotallyWildlyRamified(E) -> BoolElt
+  {True if E is totally wildly ramified.}
+  return IsTotallyRamified(E) and IsPowerOf(RamificationDegree(E), Prime(E));
+end intrinsic;
+
+///ditto
+intrinsic IsTotallyWildlyRamified(E, F) -> BoolElt
+  {True if E/F is totally wildly ramified.}
+  return IsTotallyRamified(E,F) and IsPowerOf(RamificationDegree(E,F), Prime(F));
+end intrinsic;
+
+
+
+///### Printing
+
+///hide
+intrinsic DescribeExtension(X :: ExtDataFldPadExact : BaseName:="") -> MonStgElt
+  {A string describing the extension E/F with F described as FName.}
+  if not assigned X`describe_extension then
+    case X`type:
+    when COMPOUND:
+      d := Join([DescribeExtension(Y) : Y in Reverse(X`list)], " over ");
+    when INERT:
+      d := Sprintf("Unramified extension of degree %o", Degree(X));
+    when EISEN:
+      d := Sprintf("Totally ramified extension of degree %o", Degree(X));
+    when EMBED:
+      d := Sprintf("Extension of embedding of degree %o", Degree(X));
+    else
+      error "not implemented";
+    end case;
+    X`describe_extension := d;
+  end if;
+  d := X`describe_extension;
+  if #BaseName eq 0 then
+    return d;
+  elif #d eq 0 then
+    return BaseName;
+  else
+    return Sprintf("%o over %o", d, BaseName);
+  end if;
+end intrinsic;
+
+intrinsic DescribeExtension(E :: FldPadExact, F :: FldPadExact : BaseName:="") -> MonStgElt
+  {A string describing the extension E/F with F described as FName.}
+  ok, X := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return DescribeExtension(X : BaseName:=BaseName);
+end intrinsic;
+
+///hide
+intrinsic Print(F :: FldPadExact, lvl :: MonStgElt)
+  {Print.}
+  case lvl:
+  when "Magma":
+    case F`type:
+    when PRIME:
+      printf "ExactpAdicField(%m)", Prime(F);
+    when INERT:
+      printf "UnramifiedExtension(%m)", DefiningPolynomial(F);
+    when EISEN:
+      printf "TotallyRamifiedExtension(%m)", DefiningPolynomial(F);
+    when EMBED:
+      error "Image(%m)", F`defining_embedding;
+    else
+      error "not implemented";
+    end case;
+  else
+    printf "%o", DescribeExtension(F, PrimeField(F) : BaseName:=Sprintf("Exact %o-adic field", Prime(F)));
+  end case;
+end intrinsic;
+
+///hide
+intrinsic Print(x :: FldPadExactElt, lvl :: MonStgElt)
+  {"}
+  case lvl:
+  when "Magma":
+    printf "%o", Format(x : APr := APR(x));
+  else
+    printf "%o", Format(x : APr := CAPR(x));
+  end case;
+end intrinsic;
+
+///### Standard form
+
+///hide
+intrinsic IsInStandardForm(x :: ExtDataFldPadExact) -> BoolElt
+  {True if E/F is in standard form.}
+  if not assigned x`is_in_standard_form then
+    x2 := Flatten(x);
+    case #x2`list:
+    when 0:
+      ok := true;
+    when 1:
+      ok := x2`list[1] in [INERT, EISEN];
+    when 2:
+      ok := x2`list[1]`type eq INERT and x2`list[2]`type eq EISEN;
+    else
+      ok := false;
+    end case;
+    x`is_in_standard_form := ok;
+  end if;
+  return x`is_in_standard_form;
+end intrinsic;
+
+intrinsic IsInStandardForm(E :: FldPadExact, F :: FldPadExact) -> BoolElt
+  {True if E/F is in standard form: E is a totally ramified extension of an unramified extension of F.}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return IsInStandardForm(x);
+end intrinsic;
+
+///hide
+intrinsic StandardForm(x :: ExtDataFldPadExact) -> ExtDataFldPadExact
+  {Returns a standard form of x.}
+  if not assigned x`standard_form then
+    if IsInStandardForm(x) then
+      y := x;
+    elif IsUnramified(x) then
+      K := BaseField(x);
+      L := TopField(x);
+      d := Degree(x);
+      y := UnramifiedExtension(K, d) / K;
+    elif IsTotallyRamified(x) then
+      K := BaseField(x);
+      L := TopField(x);
+      m := MinimalPolynomial(UniformizingElement(L), x);
+      y := TotallyRamifiedExtension(K, m) / K;
+    else
+      K := BaseField(x);
+      L := TopField(x);
+      d := Degree(x);
+      e := RamificationDegree(x);
+      f := InertiaDegree(x);
+      m := MinimalPolynomial(UniformizingElement(L) + InertiaGenerator(L), x);
+      U := UnramifiedExtension(K, f);
+      Ubar, bar := ResidueClassField(U);
+      u := Roots(Polynomial([Ubar | ResidueClass(c) : c in Coefficients(m)]))[1][1] @@ bar @ WeakApproximation;
+      mu := Polynomial([&+[U| &*[U| Binomial(i,j), Coefficient(m, i), u^(i-j)] : i in [j..d]] : j in [0..d]]); // f(x+u)
+      facs := NewtonPolygonFactorization(mu);
+      mi := THE([fac : fac in facs | Degree(fac) eq e and IsEisenstein(fac)]);
+      y := TotallyRamifiedExtension(U, mi) / K;
+    end if;
+    assert IsInStandardForm(y);
+    x`standard_form := y;
+  end if;
+  return x`standard_form;
+end intrinsic;
+
+intrinsic StandardForm(E :: FldPadExact, F :: FldPadExact) -> FldPadExact
+  {Returns a standard form version of E/F (that is, a totally ramified extension of an unramified extension of F).}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return StandardForm(x)`top_field;
 end intrinsic;
 
 ///## Residue class field
