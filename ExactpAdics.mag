@@ -1012,7 +1012,7 @@ end intrinsic;
 ///### Basic information
 
 intrinsic DefiningPolynomial(K :: FldPadExact) -> RngUPolElt_FldPadExact
-  {"}
+  {The defining polynomial of K.}
   if assigned K`defining_polynomial then
     return K`defining_polynomial;
   else
@@ -1568,7 +1568,7 @@ intrinsic PrimitiveElement(E :: FldPadExact) -> FldPadExactElt
   return E`primitive_element;
 end intrinsic;
 
-//ditto
+///ditto
 intrinsic PrimitiveElement(E :: FldPadExact, F :: FldPadExact) -> FldPadExactElt
   {A primitive element of E/F.}
   ok, x := IsExtensionOf(E, F);
@@ -1613,7 +1613,7 @@ intrinsic EltConstructor(E :: FldPadExact, t :: .) -> FldPadExactElt
   end if;
 end intrinsic;
 
-///### Coersion
+///### Coercion
 
 function is_coercible_from_embeddings(F, X)
   if assigned F`embeddings then
@@ -2559,6 +2559,381 @@ intrinsic ResidueClass(x :: FldPadExactElt) -> FldFinElt
   return x`residue_class;
 end intrinsic;
 
+///## Ramification polynomials and polygons
+///
+/// In this package, if $f(x)$ is an Eisenstein polynomial with a root $\pi$, then we define the *ramification polynomial of $f$* to be $f(x+\pi)$ and the *ramification polygon of $f$* to be the Newton polygon of this. Observe that since $f(\pi)=0$ then the ramification polygon has end vertices at 1 and $\deg f$.
+/// 
+/// If $L/K$ is totally ramified, then the *ramification polygon of $L/K$* is the ramification polygon of any Eisenstein polynomial defining the extension. If $L/U$ is totally ramified and $U/K$ is unramified then the *ramification polygon of $L/K$* is that of $L/U$ with an additional horizontal face from $((L:U),0)$ to $((L:K),0)$.
+/// 
+/// The Newton polygon is an invariant of an extension and describes the ramification breaks of the *Galois set* $\Gamma(L/K)$ of embeddings $L \hookrightarrow \bar{K}$. This generalizes ramification theory of Galois extensions, where the Galois set is equal to the Galois group.
+
+intrinsic RamificationResidualPolynomials(f :: RngUPolElt_FldPadExact) -> []
+  {The residual polynomials of the ramification polygon of f.}
+  if not assigned f`ramification_residual_polynomials then
+    f`ramification_residual_polynomials := [RamificationResidualPolynomial(f, face) : face in RamificationPolygon(f)];
+  end if;
+  return f`ramification_residual_polynomials;
+end intrinsic;
+
+intrinsic RamificationResidualPolynomial(f :: RngUPolElt_FldPadExact, face :: NwtnPgonFace) -> RngUPolElt
+  {The residual polynomial of the given face of the ramification polygon of f.}
+  require IsEisenstein(f): "f must be Eisenstein";
+  if not assigned f`ramification_residual_polynomial then
+    f`ramification_residual_polynomial := AssociativeArray();
+  end if;
+  ok, r := IsDefined(f`ramification_residual_polynomial, face);
+  if not ok then
+    F := BaseRing(f);
+    FF, FtoFF := ResidueClassField(F);
+    eF := AbsoluteRamificationDegree(F);
+    d := Degree(f);
+    p := Prime(F);
+    v0, v1 := Explode(EndVertices(face));
+    x0 := Z ! v0[1];
+    y0 := Z ! v0[2];
+    x1 := Z ! v1[1];
+    y1 := Z ! v1[2];
+    assert x0 ge 1;
+    assert x1 gt x0;
+    assert x1 le d;
+    slope := (y1 - y0) / (x1 - x0);
+    h := Numerator(-slope);
+    e := Denominator(-slope);
+    assert IsPowerOf(x0, p);
+    ok, w0 := IsDivisibleBy(x1, x0);
+    assert ok;
+    if not IsDivisibleBy(w0, p) then
+      assert x1 eq d;
+      tame := true;
+    else
+      assert IsPowerOf(x1, p);
+      tame := false;
+    end if;
+    coeffs := [FF|];
+    for j in [x0..x1 by e] do
+      v := Z ! (y0 + (j-x0)*slope);
+      i := j + (v mod d);
+      if i le d then
+        c := Binomial(i, j) * Coefficient(f, i);
+        tgt := Z ! ((v - i + j) / d);
+        coeff := ResidueClass(ShiftValuation(c, -tgt));
+      else
+        coeff := 0;
+      end if;
+      assert coeff ne 0 or (j gt x0 and j lt x1);
+      Append(~coeffs, coeff);
+    end for;
+    r := Polynomial(coeffs);
+    assert Degree(r) eq (x1-x0)/e;
+    f`ramification_residual_polynomial[face] := r;
+  end if;
+  return r;
+end intrinsic;
+
+intrinsic RamificationPolynomial(L :: FldPadExact) -> RngUPolElt_FldPadExact
+  {The ramification polynomial of L with respect to its defining polynomial.}
+  if not assigned L`ramification_polynomial then
+    require L`type eq EISEN: "L must be totally ramified over its base field";
+    f := DefiningPolynomial(L);
+    assert IsEisenstein(f);
+    pi := UniformizingElement(L);
+    d := Degree(f);
+    cs := [L| c : c in Coefficients(f)];
+    pipwrs := [pi^n : n in [0..d]];
+    L`ramification_polynomial := Polynomial([L| j eq 0 select 0 else &+[&*[L| Binomial(i,j), cs[i+1], pipwrs[i-j+1]] : i in [j..d]] : j in [0..d]]);
+  end if;
+  return L`ramification_polynomial;
+end intrinsic;
+
+function factorialValuation(n, p)
+  assert p gt 0;
+  assert n ge 0;
+  // v_p(n!)
+  v := 0;
+  q := p;
+  while q le n do
+    v +:= n div q;
+    q *:= p;
+  end while;
+  return v;
+end function;
+
+function binomialValuation(n, k, p)
+  return factorialValuation(n, p) - factorialValuation(k, p) - factorialValuation(n - k, p);
+end function;
+
+intrinsic RamificationPolygon(f :: RngUPolElt_FldPadExact) -> NwtnPgon
+  {The ramification polygon of the extension defined by f.}
+  if not assigned f`ramification_polygon then
+    if IsEisenstein(f) then
+      // the newton polygon of r(x) where
+      // v(r_j) = min[j<=i<=d] d*v_K((i choose j)*f_i)+(i-j)
+      d := Degree(f);
+      K := BaseRing(f);
+      e := AbsoluteRamificationDegree(K);
+      p := Prime(K);
+      // we deduce that v(r_j) <= d*v_K((d choose j))+(d-j)
+      // and hence we need to known v_K(f_i) <? v_K((d choose j)) - v_K((i choose j)) + 1-i/d
+      aprs := [0] cat [Max([Ceiling(e*(binomialValuation(d,j,p) - binomialValuation(i,j,p)) + 1 - i/d) : j in [1..i]]) : i in [1..d]];
+      IncreaseAbsolutePrecision(f, aprs);
+      // now compute
+      vfs := [Valuation(c) : c in Coefficients(f`approximation)[2..d+1]];
+      vrs := [Min([d*e*binomialValuation(i,j,p)+d*vfs[i]+(i-j) : i in [j..d] | vfs[i] lt OO]) : j in [1..d]];
+      f`ramification_polygon := NewtonPolygon([<j, vrs[j]> : j in [1..d]] : Faces:="Lower");
+    elif IsInertial(f) then
+      d := Degree(f);
+      f`ramification_polygon := NewtonPolygon([<1,0>, <d,0>] : Faces:="Lower");
+    else
+      error "only implemented for inertial or Eisenstein polynomials";
+    end if;
+  end if;
+  return f`ramification_polygon;
+end intrinsic;
+
+/// The ramification polygon of `E` over its base field or `F`.
+intrinsic RamificationPolygon(E :: FldPadExact) -> NwtnPgon
+  {The ramification polygon of F over its base field.}
+  return RamificationPolygon(DefiningPolynomial(E));
+end intrinsic;
+
+///ditto
+intrinsic RamificationPolygon(E :: FldPadExact, F :: FldPadExact) -> NwtnPgon
+  {The ramification polygon of E/F.}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return RamificationPolygon(x);
+end intrinsic;
+
+///hide
+intrinsic RamificationPolygon(x :: ExtDataFldPadExact) -> NwtnPgon
+  {The ramification polygon.}
+  if not assigned x`ramification_polygon then
+    d := Degree(x);
+    rp0 := RamificationPolygon(TransitionFunction(x));
+    rp := NewtonPolygon(Vertices(rp0) cat [<d,0>] : Faces:="Lower");
+    x`ramification_polygon := rp;
+  end if;
+  return x`ramification_polygon;
+end intrinsic;
+
+///## Hasse-Herbrand transition function
+
+///### Creation
+
+function hhtf_from_ramification_polygon(rp, d)
+  assert Vertices(rp)[1][1] eq 1;
+  assert LAST(Vertices(rp))[1] eq d;
+  U := [<Q!0, Q!0>];
+  for face in Reverse(Faces(rp)) do
+    v1 := -(y1-y0)/(x1-x0) where x0,y0:=Explode(xy0) where x1,y1:=Explode(xy1) where xy0,xy1:=Explode(EndVertices(face));
+    v0, u0 := Explode(LAST(U));
+    e := Z ! EndVertices(face)[2][1];
+    assert IsDivisibleBy(d, e);
+    assert v1 gt v0;
+    u1 := u0 + (e/d)*(v1-v0);
+    assert u1 gt u0;
+    Append(~U, <v1, u1>);
+  end for;
+  h := New(HassHerbTransFunc);
+  h`degree := d;
+  h`vertices := U;
+  return h;
+end function;
+
+function hhtf_trivial()
+  h := New(HassHerbTransFunc);
+  h`degree := 1;
+  h`vertices := [<Q!0,Q!0>];
+  return h;
+end function;
+
+function hhtf_merge_tower(hs)
+  h := New(HassHerbTransFunc);
+  h`degree := 1;
+  h`vertices := [<Q!0, Q!0>];
+  for h1 in hs do
+    h0 := h;
+    vs := SORT({vu[1] : vu in h1`vertices} join {vu[1] @@ h1 : vu in h0`vertices});
+    h := New(HassHerbTransFunc);
+    h`degree := h1`degree * h0`degree;
+    h`vertices := [<v, v@h1@h0> : v in vs];
+  end for;
+  return h;
+end function;
+
+/// The Hasse-Herbrand transition function of `E` over its base field or `F`.
+intrinsic TransitionFunction(E :: FldPadExact) -> HassHerbTransFunc
+  {The Hasse-Herbrand transition function of E over its base field.}
+  if not assigned E`transition_function then
+    case E`type:
+    when PRIME:
+      error "E must be an extension";
+    when INERT:
+      h := hhtf_trivial();
+    when EISEN:
+      rp := RamificationPolygon(E);
+      d := Degree(E);
+      h := hhtf_from_ramification_polygon(rp, d);
+    else
+      error "not implemented";
+    end case;
+    E`transition_function := h;
+  end if;
+  return E`transition_function;
+end intrinsic;
+
+///ditto
+intrinsic TransitionFunction(E :: FldPadExact, F :: FldPadExact) -> HassHerbTransFunc
+  {The Hasse-Herbrand transition function of E/F.}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return TransitionFunction(x);
+end intrinsic;
+
+///ditto
+intrinsic TransitionFunction(E :: FldPad) -> HassHerbTransFunc
+  {The Hasse-Herbrand transition function of E over its base field.}
+  if IsPrimeField(E) then
+    error "E must be an extension";
+  end if;
+  F := BaseField(E);
+  if RamificationDegree(E) eq 1 then
+    return hhtf_trivial();
+  elif RamificationDegree(E) eq Degree(E) then
+    f := DefiningPolynomial(E);
+    alpha := F.1;
+    r := Evaluate(f, Polynomial([alpha,1]));
+    assert Degree(r) eq Degree(f);
+    assert IsWeaklyZero(Coefficient(r, 0));
+    rp := NewtonPolygon([<i, Valuation(Coefficient(r,i))> : i in [1..Degree(r)]] : Faces:="Lower");
+    assert forall{v : v in Vertices(rp) | not IsWeaklyZero(Coefficient(r, Z ! v[1]))};
+    d := Degree(E);
+    return hhtf_from_ramification_polygon(rp, d);
+  else
+    error "not implemented";
+  end if;
+end intrinsic;
+
+///ditto
+intrinsic TransitionFunction(E :: FldPad, F :: FldPad) -> HassHerbTransFunc
+  {The Hasse-Herbrand transition function of E/F.}
+  twr := TOWER(E, F);
+  return hhtf_merge_tower([TransitionFunction(t) : t in twr[2..#twr]]);
+end intrinsic;
+
+///hide
+intrinsic TransitionFunction(x :: ExtDataFldPadExact) -> HassHerbTransFunc
+  {The Hasse-Herbrand transition function.}
+  if not assigned x`transition_function then
+    case x`type:
+    when COMPOUND:
+      h := hhtf_merge_tower([TransitionFunction(y) : y in x`list]);
+    when INERT, EISEN:
+      h := TransitionFunction(x`top_field);
+    when EMBED:
+      // TODO: implement "division" of transition functions
+      error "not implemented";
+    else
+      error "not implemented";
+    end case;
+    x`transition_function := h;
+  end if;
+  return x`transition_function;
+end intrinsic;
+
+///### Operations
+
+///hide
+intrinsic Print(h :: HassHerbTransFunc, lvl :: MonStgElt)
+  {Prints h.}
+    printf "Hasse-Herbrand transition function of an extension of ramification degree %o", h`degree;
+end intrinsic;
+
+intrinsic Degree(h :: HassHerbTransFunc) -> RngIntElt
+  {The degree of the extension this is the transition function of.}
+  return h`degree;
+end intrinsic;
+
+intrinsic Vertices(h :: HassHerbTransFunc) -> []
+  {The vertices of the function.}
+  return h`vertices;
+end intrinsic;
+
+intrinsic LowerBreaks(h :: HassHerbTransFunc) -> []
+  {The lower breaks of h.}
+  return [x[1] : x in Vertices(h)];
+end intrinsic;
+
+intrinsic UpperBreaks(h :: HassHerbTransFunc) -> []
+  {The upper breaks of h.}
+  return [x[2] : x in Vertices(h)];
+end intrinsic;
+
+intrinsic 'eq'(h1 :: HassHerbTransFunc, h2 :: HassHerbTransFunc) -> BoolElt
+  {True if h1 and h2 are equal as field invariants, i.e. they define the same function.}
+  return Degree(h1) eq Degree(h2) and Vertices(h1) eq Vertices(h2);
+end intrinsic;
+
+intrinsic '@'(v, h :: HassHerbTransFunc) -> .
+  {Evaluates h at v.}
+  if v le 0 then
+    return (Q!1) * v;
+  end if;
+  for i in [2..#h`vertices] do
+    v1, u1 := Explode(h`vertices[i]);
+    if v le v1 then
+      v0, u0 := Explode(h`vertices[i-1]);
+      return u0 + (v-v0)*(u1-u0)/(v1-v0);
+    end if;
+  end for;
+  v1, u1 := Explode(LAST(h`vertices));
+  assert v gt v1;
+  return u1 + (v-v1) / h`degree;
+end intrinsic;
+
+intrinsic '@@'(u, h :: HassHerbTransFunc) -> .
+  {The inverse of h at u.}
+  if u le 0 then
+    return (Q!1) * u;
+  end if;
+  for i in [2..#h`vertices] do
+    v1, u1 := Explode(h`vertices[i]);
+    if u le u1 then
+      v0, u0 := Explode(h`vertices[i-1]);
+      return v0 + (u-u0)*(v1-v0)/(u1-u0);
+    end if;
+  end for;
+  v1, u1 := Explode(LAST(h`vertices));
+  assert u gt u1;
+  return v1 + (u-u1) * h`degree;
+end intrinsic;
+
+intrinsic RamificationPolygon(h :: HassHerbTransFunc) -> NwtnPgon
+  {The ramification polygon of a totally ramified extension with the given transition function.}
+  if not assigned h`ramification_polygon then
+    e := h`degree;
+    vs := [<e, 0>];
+    vus := Vertices(h);
+    for i in [2..#vus] do
+      slope := -vus[i][1];
+      if i eq #vus then
+        x1 := 1;
+      else
+        v0, u0 := Explode(vus[i]);
+        v1, u1 := Explode(vus[i+1]);
+        x1 := Z ! (e * (u1 - u0) / (v1 - v0));
+      end if;
+      x0, y0 := Explode(LAST(vs));
+      assert x1 lt x0;
+      y1 := Z ! (y0 + slope*(x1-x0));
+      Append(~vs, <x1, y1>);
+    end for;
+    h`ramification_polygon := NewtonPolygon(vs : Faces:="Lower");
+  end if;
+  return h`ramification_polygon;
+end intrinsic;
+
+
 ///## Primitivity and minimal polynomials
 
 // to determine if x in E/F  (degree d) is primitive:
@@ -2672,6 +3047,7 @@ intrinsic IsDefinitelyPrimitive(x, X :: ExtDataFldPadExact : Strategy:="default"
   end if;
 end intrinsic;
 
+/// True if `x` is a primitive element for `E` (or `Parent(x)`) over `F`.
 intrinsic IsDefinitelyPrimitive(x, E :: FldPadExact, F :: FldPadExact : Strategy:="default") -> BoolElt, RngUPolElt_FldPadExact
   {True if x is primitive for E/F, i.e. E=F(x). If so, also returns the minimal polynomial of x over F.}
   ok, X := IsExtensionOf(E, F);
@@ -2680,6 +3056,7 @@ intrinsic IsDefinitelyPrimitive(x, E :: FldPadExact, F :: FldPadExact : Strategy
   isKnown := false;
 end intrinsic;
 
+///ditto
 intrinsic IsDefinitelyPrimitive(x :: FldPadExactElt, F :: FldPadExact : Strategy:="default") -> BoolElt, RngUPolElt_FldPadExact
   {True if x in E is primitive for E/F, i.e. E=F(x). If so, also returns the minimal polynomial of x over F.}
   return IsDefinitelyPrimitive(x, Parent(x), F : Strategy:=Strategy);
@@ -2785,12 +3162,12 @@ intrinsic BaseField(h :: HomFldPadExact) -> FldPadExact
 end intrinsic;
 
 intrinsic Domain(h :: HomFldPadExact) -> FldPadExact
-  {"}
+  {The domain of h.}
   return TopField(h`xdomain);
 end intrinsic;
 
 intrinsic Codomain(h :: HomFldPadExact) -> FldPadExact
-  {"}
+  {The codomain of h.}
   return TopField(h`xcodomain);
 end intrinsic;
 
@@ -3940,7 +4317,7 @@ intrinsic Polynomial(K :: FldPadExact, coeffs :: []) -> RngUPolElt_FldPadExact
   return CAST(PolynomialRing(K), coeffs);
 end intrinsic;
 
-///### Coersion
+///### Coercion
 
 /// True if `X` is coercible to an element of `R`. If so, also returns the coerced element. Otherwise, also returns a string explaining why not.
 /// 
@@ -4055,7 +4432,7 @@ end intrinsic;
 
 ///hide-none
 
-intrinsic CanChangeRing(f :: RngUPolElt_FldPadExact, K :: FldPadExact) -> RngUPolElt_FldPadExact
+intrinsic CanChangeRing(f :: RngUPolElt_FldPadExact, K :: FldPadExact) -> BoolElt, RngUPolElt_FldPadExact
   {True if f can be coerced to a polynomial over K. If so, also returns the coerced polynomial.}
   if BaseRing(f) eq K then
     return true, f;
@@ -4064,7 +4441,7 @@ intrinsic CanChangeRing(f :: RngUPolElt_FldPadExact, K :: FldPadExact) -> RngUPo
   end if;
 end intrinsic;
 
-intrinsic CanChangeRing(f :: RngUPolElt, K :: FldPadExact) -> RngUPolElt_FldPadExact
+intrinsic CanChangeRing(f :: RngUPolElt, K :: FldPadExact) -> BoolElt, RngUPolElt_FldPadExact
   {"}
   return IsCoercible(PolynomialRing(K), f);
 end intrinsic;
@@ -4081,55 +4458,133 @@ end intrinsic;
 
 ///## Polynomial basics
 
-intrinsic Slice(f :: RngUPolElt_FldPadExact, idxs :: [RngIntElt]) -> RngUPolElt_FldPadExact
-  {The polynomial with the given coefficients of f.}
-  require forall{i : i in idxs | i ge 0}: "idxs must be non-negative";
-  R := Parent(f);
-  if #idxs eq 0 then
-    return CAST(R, []);
+intrinsic BaseRing(f :: RngUPolElt_FldPadExact) -> FldPadExact
+  {The base ring of f.}
+  if not assigned f`base_ring then
+    f`base_ring := BaseRing(Parent(f));
   end if;
-  xf := Approximation(f, CAPR(f));
-  init := Parent(xf) ! [IsDefined(idxs,i) select Coefficient(xf, idxs[i]) else 0 : i in [1..#idxs]];
-  // make an array a := [<j, [i : idxs[i] eq j]>]
-  a := AssociativeArray();
-  for i in [1..#idxs] do
-    if IsDefined(idxs, i) then
-      j := idxs[i];
-      if IsDefined(a, j) then
-        Append(~a[j], i);
-      else
-        a[j] := [i];
-      end if;
+  return f`base_ring;
+end intrinsic;
+
+intrinsic Parent(f :: RngUPolElt_FldPadExact) -> RngUPol_FldPadExact
+  {The polynomial ring containing f.}
+  return f`parent;
+end intrinsic;
+
+///### Degree
+
+intrinsic Degree(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
+  {The degree of f.}
+  if not assigned f`degree then
+    d := WeakDegree(f);
+    if d ge 0 and IsWeaklyZero(Coefficient(f, d) : Strategy:=Strategy) then
+      error "leading coefficient is weakly zero";
     end if;
-  end for;
-  a := [<j, a[j]> : j in Keys(a)];
-  print a;
-  mkupdate := func<z | function (aprs)
-    return Approximation_Lazy(f, [<x[1], &join[aprs(i-1) : i in x[2]]> : x in a]) mod function (xf)
-      Update(z, Parent(xf) ! [IsDefined(idxs,i) select Coefficient(xf, idxs[i]) else 0 : i in [1..#idxs]]);
+    f`degree := d;
+  end if;
+  return f`degree;
+end intrinsic;
+
+intrinsic WeakDegree(f :: RngUPolElt_FldPadExact) -> RngIntElt
+  {The weak degree of f, the degree of its approximation.}
+  return Degree(f`approximation);
+end intrinsic;
+
+///### Coefficients
+
+intrinsic Coefficients(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
+  {The coefficients of f.}
+  if not assigned f`coefficients then
+    d := Degree(f : Strategy:=Strategy);
+    f`coefficients := [Coefficient(f, i) : i in [0..d]];
+  end if;
+  return f`coefficients;
+end intrinsic;
+
+intrinsic WeakCoefficients(f :: RngUPolElt_FldPadExact) -> []
+  {The coefficients of f, possibly including some leading zeros.}
+  if not assigned f`weak_coefficients then
+    f`weak_coefficients := [Coefficient(f, i) : i in [0..WeakDegree(f)]];
+  end if;
+  return f`weak_coefficients[1..WeakDegree(f)+1];
+end intrinsic;
+
+intrinsic LeadingCoefficient(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
+  {The leading coefficient of f.}
+  if not assigned f`leading_coefficient then
+    d := Degree(f : Strategy:=Strategy);
+    f`leading_coefficient := Coefficient(f, d);
+  end if;
+  return f`leading_coefficient;
+end intrinsic;
+
+intrinsic WeakLeadingCoefficient(f :: RngUPolElt_FldPadExact) -> BoolElt
+  {The leading weak coefficient of f.}
+  return Coefficient(f, WeakDegree(f));
+end intrinsic;
+
+function _coefficient(f, i)
+  R := Parent(f);
+  F := BaseRing(R);
+  init := Coefficient(f`approximation, i);
+  mkupdate := func<z | function (apr)
+    fapr := AbsolutePrecision(f);
+    return IncreaseAbsolutePrecision_Lazy(f, [<i,apr>])
+    mod function (ig)
+      Update(z, Coefficient(f`approximation, i));
       return true;
     end function;
   end function>;
-  return R ! <init, mkupdate>;
+  return F ! <init, mkupdate>;
+end function;
+
+intrinsic Coefficient(f :: RngUPolElt_FldPadExact, i :: RngIntElt) -> []
+  {The ith coefficient of f.}
+  require i ge 0: "i must be non-negative";
+  if assigned f`weak_coefficients then
+    return (i+1 gt #f`weak_coefficients) select CAST(BaseRing(Parent(f), 0)) else f`weak_coefficients[i+1];
+  end if;
+  if i gt WeakDegree(f) then
+    return CAST(BaseRing(Parent(f)), 0);
+  end if;
+  if not assigned f`coefficient then
+    f`coefficient := [];
+  end if;
+  if IsDefined(f`coefficient, i+1) then
+    c := f`coefficient[i+1];
+  else
+    c := _coefficient(f, i);
+    f`coefficient[i+1] := c;
+  end if;
+  return c;
 end intrinsic;
 
-intrinsic Reverse(f :: RngUPolElt_FldPadExact : Strategy:="default") -> RngUPolElt_FldPadExact
-  {The polynomial with the reversed coefficients of f: f(1/x)*x^deg(f).}
-  d := Degree(f : Strategy:=Strategy);
-  return Slice(f, [d..0 by -1]);
+///### Valuation
+
+intrinsic IsIntegral(f :: RngUPolElt_FldPadExact) -> RngUPolElt
+  {True if each coefficient of `f` is integral.}
+  if not assigned f`is_integral then
+    // can we answer without increasing precision?
+    if exists{c : c in Coefficients(f`approximation) | (not WZERO(c)) and Valuation(c) lt 0} then
+      f`is_integral := false;
+    else
+      // now increase precision and check again
+      IncreaseAbsolutePrecision(f, 0);
+      f`is_integral := forall{c : c in Coefficients(f`approximation) | Valuation(c) ge 0};
+    end if;
+  end if;
+  return f`is_integral;  
 end intrinsic;
 
-intrinsic WeakReverse(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
-  {The polynomial with the reversed weak coefficient of f: f(1/x)*x^weakdeg(f).}
-  d := WeakDegree(f);
-  return Slice(f, [d..0 by -1]);
-end intrinsic;
-
-intrinsic Decimate(f :: RngUPolElt_FldPadExact, n :: RngIntElt : Phase:=0) -> RngUPolElt_FldPadExact
-  {The polynomial of the ith coefficients of f where i=Phase mod n.}
-  require n gt 0: "n must be positive";
-  d := WeakDegree(f);
-  return Slice(f, [Phase mod n .. d by n]);
+intrinsic MinValuation(f :: RngUPolElt_FldPadExact : Strategy:="default") -> RngIntElt
+  {The smallest valuation of the coefficients of f.}
+  if not assigned f`min_valuation then
+    require not IsWeaklyZero(f : Strategy:=Strategy): "f is weakly zero";
+    v := Min([Valuation(c) : i in [0..WeakDegree(f)] | not WZERO(c) where c:=Coefficient(f`approximation,i)]);
+    IncreaseAbsolutePrecision(f, v+1);
+    f`min_valuation := WeakMinValuation(f);
+  end if;
+  return f`min_valuation;
 end intrinsic;
 
 procedure assignValuationBelow_poly(f,n)
@@ -4181,277 +4636,7 @@ intrinsic ValuationGt(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -> BoolElt
   return not ValuationLe(f, n);
 end intrinsic;
 
-intrinsic Derivative(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -> RngUPolElt_FldPadExact
-  {The nth derivative of f.}
-  require n ge 0: "n must be non-negative";
-  if n eq 0 then
-    return f;
-  end if;
-  R := Parent(f);
-  d := WeakDegree(f);
-  if n gt d then
-    return CAST(R, 0);
-  end if;
-  if not assigned f`derivative then
-    f`derivative := [];
-  end if;
-  if not IsDefined(f`derivative, n) then
-    K := BaseRing(R);
-    e := AbsoluteRamificationDegree(K);
-    p := Prime(K);
-    bs := [NumberOfPermutations(i,n) : i in [n..d]];
-    vbs := [e*Valuation(b,p) : b in bs];
-    init := Derivative(Approximation(f, CAPR(f)), n);
-    mkupdate := func<z | function (aprs)
-      faprs := AbsolutePrecision(f);
-      return Approximation_Lazy(f, [i lt n select <i, faprs(i)> else <i, aprs(i-n)-vbs[i-n+1]> : i in [n..WeakDegree(f)]]) mod function (xf)
-        Update(z, Derivative(xf, n));
-        return true;
-      end function;
-    end function>;
-    f`derivative[n] := R ! <init, mkupdate>;
-  end if;
-  return f`derivative[n];
-end intrinsic;
-
-intrinsic Derivative(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
-  {The derivative of f.}
-  return Derivative(f, 1);
-end intrinsic;
-
-declare verbose ExactpAdics_Evaluate, 2;
-
-intrinsic Evaluate(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
-  {f(g).}
-  ok, R := ExistsCoveringStructure(Parent(f), Parent(g));
-  require ok: "Argument 1 and argument 2 must be coercible to a common ring";
-  f := R ! f;
-  g := R ! g;
-  // trivial cases
-  if IsDefinitelyZero(f) or WeakDegree(f) eq 0 then
-    return f;
-  elif IsDefinitelyZero(g) then
-    return Slice(f, [0]);
-  elif WeakDegree(g) eq 0 then
-    return Evaluate(f, Coefficient(g,0));
-  end if;
-  // main case (f and g are both non-constant)
-  return &+[Coefficient(f,i) * g^i : i in [0..WeakDegree(f)]];
-end intrinsic;
-
-intrinsic Evaluate(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> FldPadExactElt
-  {f(x).}
-  ok, K := ExistsCoveringStructure(BaseRing(f), Parent(x));
-  require ok: "x and the coefficients of f must lie in the same field";
-  f := ChangeRing(f, K);
-  x := CAST(K, x);
-  R := Parent(f);
-  // trivial cases
-  if IsDefinitelyZero(f) then
-    return CAST(K, 0);
-  elif IsDefinitelyZero(x) or WeakDegree(f) eq 0 then
-    return Coefficient(f, 0);
-  end if;
-  // main case
-  xf := Approximation(f, CAPR(f));
-  xx := Approximation(x, CAPR(x));
-  init := Evaluate(xf, xx);
-  mkupdate := func<z | function (apr)
-    vx := WeakValuation(x);
-    d := WeakDegree(f);
-    vfs := WeakValuation(f);
-    pr := apr - &meet ShiftSlope(vfs, vx);
-    return [
-      Approximation_Lazy(f, [<i,apr-i*vx> : i in [0..d]]),
-      Approximation_Lazy(x, vx+pr)
-    ] mod function (xf, xx)
-      Update(z, Evaluate(xf, xx));
-      return true;
-    end function;
-  end function>;
-  ret := K ! <init, mkupdate>;
-  return ret;
-end intrinsic;
-
-intrinsic Evaluate(f :: RngUPolElt_FldPadExact, x) -> FldPadExactElt
-  {"}
-  ok, x := IsCoercible(BaseRing(f), x);
-  require ok: "x must be coercible to the coefficient ring of f";
-  return Evaluate(f, x);
-end intrinsic;
-
-intrinsic Evaluate(f :: RngUPolElt, x :: FldPadExactElt) -> FldPadExactElt
-  {"}
-  ok, f := CanChangeRing(f, Parent(x));
-  require ok: "f must be coercible to the field containing x";
-  return Evaluate(f, x);
-end intrinsic;
-
-intrinsic IsIntegral(f :: RngUPolElt_FldPadExact) -> RngUPolElt
-  {"}
-  if not assigned f`is_integral then
-    // can we answer without increasing precision?
-    if exists{c : c in Coefficients(f`approximation) | (not WZERO(c)) and Valuation(c) lt 0} then
-      f`is_integral := false;
-    else
-      // now increase precision and check again
-      IncreaseAbsolutePrecision(f, 0);
-      f`is_integral := forall{c : c in Coefficients(f`approximation) | Valuation(c) ge 0};
-    end if;
-  end if;
-  return f`is_integral;  
-end intrinsic;
-
-intrinsic MinValuation(f :: RngUPolElt_FldPadExact : Strategy:="default") -> RngIntElt
-  {The smallest valuation of the coefficients of f.}
-  if not assigned f`min_valuation then
-    require not IsWeaklyZero(f : Strategy:=Strategy): "f is weakly zero";
-    v := Min([Valuation(c) : i in [0..WeakDegree(f)] | not WZERO(c) where c:=Coefficient(f`approximation,i)]);
-    IncreaseAbsolutePrecision(f, v+1);
-    f`min_valuation := WeakMinValuation(f);
-  end if;
-  return f`min_valuation;
-end intrinsic;
-
-intrinsic BaseRing(f :: RngUPolElt_FldPadExact) -> FldPadExact
-  {The base ring of f.}
-  if not assigned f`base_ring then
-    f`base_ring := BaseRing(Parent(f));
-  end if;
-  return f`base_ring;
-end intrinsic;
-
-intrinsic IsInertial(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
-  {True if f is inertial (i.e. it is irreducible as a polynomial over the residue class field).}
-  if not assigned f`is_inertial then
-    R := Parent(f);
-    F := BaseRing(R);
-    C, m, xm := ResidueClassField(F);
-    d := Degree(f : Strategy:=Strategy);
-    IncreaseAbsolutePrecision(f, 1);
-    xcoeffs := Coefficients(f`approximation);
-    // check integral and "monic"
-    if exists{i : i in [0..d] | Valuation(xcoeffs[i+1]) lt 0} then
-      f`is_inertial := false;
-    elif Valuation(xcoeffs[d+1]) ne 0 then
-      f`is_inertial := false;
-    else
-      // coerce to residue class field and check irreducible
-      fC := Polynomial([C | xm(x) : x in Coefficients(f`approximation)]);
-      assert Degree(fC) eq d;
-      f`is_inertial := IsIrreducible(fC);
-    end if;
-  end if;
-  return f`is_inertial;
-end intrinsic;
-
-intrinsic Coefficients(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
-  {The coefficients of f.}
-  if not assigned f`coefficients then
-    d := Degree(f : Strategy:=Strategy);
-    f`coefficients := [Coefficient(f, i) : i in [0..d]];
-  end if;
-  return f`coefficients;
-end intrinsic;
-
-intrinsic WeakCoefficients(f :: RngUPolElt_FldPadExact) -> []
-  {The coefficients of f, possibly including some leading zeros.}
-  if not assigned f`weak_coefficients then
-    f`weak_coefficients := [Coefficient(f, i) : i in [0..WeakDegree(f)]];
-  end if;
-  return f`weak_coefficients[1..WeakDegree(f)+1];
-end intrinsic;
-
-intrinsic LeadingCoefficient(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
-  {The leading coefficient of f.}
-  if not assigned f`leading_coefficient then
-    d := Degree(f : Strategy:=Strategy);
-    f`leading_coefficient := Coefficient(f, d);
-  end if;
-  return f`leading_coefficient;
-end intrinsic;
-
-intrinsic WeakLeadingCoefficient(f :: RngUPolElt_FldPadExact) -> BoolElt
-  {The leading weak coefficient of f.}
-  return Coefficient(f, WeakDegree(f));
-end intrinsic;
-
-intrinsic Degree(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
-  {The degree of f.}
-  if not assigned f`degree then
-    d := WeakDegree(f);
-    if d ge 0 and IsWeaklyZero(Coefficient(f, d) : Strategy:=Strategy) then
-      error "leading coefficient is weakly zero";
-    end if;
-    f`degree := d;
-  end if;
-  return f`degree;
-end intrinsic;
-
-intrinsic WeakDegree(f :: RngUPolElt_FldPadExact) -> RngIntElt
-  {The weak degree of f, the degree of its approximation.}
-  return Degree(f`approximation);
-end intrinsic;
-
-intrinsic IsEisenstein(f :: RngUPolElt_FldPadExact) -> BoolElt
-  {True if f is Eisenstein.}
-  if not assigned f`is_eisenstein then
-    d := Degree(f);
-    if d lt 1 then
-      f`is_eisenstein := false;
-    else
-      IncreaseAbsolutePrecision(f, [<i, (i eq 0) select 2 else 1> : i in [0..d]]);
-      xf := f`approximation;
-      f`is_eisenstein := Valuation(Coefficient(xf, 0)) eq 1
-        and Valuation(Coefficient(xf, d)) eq 0
-        and forall{i : i in [1..d-1] | Valuation(Coefficient(xf, i)) gt 0};
-    end if;
-  end if;
-  return f`is_eisenstein;
-end intrinsic;
-
-intrinsic Parent(f :: RngUPolElt_FldPadExact) -> RngUPol_FldPadExact
-  {The polynomial ring containing f.}
-  return f`parent;
-end intrinsic;
-
-function _coefficient(f, i)
-  R := Parent(f);
-  F := BaseRing(R);
-  init := Coefficient(f`approximation, i);
-  mkupdate := func<z | function (apr)
-    fapr := AbsolutePrecision(f);
-    return IncreaseAbsolutePrecision_Lazy(f, [<i,apr>])
-    mod function (ig)
-      Update(z, Coefficient(f`approximation, i));
-      return true;
-    end function;
-  end function>;
-  return F ! <init, mkupdate>;
-end function;
-
-intrinsic Coefficient(f :: RngUPolElt_FldPadExact, i :: RngIntElt) -> []
-  {The ith coefficient of f.}
-  require i ge 0: "i must be non-negative";
-  if assigned f`weak_coefficients then
-    return (i+1 gt #f`weak_coefficients) select CAST(BaseRing(Parent(f), 0)) else f`weak_coefficients[i+1];
-  end if;
-  if i gt WeakDegree(f) then
-    return CAST(BaseRing(Parent(f)), 0);
-  end if;
-  if not assigned f`coefficient then
-    f`coefficient := [];
-  end if;
-  if IsDefined(f`coefficient, i+1) then
-    c := f`coefficient[i+1];
-  else
-    c := _coefficient(f, i);
-    f`coefficient[i+1] := c;
-  end if;
-  return c;
-end intrinsic;
-
-///## Arithmetic
+///### Arithmetic
 
 ///hide
 intrinsic '+'(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
@@ -4877,6 +5062,209 @@ intrinsic ShiftArgument(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> Rng
   return R ! <init, mkupdate>;
 end intrinsic;
 
+intrinsic Slice(f :: RngUPolElt_FldPadExact, idxs :: [RngIntElt]) -> RngUPolElt_FldPadExact
+  {The polynomial with the given coefficients of f.}
+  require forall{i : i in idxs | i ge 0}: "idxs must be non-negative";
+  R := Parent(f);
+  if #idxs eq 0 then
+    return CAST(R, []);
+  end if;
+  xf := Approximation(f, CAPR(f));
+  init := Parent(xf) ! [IsDefined(idxs,i) select Coefficient(xf, idxs[i]) else 0 : i in [1..#idxs]];
+  // make an array a := [<j, [i : idxs[i] eq j]>]
+  a := AssociativeArray();
+  for i in [1..#idxs] do
+    if IsDefined(idxs, i) then
+      j := idxs[i];
+      if IsDefined(a, j) then
+        Append(~a[j], i);
+      else
+        a[j] := [i];
+      end if;
+    end if;
+  end for;
+  a := [<j, a[j]> : j in Keys(a)];
+  print a;
+  mkupdate := func<z | function (aprs)
+    return Approximation_Lazy(f, [<x[1], &join[aprs(i-1) : i in x[2]]> : x in a]) mod function (xf)
+      Update(z, Parent(xf) ! [IsDefined(idxs,i) select Coefficient(xf, idxs[i]) else 0 : i in [1..#idxs]]);
+      return true;
+    end function;
+  end function>;
+  return R ! <init, mkupdate>;
+end intrinsic;
+
+intrinsic Reverse(f :: RngUPolElt_FldPadExact : Strategy:="default") -> RngUPolElt_FldPadExact
+  {The polynomial with the reversed coefficients of f: f(1/x)*x^deg(f).}
+  d := Degree(f : Strategy:=Strategy);
+  return Slice(f, [d..0 by -1]);
+end intrinsic;
+
+intrinsic WeakReverse(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
+  {The polynomial with the reversed weak coefficient of f: f(1/x)*x^weakdeg(f).}
+  d := WeakDegree(f);
+  return Slice(f, [d..0 by -1]);
+end intrinsic;
+
+intrinsic Decimate(f :: RngUPolElt_FldPadExact, n :: RngIntElt : Phase:=0) -> RngUPolElt_FldPadExact
+  {The polynomial of the ith coefficients of f where i=Phase mod n.}
+  require n gt 0: "n must be positive";
+  d := WeakDegree(f);
+  return Slice(f, [Phase mod n .. d by n]);
+end intrinsic;
+
+///### Derivative
+
+intrinsic Derivative(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
+  {The first derivative of f.}
+  return Derivative(f, 1);
+end intrinsic;
+
+intrinsic Derivative(f :: RngUPolElt_FldPadExact, n :: RngIntElt) -> RngUPolElt_FldPadExact
+  {The nth derivative of f.}
+  require n ge 0: "n must be non-negative";
+  if n eq 0 then
+    return f;
+  end if;
+  R := Parent(f);
+  d := WeakDegree(f);
+  if n gt d then
+    return CAST(R, 0);
+  end if;
+  if not assigned f`derivative then
+    f`derivative := [];
+  end if;
+  if not IsDefined(f`derivative, n) then
+    K := BaseRing(R);
+    e := AbsoluteRamificationDegree(K);
+    p := Prime(K);
+    bs := [NumberOfPermutations(i,n) : i in [n..d]];
+    vbs := [e*Valuation(b,p) : b in bs];
+    init := Derivative(Approximation(f, CAPR(f)), n);
+    mkupdate := func<z | function (aprs)
+      faprs := AbsolutePrecision(f);
+      return Approximation_Lazy(f, [i lt n select <i, faprs(i)> else <i, aprs(i-n)-vbs[i-n+1]> : i in [n..WeakDegree(f)]]) mod function (xf)
+        Update(z, Derivative(xf, n));
+        return true;
+      end function;
+    end function>;
+    f`derivative[n] := R ! <init, mkupdate>;
+  end if;
+  return f`derivative[n];
+end intrinsic;
+
+///### Evaluate
+
+declare verbose ExactpAdics_Evaluate, 2;
+
+intrinsic Evaluate(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> FldPadExactElt
+  {Evaluates `f` at `x`.}
+  ok, K := ExistsCoveringStructure(BaseRing(f), Parent(x));
+  require ok: "x and the coefficients of f must lie in the same field";
+  f := ChangeRing(f, K);
+  x := CAST(K, x);
+  R := Parent(f);
+  // trivial cases
+  if IsDefinitelyZero(f) then
+    return CAST(K, 0);
+  elif IsDefinitelyZero(x) or WeakDegree(f) eq 0 then
+    return Coefficient(f, 0);
+  end if;
+  // main case
+  xf := Approximation(f, CAPR(f));
+  xx := Approximation(x, CAPR(x));
+  init := Evaluate(xf, xx);
+  mkupdate := func<z | function (apr)
+    vx := WeakValuation(x);
+    d := WeakDegree(f);
+    vfs := WeakValuation(f);
+    pr := apr - &meet ShiftSlope(vfs, vx);
+    return [
+      Approximation_Lazy(f, [<i,apr-i*vx> : i in [0..d]]),
+      Approximation_Lazy(x, vx+pr)
+    ] mod function (xf, xx)
+      Update(z, Evaluate(xf, xx));
+      return true;
+    end function;
+  end function>;
+  ret := K ! <init, mkupdate>;
+  return ret;
+end intrinsic;
+
+intrinsic Evaluate(f :: RngUPolElt_FldPadExact, x) -> FldPadExactElt
+  {"}
+  ok, x := IsCoercible(BaseRing(f), x);
+  require ok: "x must be coercible to the coefficient ring of f";
+  return Evaluate(f, x);
+end intrinsic;
+
+intrinsic Evaluate(f :: RngUPolElt, x :: FldPadExactElt) -> FldPadExactElt
+  {"}
+  ok, f := CanChangeRing(f, Parent(x));
+  require ok: "f must be coercible to the field containing x";
+  return Evaluate(f, x);
+end intrinsic;
+
+intrinsic Evaluate(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
+  {Evaluates `f` at `g`.}
+  ok, R := ExistsCoveringStructure(Parent(f), Parent(g));
+  require ok: "Argument 1 and argument 2 must be coercible to a common ring";
+  f := R ! f;
+  g := R ! g;
+  // trivial cases
+  if IsDefinitelyZero(f) or WeakDegree(f) eq 0 then
+    return f;
+  elif IsDefinitelyZero(g) then
+    return Slice(f, [0]);
+  elif WeakDegree(g) eq 0 then
+    return Evaluate(f, Coefficient(g,0));
+  end if;
+  // main case (f and g are both non-constant)
+  return &+[Coefficient(f,i) * g^i : i in [0..WeakDegree(f)]];
+end intrinsic;
+
+///### Special forms
+
+intrinsic IsInertial(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
+  {True if f is inertial (i.e. it is irreducible as a polynomial over the residue class field).}
+  if not assigned f`is_inertial then
+    R := Parent(f);
+    F := BaseRing(R);
+    C, m, xm := ResidueClassField(F);
+    d := Degree(f : Strategy:=Strategy);
+    IncreaseAbsolutePrecision(f, 1);
+    xcoeffs := Coefficients(f`approximation);
+    // check integral and "monic"
+    if exists{i : i in [0..d] | Valuation(xcoeffs[i+1]) lt 0} then
+      f`is_inertial := false;
+    elif Valuation(xcoeffs[d+1]) ne 0 then
+      f`is_inertial := false;
+    else
+      // coerce to residue class field and check irreducible
+      fC := Polynomial([C | xm(x) : x in Coefficients(f`approximation)]);
+      assert Degree(fC) eq d;
+      f`is_inertial := IsIrreducible(fC);
+    end if;
+  end if;
+  return f`is_inertial;
+end intrinsic;
+
+intrinsic IsEisenstein(f :: RngUPolElt_FldPadExact) -> BoolElt
+  {True if f is Eisenstein.}
+  if not assigned f`is_eisenstein then
+    d := Degree(f);
+    if d lt 1 then
+      f`is_eisenstein := false;
+    else
+      IncreaseAbsolutePrecision(f, [<i, (i eq 0) select 2 else 1> : i in [0..d]]);
+      xf := f`approximation;
+      f`is_eisenstein := Valuation(Coefficient(xf, 0)) eq 1
+        and Valuation(Coefficient(xf, d)) eq 0
+        and forall{i : i in [1..d-1] | Valuation(Coefficient(xf, i)) gt 0};
+    end if;
+  end if;
+  return f`is_eisenstein;
+end intrinsic;
 
 ///## Discriminant and Resultant
 
@@ -5221,381 +5609,6 @@ intrinsic HenselLift(f :: RngUPolElt, x : Strategy:="default") -> FldPadExactElt
     error "not Hensel liftable";
   end if;
 end intrinsic;
-
-///## Ramification polynomials and polygons
-///
-/// In this package, if $f(x)$ is an Eisenstein polynomial with a root $\pi$, then we define the *ramification polynomial of $f$* to be $f(x+\pi)$ and the *ramification polygon of $f$* to be the Newton polygon of this. Observe that since $f(\pi)=0$ then the ramification polygon has end vertices at 1 and $\deg f$.
-/// 
-/// If $L/K$ is totally ramified, then the *ramification polygon of $L/K$* is the ramification polygon of any Eisenstein polynomial defining the extension. If $L/U$ is totally ramified and $U/K$ is unramified then the *ramification polygon of $L/K$* is that of $L/U$ with an additional horizontal face from $((L:U),0)$ to $((L:K),0)$.
-/// 
-/// The Newton polygon is an invariant of an extension and describes the ramification breaks of the *Galois set* $\Gamma(L/K)$ of embeddings $L \hookrightarrow \bar{K}$. This generalizes ramification theory of Galois extensions, where the Galois set is equal to the Galois group.
-
-intrinsic RamificationResidualPolynomials(f :: RngUPolElt_FldPadExact) -> []
-  {The residual polynomials of the ramification polygon of f.}
-  if not assigned f`ramification_residual_polynomials then
-    f`ramification_residual_polynomials := [RamificationResidualPolynomial(f, face) : face in RamificationPolygon(f)];
-  end if;
-  return f`ramification_residual_polynomials;
-end intrinsic;
-
-intrinsic RamificationResidualPolynomial(f :: RngUPolElt_FldPadExact, face :: NwtnPgonFace) -> RngUPolElt
-  {The residual polynomial of the given face of the ramification polygon of f.}
-  require IsEisenstein(f): "f must be Eisenstein";
-  if not assigned f`ramification_residual_polynomial then
-    f`ramification_residual_polynomial := AssociativeArray();
-  end if;
-  ok, r := IsDefined(f`ramification_residual_polynomial, face);
-  if not ok then
-    F := BaseRing(f);
-    FF, FtoFF := ResidueClassField(F);
-    eF := AbsoluteRamificationDegree(F);
-    d := Degree(f);
-    p := Prime(F);
-    v0, v1 := Explode(EndVertices(face));
-    x0 := Z ! v0[1];
-    y0 := Z ! v0[2];
-    x1 := Z ! v1[1];
-    y1 := Z ! v1[2];
-    assert x0 ge 1;
-    assert x1 gt x0;
-    assert x1 le d;
-    slope := (y1 - y0) / (x1 - x0);
-    h := Numerator(-slope);
-    e := Denominator(-slope);
-    assert IsPowerOf(x0, p);
-    ok, w0 := IsDivisibleBy(x1, x0);
-    assert ok;
-    if not IsDivisibleBy(w0, p) then
-      assert x1 eq d;
-      tame := true;
-    else
-      assert IsPowerOf(x1, p);
-      tame := false;
-    end if;
-    coeffs := [FF|];
-    for j in [x0..x1 by e] do
-      v := Z ! (y0 + (j-x0)*slope);
-      i := j + (v mod d);
-      if i le d then
-        c := Binomial(i, j) * Coefficient(f, i);
-        tgt := Z ! ((v - i + j) / d);
-        coeff := ResidueClass(ShiftValuation(c, -tgt));
-      else
-        coeff := 0;
-      end if;
-      assert coeff ne 0 or (j gt x0 and j lt x1);
-      Append(~coeffs, coeff);
-    end for;
-    r := Polynomial(coeffs);
-    assert Degree(r) eq (x1-x0)/e;
-    f`ramification_residual_polynomial[face] := r;
-  end if;
-  return r;
-end intrinsic;
-
-intrinsic RamificationPolynomial(L :: FldPadExact) -> RngUPolElt_FldPadExact
-  {The ramification polynomial of L with respect to its defining polynomial.}
-  if not assigned L`ramification_polynomial then
-    require L`type eq EISEN: "L must be totally ramified over its base field";
-    f := DefiningPolynomial(L);
-    assert IsEisenstein(f);
-    pi := UniformizingElement(L);
-    d := Degree(f);
-    cs := [L| c : c in Coefficients(f)];
-    pipwrs := [pi^n : n in [0..d]];
-    L`ramification_polynomial := Polynomial([L| j eq 0 select 0 else &+[&*[L| Binomial(i,j), cs[i+1], pipwrs[i-j+1]] : i in [j..d]] : j in [0..d]]);
-  end if;
-  return L`ramification_polynomial;
-end intrinsic;
-
-function factorialValuation(n, p)
-  assert p gt 0;
-  assert n ge 0;
-  // v_p(n!)
-  v := 0;
-  q := p;
-  while q le n do
-    v +:= n div q;
-    q *:= p;
-  end while;
-  return v;
-end function;
-
-function binomialValuation(n, k, p)
-  return factorialValuation(n, p) - factorialValuation(k, p) - factorialValuation(n - k, p);
-end function;
-
-intrinsic RamificationPolygon(f :: RngUPolElt_FldPadExact) -> NwtnPgon
-  {The ramification polygon of the extension defined by f.}
-  if not assigned f`ramification_polygon then
-    if IsEisenstein(f) then
-      // the newton polygon of r(x) where
-      // v(r_j) = min[j<=i<=d] d*v_K((i choose j)*f_i)+(i-j)
-      d := Degree(f);
-      K := BaseRing(f);
-      e := AbsoluteRamificationDegree(K);
-      p := Prime(K);
-      // we deduce that v(r_j) <= d*v_K((d choose j))+(d-j)
-      // and hence we need to known v_K(f_i) <? v_K((d choose j)) - v_K((i choose j)) + 1-i/d
-      aprs := [0] cat [Max([Ceiling(e*(binomialValuation(d,j,p) - binomialValuation(i,j,p)) + 1 - i/d) : j in [1..i]]) : i in [1..d]];
-      IncreaseAbsolutePrecision(f, aprs);
-      // now compute
-      vfs := [Valuation(c) : c in Coefficients(f`approximation)[2..d+1]];
-      vrs := [Min([d*e*binomialValuation(i,j,p)+d*vfs[i]+(i-j) : i in [j..d] | vfs[i] lt OO]) : j in [1..d]];
-      f`ramification_polygon := NewtonPolygon([<j, vrs[j]> : j in [1..d]] : Faces:="Lower");
-    elif IsInertial(f) then
-      d := Degree(f);
-      f`ramification_polygon := NewtonPolygon([<1,0>, <d,0>] : Faces:="Lower");
-    else
-      error "only implemented for inertial or Eisenstein polynomials";
-    end if;
-  end if;
-  return f`ramification_polygon;
-end intrinsic;
-
-/// The ramification polygon of `E` over its base field or `F`.
-intrinsic RamificationPolygon(E :: FldPadExact) -> NwtnPgon
-  {The ramification polygon of F over its base field.}
-  return RamificationPolygon(DefiningPolynomial(E));
-end intrinsic;
-
-///ditto
-intrinsic RamificationPolygon(E :: FldPadExact, F :: FldPadExact) -> NwtnPgon
-  {The ramification polygon of E/F.}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return RamificationPolygon(x);
-end intrinsic;
-
-///hide
-intrinsic RamificationPolygon(x :: ExtDataFldPadExact) -> NwtnPgon
-  {The ramification polygon.}
-  if not assigned x`ramification_polygon then
-    d := Degree(x);
-    rp0 := RamificationPolygon(TransitionFunction(x));
-    rp := NewtonPolygon(Vertices(rp0) cat [<d,0>] : Faces:="Lower");
-    x`ramification_polygon := rp;
-  end if;
-  return x`ramification_polygon;
-end intrinsic;
-
-///## Hasse-Herbrand transition function
-
-///### Creation
-
-function hhtf_from_ramification_polygon(rp, d)
-  assert Vertices(rp)[1][1] eq 1;
-  assert LAST(Vertices(rp))[1] eq d;
-  U := [<Q!0, Q!0>];
-  for face in Reverse(Faces(rp)) do
-    v1 := -(y1-y0)/(x1-x0) where x0,y0:=Explode(xy0) where x1,y1:=Explode(xy1) where xy0,xy1:=Explode(EndVertices(face));
-    v0, u0 := Explode(LAST(U));
-    e := Z ! EndVertices(face)[2][1];
-    assert IsDivisibleBy(d, e);
-    assert v1 gt v0;
-    u1 := u0 + (e/d)*(v1-v0);
-    assert u1 gt u0;
-    Append(~U, <v1, u1>);
-  end for;
-  h := New(HassHerbTransFunc);
-  h`degree := d;
-  h`vertices := U;
-  return h;
-end function;
-
-function hhtf_trivial()
-  h := New(HassHerbTransFunc);
-  h`degree := 1;
-  h`vertices := [<Q!0,Q!0>];
-  return h;
-end function;
-
-function hhtf_merge_tower(hs)
-  h := New(HassHerbTransFunc);
-  h`degree := 1;
-  h`vertices := [<Q!0, Q!0>];
-  for h1 in hs do
-    h0 := h;
-    vs := SORT({vu[1] : vu in h1`vertices} join {vu[1] @@ h1 : vu in h0`vertices});
-    h := New(HassHerbTransFunc);
-    h`degree := h1`degree * h0`degree;
-    h`vertices := [<v, v@h1@h0> : v in vs];
-  end for;
-  return h;
-end function;
-
-/// The Hasse-Herbrand transition function of `E` over its base field or `F`.
-intrinsic TransitionFunction(E :: FldPadExact) -> HassHerbTransFunc
-  {The Hasse-Herbrand transition function of E over its base field.}
-  if not assigned E`transition_function then
-    case E`type:
-    when PRIME:
-      error "E must be an extension";
-    when INERT:
-      h := hhtf_trivial();
-    when EISEN:
-      rp := RamificationPolygon(E);
-      d := Degree(E);
-      h := hhtf_from_ramification_polygon(rp, d);
-    else
-      error "not implemented";
-    end case;
-    E`transition_function := h;
-  end if;
-  return E`transition_function;
-end intrinsic;
-
-///ditto
-intrinsic TransitionFunction(E :: FldPadExact, F :: FldPadExact) -> HassHerbTransFunc
-  {The Hasse-Herbrand transition function of E/F.}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return TransitionFunction(x);
-end intrinsic;
-
-///ditto
-intrinsic TransitionFunction(E :: FldPad) -> HassHerbTransFunc
-  {The Hasse-Herbrand transition function of E over its base field.}
-  if IsPrimeField(E) then
-    error "E must be an extension";
-  end if;
-  F := BaseField(E);
-  if RamificationDegree(E) eq 1 then
-    return hhtf_trivial();
-  elif RamificationDegree(E) eq Degree(E) then
-    f := DefiningPolynomial(E);
-    alpha := F.1;
-    r := Evaluate(f, Polynomial([alpha,1]));
-    assert Degree(r) eq Degree(f);
-    assert IsWeaklyZero(Coefficient(r, 0));
-    rp := NewtonPolygon([<i, Valuation(Coefficient(r,i))> : i in [1..Degree(r)]] : Faces:="Lower");
-    assert forall{v : v in Vertices(rp) | not IsWeaklyZero(Coefficient(r, Z ! v[1]))};
-    d := Degree(E);
-    return hhtf_from_ramification_polygon(rp, d);
-  else
-    error "not implemented";
-  end if;
-end intrinsic;
-
-///ditto
-intrinsic TransitionFunction(E :: FldPad, F :: FldPad) -> HassHerbTransFunc
-  {The Hasse-Herbrand transition function of E/F.}
-  twr := TOWER(E, F);
-  return hhtf_merge_tower([TransitionFunction(t) : t in twr[2..#twr]]);
-end intrinsic;
-
-///hide
-intrinsic TransitionFunction(x :: ExtDataFldPadExact) -> HassHerbTransFunc
-  {The Hasse-Herbrand transition function.}
-  if not assigned x`transition_function then
-    case x`type:
-    when COMPOUND:
-      h := hhtf_merge_tower([TransitionFunction(y) : y in x`list]);
-    when INERT, EISEN:
-      h := TransitionFunction(x`top_field);
-    when EMBED:
-      // TODO: implement "division" of transition functions
-      error "not implemented";
-    else
-      error "not implemented";
-    end case;
-    x`transition_function := h;
-  end if;
-  return x`transition_function;
-end intrinsic;
-
-///### Operations
-
-///hide
-intrinsic Print(h :: HassHerbTransFunc, lvl :: MonStgElt)
-  {Prints h.}
-    printf "Hasse-Herbrand transition function of an extension of ramification degree %o", h`degree;
-end intrinsic;
-
-intrinsic Degree(h :: HassHerbTransFunc) -> RngIntElt
-  {The degree of the extension this is the transition function of.}
-  return h`degree;
-end intrinsic;
-
-intrinsic Vertices(h :: HassHerbTransFunc) -> []
-  {The vertices of the function.}
-  return h`vertices;
-end intrinsic;
-
-intrinsic LowerBreaks(h :: HassHerbTransFunc) -> []
-  {The lower breaks of h.}
-  return [x[1] : x in Vertices(h)];
-end intrinsic;
-
-intrinsic UpperBreaks(h :: HassHerbTransFunc) -> []
-  {The upper breaks of h.}
-  return [x[2] : x in Vertices(h)];
-end intrinsic;
-
-intrinsic 'eq'(h1 :: HassHerbTransFunc, h2 :: HassHerbTransFunc) -> BoolElt
-  {True if h1 and h2 are equal as field invariants, i.e. they define the same function.}
-  return Degree(h1) eq Degree(h2) and Vertices(h1) eq Vertices(h2);
-end intrinsic;
-
-intrinsic '@'(v, h :: HassHerbTransFunc) -> .
-  {Evaluates h at v.}
-  if v le 0 then
-    return (Q!1) * v;
-  end if;
-  for i in [2..#h`vertices] do
-    v1, u1 := Explode(h`vertices[i]);
-    if v le v1 then
-      v0, u0 := Explode(h`vertices[i-1]);
-      return u0 + (v-v0)*(u1-u0)/(v1-v0);
-    end if;
-  end for;
-  v1, u1 := Explode(LAST(h`vertices));
-  assert v gt v1;
-  return u1 + (v-v1) / h`degree;
-end intrinsic;
-
-intrinsic '@@'(u, h :: HassHerbTransFunc) -> .
-  {The inverse of h at u.}
-  if u le 0 then
-    return (Q!1) * u;
-  end if;
-  for i in [2..#h`vertices] do
-    v1, u1 := Explode(h`vertices[i]);
-    if u le u1 then
-      v0, u0 := Explode(h`vertices[i-1]);
-      return v0 + (u-u0)*(v1-v0)/(u1-u0);
-    end if;
-  end for;
-  v1, u1 := Explode(LAST(h`vertices));
-  assert u gt u1;
-  return v1 + (u-u1) * h`degree;
-end intrinsic;
-
-intrinsic RamificationPolygon(h :: HassHerbTransFunc) -> NwtnPgon
-  {The ramification polygon of a totally ramified extension with the given transition function.}
-  if not assigned h`ramification_polygon then
-    e := h`degree;
-    vs := [<e, 0>];
-    vus := Vertices(h);
-    for i in [2..#vus] do
-      slope := -vus[i][1];
-      if i eq #vus then
-        x1 := 1;
-      else
-        v0, u0 := Explode(vus[i]);
-        v1, u1 := Explode(vus[i+1]);
-        x1 := Z ! (e * (u1 - u0) / (v1 - v0));
-      end if;
-      x0, y0 := Explode(LAST(vs));
-      assert x1 lt x0;
-      y1 := Z ! (y0 + slope*(x1-x0));
-      Append(~vs, <x1, y1>);
-    end for;
-    h`ramification_polygon := NewtonPolygon(vs : Faces:="Lower");
-  end if;
-  return h`ramification_polygon;
-end intrinsic;
-
 
 
 ///## Approximation

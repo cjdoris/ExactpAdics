@@ -1,56 +1,52 @@
 ---
 ---
 
-# New types
+# Index of new types
 
 ## FldPadExact, FldPadExactElt
 
-[Exact p-adic fields]({{site.baseurl}}/pad-intro) and their elements.
-
-## Val_FldPadElt, PowVal_FldPadElt
-
-[Valuations of p-adic numbers]({{site.baseurl}}/pad-elt-basics#val_fldpadelt), and the power structure of such things.
+[Exact p-adic fields]({{site.baseurl}}/exact-p-adic-fields) and their elements.
 
 ## RngUPol_FldPadExact, RngUPolElt_FldPadExact
 
-[Rings of univarate polynomials over exact p-adic fields]({{site.baseurl}}/upol-intro) (the exact analogue of `RngUPol[FldPad]`) and their elements.
-
-## Val_RngUPolElt_FldPad, PowVal_RngUPolElt_FldPad
-
-[Valuations of univariate polynomials over p-adic fields]({{site.baseurl}}/upol-elt-basics#val_rngupolelt_fldpad), and the power structure of such things.
+[Rings of univarate polynomials over exact p-adic fields]({{site.baseurl}}/univariate-polynomials) (the exact analogue of `RngUPol[FldPad]`) and their elements.
 
 ## RngMPol_FldPadExact, RngMPolElt_FldPadExact
 
-[Rings of multivariate polynomials over exact p-adic fields]({{site.baseurl}}/mpol-intro), and their elements.
+[Rings of multivariate polynomials over exact p-adic fields]({{site.baseurl}}/multivariate-polynomials), and their elements.
 
-## Val_RngMPolElt_FldPad, PowVal_RngMPolElt_FldPad
+## Val_FldPadElt, Val_RngUPolElt_FldPad, Val_RngMPolElt_FldPad
 
-[Valuations of multivariate polynomials over p-adic fields]({{site.baseurl}}/mpol-elt-basics#val_rngmpolelt_fldpad), and the power structure of such things.
+[Valuations of p-adic objects]({{site.baseurl}}/valuations).
 
 ## HasseHerbTransFunc
 
-[Hasse-Herbrand transition functions]({{site.baseurl}}/pad-ramification#hasse-herbrand-transition-functions).
+[Hasse-Herbrand transition functions]({{site.baseurl}}/exact-p-adic-fields#hasse-herbrand-transition-function).
 
 ## ExtDataFldPadExact
 
-[Extensions of exact p-adic fields]({{site.baseurl}}/pad-basics#extensions).
-
-## HomFldPadExact
-
-Homomorphisms of exact p-adic fields.
+[Extensions of exact p-adic fields]({{site.baseurl}}/exact-p-adic-fields#extdatafldpadexact).
 
 ## ExactpAdics_Gettr
 
-Computations with lazy p-adic dependencies.
+[Computations with lazy p-adic dependencies]({{site.baseurl}}/getters).
 
-## ExactpAdics_Getter_Store
+## HomFldPadExact
 
-Internal book-keeping type.
+[Homomorphisms of exact p-adic fields]({{site.baseurl}}/exact-p-adic-fields#homomorphisms-incomplete-feature).
 
 ## TmpFldPadExact, TmpFldPadExactElt
 
-**Experimental/undocumented feature.** Exact p-adic fields and their elements in a different format: instead of storing an approximation and updating it, recompute it to a desired precision each time. Possibly useful for preventing the storage of large numbers of intermediate variables at the expense of possibly more computation.
+[Temporary p-adic fields]({{site.baseurl}}/exact-p-adic-fields#temporary-field-incomplete-feature)
 
 ## RngPadExact, RngPadExactElt
 
-**Experimental/undocumented feature.** Rings of p-adic integers, and their elements.
+[Rings of p-adic integers]({{site.baseurl}}/exact-p-adic-fields#integer-ring-incomplete-feature), and their elements.
+
+## AssocDflt
+
+[Associative arrays with default values]({{site.baseurl}}/miscellany#default-associative-arrays).
+
+## ExactpAdics_BndLow
+
+[Lower bounds]({{site.baseurl}}/miscellany#lower-bounds).

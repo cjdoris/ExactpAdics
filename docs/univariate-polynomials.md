@@ -5,16 +5,18 @@
 * [Ring basics](#ring-basics)
 * [Creation of polynomials](#creation-of-polynomials)
   * [From coefficients](#from-coefficients)
-  * [Coersion](#coersion)
+  * [Coercion](#coercion)
 * [Polynomial basics](#polynomial-basics)
-* [Arithmetic](#arithmetic)
+  * [Degree](#degree)
+  * [Coefficients](#coefficients)
+  * [Valuation](#valuation)
+  * [Arithmetic](#arithmetic)
+  * [Derivative](#derivative)
+  * [Evaluate](#evaluate)
+  * [Special forms](#special-forms)
 * [Discriminant and Resultant](#discriminant-and-resultant)
 * [Newton polygon](#newton-polygon)
 * [Hensel lifting](#hensel-lifting)
-* [Ramification polynomials and polygons](#ramification-polynomials-and-polygons)
-* [Hasse-Herbrand transition function](#hasse-herbrand-transition-function)
-  * [Creation](#creation)
-  * [Operations](#operations)
 * [Approximation](#approximation)
 * [Internals](#internals)
 * [Root-finding and factorization](#root-finding-and-factorization)
@@ -142,7 +144,7 @@ The polynomial with the given coefficients.
 The polynomial over K with the given coefficients.
 
 
-### Coersion
+### Coercion
 
 > **IsCoercible** (R :: *RngUPol_FldPadExact*, X)
 > 
@@ -164,7 +166,7 @@ Succeeds if either:
 > 
 > **CanChangeRing** (f :: *RngUPolElt*, K :: *FldPadExact*)
 > 
-> -> *RngUPolElt_FldPadExact*
+> -> *BoolElt*, *RngUPolElt_FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
@@ -184,45 +186,118 @@ Change the ring of f to K.
 
 ## Polynomial basics
 
-> **Slice** (f :: *RngUPolElt_FldPadExact*, idxs :: [*RngIntElt*])
+> **BaseRing** (f :: *RngUPolElt_FldPadExact*)
 > 
-> -> *RngUPolElt_FldPadExact*
+> -> *FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
-The polynomial with the given coefficients of f.
+The base ring of f.
 
 
-> **Reverse** (f :: *RngUPolElt_FldPadExact*)
+> **Parent** (f :: *RngUPolElt_FldPadExact*)
 > 
-> -> *RngUPolElt_FldPadExact*
+> -> *RngUPol_FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
-The polynomial with the reversed coefficients of f: f(1/x)*x^deg(f).
+The polynomial ring containing f.
+
+
+### Degree
+
+> **Degree** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+The degree of f.
 
 **Parameters**
 - `Strategy`
 
-> **WeakReverse** (f :: *RngUPolElt_FldPadExact*)
+> **WeakDegree** (f :: *RngUPolElt_FldPadExact*)
 > 
-> -> *RngUPolElt_FldPadExact*
+> -> *RngIntElt*
 > {:.ret}
 {:.intrinsic}
 
-The polynomial with the reversed weak coefficient of f: f(1/x)*x^weakdeg(f).
+The weak degree of f, the degree of its approximation.
 
 
-> **Decimate** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
+### Coefficients
+
+> **Coefficients** (f :: *RngUPolElt_FldPadExact*)
 > 
-> -> *RngUPolElt_FldPadExact*
+> -> *BoolElt*
 > {:.ret}
 {:.intrinsic}
 
-The polynomial of the ith coefficients of f where i=Phase mod n.
+The coefficients of f.
 
 **Parameters**
-- `Phase`
+- `Strategy`
+
+> **WeakCoefficients** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> []
+> {:.ret}
+{:.intrinsic}
+
+The coefficients of f, possibly including some leading zeros.
+
+
+> **LeadingCoefficient** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+The leading coefficient of f.
+
+**Parameters**
+- `Strategy`
+
+> **WeakLeadingCoefficient** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+The leading weak coefficient of f.
+
+
+> **Coefficient** (f :: *RngUPolElt_FldPadExact*, i :: *RngIntElt*)
+> 
+> -> []
+> {:.ret}
+{:.intrinsic}
+
+The ith coefficient of f.
+
+
+### Valuation
+
+> **IsIntegral** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *RngUPolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if each coefficient of `f` is integral.
+
+
+> **MinValuation** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The smallest valuation of the coefficients of f.
+
+**Parameters**
+- `Strategy`
 
 > **ValuationEq** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
@@ -278,176 +353,7 @@ True if the valuation of f is at least n.
 True if the valuation of f is greater than n.
 
 
-> **Derivative** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
-> 
-> -> *RngUPolElt_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The nth derivative of f.
-
-
-> **Derivative** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *RngUPolElt_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The derivative of f.
-
-
-> **Evaluate** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
-> 
-> -> *RngUPolElt_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-f(g).
-
-
-> **Evaluate** (f :: *RngUPolElt_FldPadExact*, x :: *FldPadExactElt*)
-> 
-> **Evaluate** (f :: *RngUPolElt_FldPadExact*, x)
-> 
-> **Evaluate** (f :: *RngUPolElt*, x :: *FldPadExactElt*)
-> 
-> -> *FldPadExactElt*
-> {:.ret}
-> 
-> **IsIntegral** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *RngUPolElt*
-> {:.ret}
-{:.intrinsic}
-
-f(x).
-
-
-
-
-
-
-
-
-> **MinValuation** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The smallest valuation of the coefficients of f.
-
-**Parameters**
-- `Strategy`
-
-> **BaseRing** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The base ring of f.
-
-
-> **IsInertial** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if f is inertial (i.e. it is irreducible as a polynomial over the residue class field).
-
-**Parameters**
-- `Strategy`
-
-> **Coefficients** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-The coefficients of f.
-
-**Parameters**
-- `Strategy`
-
-> **WeakCoefficients** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> []
-> {:.ret}
-{:.intrinsic}
-
-The coefficients of f, possibly including some leading zeros.
-
-
-> **LeadingCoefficient** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-The leading coefficient of f.
-
-**Parameters**
-- `Strategy`
-
-> **WeakLeadingCoefficient** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-The leading weak coefficient of f.
-
-
-> **Degree** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-The degree of f.
-
-**Parameters**
-- `Strategy`
-
-> **WeakDegree** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The weak degree of f, the degree of its approximation.
-
-
-> **IsEisenstein** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if f is Eisenstein.
-
-
-> **Parent** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *RngUPol_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The polynomial ring containing f.
-
-
-> **Coefficient** (f :: *RngUPolElt_FldPadExact*, i :: *RngIntElt*)
-> 
-> -> []
-> {:.ret}
-{:.intrinsic}
-
-The ith coefficient of f.
-
-
-## Arithmetic
+### Arithmetic
 
 > **\'-\'** (f :: *RngUPolElt_FldPadExact*)
 > 
@@ -532,6 +438,116 @@ Shifts the valuation of the `i`th coefficient of `f` by `i*n`.
 {:.intrinsic}
 
 `f(x+X)` as a polnomial in `X`
+
+
+> **Slice** (f :: *RngUPolElt_FldPadExact*, idxs :: [*RngIntElt*])
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The polynomial with the given coefficients of f.
+
+
+> **Reverse** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The polynomial with the reversed coefficients of f: f(1/x)*x^deg(f).
+
+**Parameters**
+- `Strategy`
+
+> **WeakReverse** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The polynomial with the reversed weak coefficient of f: f(1/x)*x^weakdeg(f).
+
+
+> **Decimate** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The polynomial of the ith coefficients of f where i=Phase mod n.
+
+**Parameters**
+- `Phase`
+
+### Derivative
+
+> **Derivative** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The first derivative of f.
+
+
+> **Derivative** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The nth derivative of f.
+
+
+### Evaluate
+
+> **Evaluate** (f :: *RngUPolElt_FldPadExact*, x :: *FldPadExactElt*)
+> 
+> **Evaluate** (f :: *RngUPolElt_FldPadExact*, x)
+> 
+> **Evaluate** (f :: *RngUPolElt*, x :: *FldPadExactElt*)
+> 
+> -> *FldPadExactElt*
+> {:.ret}
+{:.intrinsic}
+
+Evaluates `f` at `x`.
+
+
+
+
+
+
+> **Evaluate** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+Evaluates `f` at `g`.
+
+
+### Special forms
+
+> **IsInertial** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if f is inertial (i.e. it is irreducible as a polynomial over the residue class field).
+
+**Parameters**
+- `Strategy`
+
+> **IsEisenstein** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if f is Eisenstein.
 
 
 ## Discriminant and Resultant
@@ -651,163 +667,6 @@ The root of `f` uniquely closest to `x` (see `IsHenselLiftable`).
 
 **Parameters**
 - `Strategy`
-
-## Ramification polynomials and polygons
-
-
-In this package, if $f(x)$ is an Eisenstein polynomial with a root $\pi$, then we define the *ramification polynomial of $f$* to be $f(x+\pi)$ and the *ramification polygon of $f$* to be the Newton polygon of this. Observe that since $f(\pi)=0$ then the ramification polygon has end vertices at 1 and $\deg f$.
-
-If $L/K$ is totally ramified, then the *ramification polygon of $L/K$* is the ramification polygon of any Eisenstein polynomial defining the extension. If $L/U$ is totally ramified and $U/K$ is unramified then the *ramification polygon of $L/K$* is that of $L/U$ with an additional horizontal face from $((L:U),0)$ to $((L:K),0)$.
-
-The Newton polygon is an invariant of an extension and describes the ramification breaks of the *Galois set* $\Gamma(L/K)$ of embeddings $L \hookrightarrow \bar{K}$. This generalizes ramification theory of Galois extensions, where the Galois set is equal to the Galois group.
-
-> **RamificationResidualPolynomials** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> []
-> {:.ret}
-{:.intrinsic}
-
-The residual polynomials of the ramification polygon of f.
-
-
-> **RamificationResidualPolynomial** (f :: *RngUPolElt_FldPadExact*, face :: *NwtnPgonFace*)
-> 
-> -> *RngUPolElt*
-> {:.ret}
-{:.intrinsic}
-
-The residual polynomial of the given face of the ramification polygon of f.
-
-
-> **RamificationPolynomial** (L :: *FldPadExact*)
-> 
-> -> *RngUPolElt_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The ramification polynomial of L with respect to its defining polynomial.
-
-
-> **RamificationPolygon** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *NwtnPgon*
-> {:.ret}
-{:.intrinsic}
-
-The ramification polygon of the extension defined by f.
-
-
-> **RamificationPolygon** (E :: *FldPadExact*)
-> 
-> **RamificationPolygon** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *NwtnPgon*
-> {:.ret}
-{:.intrinsic}
-
-The ramification polygon of `E` over its base field or `F`.
-
-
-
-
-## Hasse-Herbrand transition function
-
-### Creation
-
-> **TransitionFunction** (E :: *FldPadExact*)
-> 
-> **TransitionFunction** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> **TransitionFunction** (E :: *FldPad*)
-> 
-> **TransitionFunction** (E :: *FldPad*, F :: *FldPad*)
-> 
-> -> *HassHerbTransFunc*
-> {:.ret}
-{:.intrinsic}
-
-The Hasse-Herbrand transition function of `E` over its base field or `F`.
-
-
-
-
-
-
-
-
-### Operations
-
-> **Degree** (h :: *HassHerbTransFunc*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The degree of the extension this is the transition function of.
-
-
-> **Vertices** (h :: *HassHerbTransFunc*)
-> 
-> -> []
-> {:.ret}
-{:.intrinsic}
-
-The vertices of the function.
-
-
-> **LowerBreaks** (h :: *HassHerbTransFunc*)
-> 
-> -> []
-> {:.ret}
-{:.intrinsic}
-
-The lower breaks of h.
-
-
-> **UpperBreaks** (h :: *HassHerbTransFunc*)
-> 
-> -> []
-> {:.ret}
-{:.intrinsic}
-
-The upper breaks of h.
-
-
-> **\'eq\'** (h1 :: *HassHerbTransFunc*, h2 :: *HassHerbTransFunc*)
-> 
-> -> *BoolElt*
-> {:.ret}
-{:.intrinsic}
-
-True if h1 and h2 are equal as field invariants, i.e. they define the same function.
-
-
-> **\'@\'** (v, h :: *HassHerbTransFunc*)
-> 
-> -> Any
-> {:.ret}
-{:.intrinsic}
-
-Evaluates h at v.
-
-
-> **\'@@\'** (u, h :: *HassHerbTransFunc*)
-> 
-> -> Any
-> {:.ret}
-{:.intrinsic}
-
-The inverse of h at u.
-
-
-> **RamificationPolygon** (h :: *HassHerbTransFunc*)
-> 
-> -> *NwtnPgon*
-> {:.ret}
-{:.intrinsic}
-
-The ramification polygon of a totally ramified extension with the given transition function.
-
 
 ## Approximation
 

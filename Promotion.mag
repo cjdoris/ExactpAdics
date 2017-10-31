@@ -3,6 +3,7 @@
 
 ///# Miscellany
 ///## Promotion
+/// A basic scheme for promoting values in different structures to a common strucure.
 
 intrinsic IsPromotable(x, y) -> BoolElt, ., .
   {True if x and y are promotable to the same parent.}

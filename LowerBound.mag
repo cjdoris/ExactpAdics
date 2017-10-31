@@ -1,5 +1,6 @@
 ///# Miscellany
 ///## Lower bounds
+/// A `ExactpAdics_BndLow` is a lower bound on a possibly unknown value.
 
 // encapsulates values which are lower bounds on something
 declare type ExactpAdics_BndLow;

@@ -16,7 +16,7 @@
 * [Creation of p-adic numbers](#creation-of-p-adic-numbers)
   * [Distinguished elements](#distinguished-elements)
   * [From coefficients](#from-coefficients)
-  * [Coersion](#coersion)
+  * [Coercion](#coercion)
   * [Random](#random)
 * [Basic operations on p-adic numbers](#basic-operations-on-p-adic-numbers)
 * [Arithmetic](#arithmetic)
@@ -25,6 +25,10 @@
   * [Comparison between elements](#comparison-between-elements)
   * [Smallest and closest](#smallest-and-closest)
 * [Residue class field](#residue-class-field)
+* [Ramification polynomials and polygons](#ramification-polynomials-and-polygons)
+* [Hasse-Herbrand transition function](#hasse-herbrand-transition-function)
+  * [Creation](#creation)
+  * [Operations](#operations)
 * [Primitivity and minimal polynomials](#primitivity-and-minimal-polynomials)
 * [Quotient ring](#quotient-ring)
 * [Homomorphisms (incomplete feature)](#homomorphisms-incomplete-feature)
@@ -243,11 +247,6 @@ True if E is an extension of F. If so, also returns an object representing the e
 > 
 > -> *BoolElt*, Any
 > {:.ret}
-> 
-> **DefiningPolynomial** (K :: *FldPadExact*)
-> 
-> -> *RngUPolElt_FldPadExact*
-> {:.ret}
 {:.intrinsic}
 
 True if there is a structure containing E and F, and the common structure.
@@ -261,9 +260,16 @@ True if there is a structure containing E and F, and the common structure.
 
 
 
-
-
 ### Basic information
+
+> **DefiningPolynomial** (K :: *FldPadExact*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The defining polynomial of K.
+
 
 > **AssignNames** (~F :: *FldPadExact*, names :: [*MonStgElt*])
 {:.intrinsic}
@@ -534,6 +540,8 @@ An element of F generating the maximal unramified subextension of F over its pri
 
 > **PrimitiveElement** (E :: *FldPadExact*)
 > 
+> **PrimitiveElement** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
 > -> *FldPadExactElt*
 > {:.ret}
 {:.intrinsic}
@@ -541,13 +549,6 @@ An element of F generating the maximal unramified subextension of F over its pri
 A primitive element of `E` over its prime subfield or `F`.
 
 
-> **PrimitiveElement** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *FldPadExactElt*
-> {:.ret}
-{:.intrinsic}
-
-A primitive element of E/F.
 
 
 ### From coefficients
@@ -563,7 +564,7 @@ Constructs an element of `E`, where the right hand side is either:
 - multiple elements, coercible to the base field of `E`, interpreted as coefficients
 
 
-### Coersion
+### Coercion
 
 > **IsCoercible** (F :: *FldPadExact*, X)
 > 
@@ -917,26 +918,176 @@ The residue class field R of F, the map F to R, and the map from the approximati
 The residue class of x.
 
 
+## Ramification polynomials and polygons
+
+
+In this package, if $f(x)$ is an Eisenstein polynomial with a root $\pi$, then we define the *ramification polynomial of $f$* to be $f(x+\pi)$ and the *ramification polygon of $f$* to be the Newton polygon of this. Observe that since $f(\pi)=0$ then the ramification polygon has end vertices at 1 and $\deg f$.
+
+If $L/K$ is totally ramified, then the *ramification polygon of $L/K$* is the ramification polygon of any Eisenstein polynomial defining the extension. If $L/U$ is totally ramified and $U/K$ is unramified then the *ramification polygon of $L/K$* is that of $L/U$ with an additional horizontal face from $((L:U),0)$ to $((L:K),0)$.
+
+The Newton polygon is an invariant of an extension and describes the ramification breaks of the *Galois set* $\Gamma(L/K)$ of embeddings $L \hookrightarrow \bar{K}$. This generalizes ramification theory of Galois extensions, where the Galois set is equal to the Galois group.
+
+> **RamificationResidualPolynomials** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> []
+> {:.ret}
+{:.intrinsic}
+
+The residual polynomials of the ramification polygon of f.
+
+
+> **RamificationResidualPolynomial** (f :: *RngUPolElt_FldPadExact*, face :: *NwtnPgonFace*)
+> 
+> -> *RngUPolElt*
+> {:.ret}
+{:.intrinsic}
+
+The residual polynomial of the given face of the ramification polygon of f.
+
+
+> **RamificationPolynomial** (L :: *FldPadExact*)
+> 
+> -> *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The ramification polynomial of L with respect to its defining polynomial.
+
+
+> **RamificationPolygon** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> *NwtnPgon*
+> {:.ret}
+{:.intrinsic}
+
+The ramification polygon of the extension defined by f.
+
+
+> **RamificationPolygon** (E :: *FldPadExact*)
+> 
+> **RamificationPolygon** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> -> *NwtnPgon*
+> {:.ret}
+{:.intrinsic}
+
+The ramification polygon of `E` over its base field or `F`.
+
+
+
+
+## Hasse-Herbrand transition function
+
+### Creation
+
+> **TransitionFunction** (E :: *FldPadExact*)
+> 
+> **TransitionFunction** (E :: *FldPadExact*, F :: *FldPadExact*)
+> 
+> **TransitionFunction** (E :: *FldPad*)
+> 
+> **TransitionFunction** (E :: *FldPad*, F :: *FldPad*)
+> 
+> -> *HassHerbTransFunc*
+> {:.ret}
+{:.intrinsic}
+
+The Hasse-Herbrand transition function of `E` over its base field or `F`.
+
+
+
+
+
+
+
+
+### Operations
+
+> **Degree** (h :: *HassHerbTransFunc*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The degree of the extension this is the transition function of.
+
+
+> **Vertices** (h :: *HassHerbTransFunc*)
+> 
+> -> []
+> {:.ret}
+{:.intrinsic}
+
+The vertices of the function.
+
+
+> **LowerBreaks** (h :: *HassHerbTransFunc*)
+> 
+> -> []
+> {:.ret}
+{:.intrinsic}
+
+The lower breaks of h.
+
+
+> **UpperBreaks** (h :: *HassHerbTransFunc*)
+> 
+> -> []
+> {:.ret}
+{:.intrinsic}
+
+The upper breaks of h.
+
+
+> **\'eq\'** (h1 :: *HassHerbTransFunc*, h2 :: *HassHerbTransFunc*)
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if h1 and h2 are equal as field invariants, i.e. they define the same function.
+
+
+> **\'@\'** (v, h :: *HassHerbTransFunc*)
+> 
+> -> Any
+> {:.ret}
+{:.intrinsic}
+
+Evaluates h at v.
+
+
+> **\'@@\'** (u, h :: *HassHerbTransFunc*)
+> 
+> -> Any
+> {:.ret}
+{:.intrinsic}
+
+The inverse of h at u.
+
+
+> **RamificationPolygon** (h :: *HassHerbTransFunc*)
+> 
+> -> *NwtnPgon*
+> {:.ret}
+{:.intrinsic}
+
+The ramification polygon of a totally ramified extension with the given transition function.
+
+
 ## Primitivity and minimal polynomials
 
 > **IsDefinitelyPrimitive** (x, E :: *FldPadExact*, F :: *FldPadExact*)
 > 
-> -> *BoolElt*, *RngUPolElt_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-True if x is primitive for E/F, i.e. E=F(x). If so, also returns the minimal polynomial of x over F.
-
-**Parameters**
-- `Strategy`
-
 > **IsDefinitelyPrimitive** (x :: *FldPadExactElt*, F :: *FldPadExact*)
 > 
 > -> *BoolElt*, *RngUPolElt_FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
-True if x in E is primitive for E/F, i.e. E=F(x). If so, also returns the minimal polynomial of x over F.
+True if `x` is a primitive element for `E` (or `Parent(x)`) over `F`.
+
+
 
 **Parameters**
 - `Strategy`
@@ -976,10 +1127,6 @@ Quotient of the ring of integers of `F` by the elements on the right hand side.
 
 > **BaseField** (h :: *HomFldPadExact*)
 > 
-> **Domain** (h :: *HomFldPadExact*)
-> 
-> **Codomain** (h :: *HomFldPadExact*)
-> 
 > -> *FldPadExact*
 > {:.ret}
 {:.intrinsic}
@@ -987,8 +1134,22 @@ Quotient of the ring of integers of `F` by the elements on the right hand side.
 The base field of h, which is fixed.
 
 
+> **Domain** (h :: *HomFldPadExact*)
+> 
+> -> *FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The domain of h.
 
 
+> **Codomain** (h :: *HomFldPadExact*)
+> 
+> -> *FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+The codomain of h.
 
 
 > **\'@\'** (x, h :: *HomFldPadExact*)

@@ -1,11 +1,14 @@
 # Miscellany
 
+Bits and bobs not belonging to the main features of the package, but needed by the package and useful nonetheless.
 **Contents**
 * [Default associative arrays](#default-associative-arrays)
 * [Promotion](#promotion)
 * [Lower bounds](#lower-bounds)
 
 ## Default associative arrays
+
+The new type `AssocDflt` is an associative array with a default value. Hence it may be used to describe a function which is constant save for finitely many exceptions.
 
 > **IsCoercible_DefaultAssociativeArray** (x)
 > 
@@ -176,6 +179,8 @@ True if f(x(i),y(i)) is true for all i.
 
 ## Promotion
 
+A basic scheme for promoting values in different structures to a common strucure.
+
 > **IsPromotable** (x, y)
 > 
 > -> *BoolElt*, Any, Any
@@ -195,6 +200,8 @@ Promotes x and y to a common type.
 
 
 ## Lower bounds
+
+A `ExactpAdics_BndLow` is a lower bound on a possibly unknown value.
 
 > **ExactpAdics_LowerBound** (v)
 > 
