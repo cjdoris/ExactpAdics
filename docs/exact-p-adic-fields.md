@@ -50,51 +50,41 @@ The exact p-adic field.
 
 ### Extensions
 
-> **ExtConstructor** (E :: *FldPadExact*, t :: *Tup*)
+> **ext** \<E :: *FldPadExact* \| ...>
 > 
 > -> *FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
-The extension of `E` defined by `t`, which may be:
+An extension of `E`, where the right hand side is either:
 - an integer, giving the unramified extension of this degree
 - coercible to a defining polynomial (Eisenstein or inertial)
 
 
 > **Extension** (f :: *RngUPolElt_FldPadExact*)
 > 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The extension defined by the inertial or Eisenstein polynomial f.
-
-
 > **Extension** (F :: *FldPadExact*, f)
 > 
 > -> *FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
-The extension of F defined by the inertial or Eisenstein polynomial f.
+The extension defined by `f` over its base field or `F`.
+
+
 
 
 > **UnramifiedExtension** (f :: *RngUPolElt_FldPadExact*)
 > 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The unramified extension defined by the inertial polynomial f.
-
-
 > **UnramifiedExtension** (F :: *FldPadExact*, f)
 > 
 > -> *FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
-The unramified extension of F defined by the inertial polynomial f.
+The unramified extension defined by `f` over its base field or `F`.
+
+
 
 
 > **UnramifiedExtension** (F :: *FldPadExact*, n :: *RngIntElt*)
@@ -103,43 +93,33 @@ The unramified extension of F defined by the inertial polynomial f.
 > {:.ret}
 {:.intrinsic}
 
-An unramified extension of F of degree n.
+The unramified extension of `F` of degree `n`.
 
 
 > **TotallyRamifiedExtension** (f :: *RngUPolElt_FldPadExact*)
 > 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The totally ramified extension defined by the Eisenstein polynomial f.
-
-
 > **TotallyRamifiedExtension** (F :: *FldPadExact*, f)
 > 
 > -> *FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
-The totally ramified extension of F defined by the Eisenstein polynomial f.
+The totally ramified extension defined by `f` over its base field or `F`.
+
+
 
 
 > **TotallyRamifiedExtension** (F :: *FldPadExact*, n :: *RngIntElt*, pi)
 > 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The totally ramified extension of F got by adjoining the nth root of pi, which must be a uniformizing element.
-
-
 > **TotallyRamifiedExtension** (F :: *FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *FldPadExact*
 > {:.ret}
 {:.intrinsic}
 
-The totally ramified extension of F got by adjoining the nth root of the uniformizing element of F.
+The totally ramified extension of `F` of degree `n` got by adjoining the `n`th root of `pi` (or the default uniformizer of `F`).
+
+
 
 
 ### Completions
@@ -572,15 +552,15 @@ A primitive element of E/F.
 
 ### From coefficients
 
-> **EltConstructor** (E :: *FldPadExact*, t)
+> **elt** \<E :: *FldPadExact* \| ...>
 > 
 > -> *FldPadExactElt*
 > {:.ret}
 {:.intrinsic}
 
-Constructs an element of `E` from `t`, which may be:
-- A single element, coercible to `E`
-- Several elements, coercible to the base field of `E`, interpreted as coefficients
+Constructs an element of `E`, where the right hand side is either:
+- a single element, coercible to `E`
+- multiple elements, coercible to the base field of `E`, interpreted as coefficients
 
 
 ### Coersion
@@ -983,13 +963,13 @@ The minimal polynomial of x over F. Requires that x is a primitive element for E
 The integers Q of F mod pi^n, and the map F to Q.
 
 
-> **QuoConstructor** (F :: *FldPadExact*, t)
+> **quo** \<F :: *FldPadExact* \| ...>
 > 
 > -> *RngPadRes*, *Map*
 > {:.ret}
 {:.intrinsic}
 
-The quotient of F by t.
+Quotient of the ring of integers of `F` by the elements on the right hand side.
 
 
 ## Homomorphisms (incomplete feature)
