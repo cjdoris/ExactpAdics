@@ -96,13 +96,7 @@ end intrinsic;
 intrinsic Val_RngMPolElt_FldPad_IsCoercible(dflt :: Val_FldPadElt, v) -> BoolElt, .
   {"}
   reasons := {"wrong type"};
-  ok := true;
-  print "WARNING: Val_RngMPolElt_FldPad_IsCoercible: try";
-  try
-    x := DefaultAssociativeArray(dflt, v);
-  catch err
-    ok := false;
-  end try;
+  ok, x := IsCoercible_DefaultAssociativeArray(dflt, v);
   if ok then
     ok, w := Val_RngMPolElt_FldPad_IsCoercible(x);
     if ok then
@@ -110,6 +104,8 @@ intrinsic Val_RngMPolElt_FldPad_IsCoercible(dflt :: Val_FldPadElt, v) -> BoolElt
     else
       Include(~reasons, w);
     end if;
+  else
+    Include(~reasons, x);
   end if;
   ok, w := Val_RngMPolElt_FldPad_IsCoercible(v);
   if ok and DefaultValue(Value(w)) eq dflt then
