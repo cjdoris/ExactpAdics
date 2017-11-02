@@ -555,6 +555,21 @@ end intrinsic;
 
 ///### Extensions
 
+function get_approximation(f, apr)
+  if apr le AbsolutePrecision(f) then
+    return f`approximation;
+  else
+    // any combination of the below is a reasonable reaction
+    // error "not known to required precision";
+    print "WARNING: Field is not known to required precision.";
+    print "         This is a bug in the ExactpAdics package.";
+    print "         Please report this to github.com/cjdoris/ExactpAdics/issues";
+    printf "         Applying workaround (%o, %o)\n", apr, APR(f);
+    IncreaseAbsolutePrecision(f, apr);
+    return f`approximation;
+  end if;
+end function;
+
 /// An extension of `E`, where the right hand side is either:
 /// - an integer, giving the unramified extension of this degree
 /// - coercible to a defining polynomial (Eisenstein or inertial)
@@ -636,21 +651,6 @@ intrinsic UnramifiedExtension(F :: FldPadExact, n :: RngIntElt) -> FldPadExact
   f := WeakApproximation(R ! xR ! [cmodp @@ xmodp : cmodp in Coefficients(fmodp)]);
   return UnramifiedExtension(f);
 end intrinsic;
-
-function get_approximation(f, apr)
-  if apr le AbsolutePrecision(f) then
-    return f`approximation;
-  else
-    // any combination of the below is a reasonable reaction
-    // error "not known to required precision";
-    print "WARNING: Field is not known to required precision.";
-    print "         This is a bug in the ExactpAdics package.";
-    print "         Please report this to github.com/cjdoris/ExactpAdics/issues";
-    printf "         Applying workaround (%o, %o)\n", apr, APR(f);
-    IncreaseAbsolutePrecision(f, apr);
-    return f`approximation;
-  end if;
-end function;
 
 /// The totally ramified extension defined by `f` over its base field or `F`.
 intrinsic TotallyRamifiedExtension(f :: RngUPolElt_FldPadExact) -> FldPadExact
@@ -2452,49 +2452,49 @@ intrinsic IsInStandardForm(E :: FldPadExact, F :: FldPadExact) -> BoolElt
   return IsInStandardForm(x);
 end intrinsic;
 
-///hide
-intrinsic StandardForm(x :: ExtDataFldPadExact) -> ExtDataFldPadExact
-  {Returns a standard form of x.}
-  if not assigned x`standard_form then
-    if IsInStandardForm(x) then
-      y := x;
-    elif IsUnramified(x) then
-      K := BaseField(x);
-      L := TopField(x);
-      d := Degree(x);
-      y := UnramifiedExtension(K, d) / K;
-    elif IsTotallyRamified(x) then
-      K := BaseField(x);
-      L := TopField(x);
-      m := MinimalPolynomial(UniformizingElement(L), x);
-      y := TotallyRamifiedExtension(K, m) / K;
-    else
-      K := BaseField(x);
-      L := TopField(x);
-      d := Degree(x);
-      e := RamificationDegree(x);
-      f := InertiaDegree(x);
-      m := MinimalPolynomial(UniformizingElement(L) + InertiaGenerator(L), x);
-      U := UnramifiedExtension(K, f);
-      Ubar, bar := ResidueClassField(U);
-      u := Roots(Polynomial([Ubar | ResidueClass(c) : c in Coefficients(m)]))[1][1] @@ bar @ WeakApproximation;
-      mu := Polynomial([&+[U| &*[U| Binomial(i,j), Coefficient(m, i), u^(i-j)] : i in [j..d]] : j in [0..d]]); // f(x+u)
-      facs := NewtonPolygonFactorization(mu);
-      mi := THE([fac : fac in facs | Degree(fac) eq e and IsEisenstein(fac)]);
-      y := TotallyRamifiedExtension(U, mi) / K;
-    end if;
-    assert IsInStandardForm(y);
-    x`standard_form := y;
-  end if;
-  return x`standard_form;
-end intrinsic;
+// ///hide
+// intrinsic StandardForm(x :: ExtDataFldPadExact) -> ExtDataFldPadExact
+//   {Returns a standard form of x.}
+//   if not assigned x`standard_form then
+//     if IsInStandardForm(x) then
+//       y := x;
+//     elif IsUnramified(x) then
+//       K := BaseField(x);
+//       L := TopField(x);
+//       d := Degree(x);
+//       y := UnramifiedExtension(K, d) / K;
+//     elif IsTotallyRamified(x) then
+//       K := BaseField(x);
+//       L := TopField(x);
+//       m := MinimalPolynomial(UniformizingElement(L), x);
+//       y := TotallyRamifiedExtension(K, m) / K;
+//     else
+//       K := BaseField(x);
+//       L := TopField(x);
+//       d := Degree(x);
+//       e := RamificationDegree(x);
+//       f := InertiaDegree(x);
+//       m := MinimalPolynomial(UniformizingElement(L) + InertiaGenerator(L), x);
+//       U := UnramifiedExtension(K, f);
+//       Ubar, bar := ResidueClassField(U);
+//       u := Roots(Polynomial([Ubar | ResidueClass(c) : c in Coefficients(m)]))[1][1] @@ bar @ WeakApproximation;
+//       mu := Polynomial([&+[U| &*[U| Binomial(i,j), Coefficient(m, i), u^(i-j)] : i in [j..d]] : j in [0..d]]); // f(x+u)
+//       facs := NewtonPolygonFactorization(mu);
+//       mi := THE([fac : fac in facs | Degree(fac) eq e and IsEisenstein(fac)]);
+//       y := TotallyRamifiedExtension(U, mi) / K;
+//     end if;
+//     assert IsInStandardForm(y);
+//     x`standard_form := y;
+//   end if;
+//   return x`standard_form;
+// end intrinsic;
 
-intrinsic StandardForm(E :: FldPadExact, F :: FldPadExact) -> FldPadExact
-  {Returns a standard form version of E/F (that is, a totally ramified extension of an unramified extension of F).}
-  ok, x := IsExtensionOf(E, F);
-  require ok: "E must be an extension of F";
-  return StandardForm(x)`top_field;
-end intrinsic;
+// intrinsic StandardForm(E :: FldPadExact, F :: FldPadExact) -> FldPadExact
+//   {Returns a standard form version of E/F (that is, a totally ramified extension of an unramified extension of F).}
+//   ok, x := IsExtensionOf(E, F);
+//   require ok: "E must be an extension of F";
+//   return StandardForm(x)`top_field;
+// end intrinsic;
 
 ///## Residue class field
 
