@@ -559,12 +559,7 @@ function get_approximation(f, apr)
   if apr le AbsolutePrecision(f) then
     return f`approximation;
   else
-    // any combination of the below is a reasonable reaction
-    // error "not known to required precision";
-    print "WARNING: Field is not known to required precision.";
-    print "         This is a bug in the ExactpAdics package.";
-    print "         Please report this to github.com/cjdoris/ExactpAdics/issues";
-    printf "         Applying workaround (%o, %o)\n", apr, APR(f);
+    ExactpAdics_Warn("get_approx", Sprintf("Field not known to required precision. Can apply workaround: %o, %o", apr, APR(f)));
     IncreaseAbsolutePrecision(f, apr);
     return f`approximation;
   end if;
