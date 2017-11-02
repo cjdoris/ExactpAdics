@@ -4,6 +4,7 @@ Bits and bobs not belonging to the main features of the package, but needed by t
 
 **Contents**
 * [Default associative arrays](#default-associative-arrays)
+* [Warnings](#warnings)
 * [Promotion](#promotion)
 * [Lower bounds](#lower-bounds)
 
@@ -177,6 +178,47 @@ True if f(x(i)) is true for all i.
 
 True if f(x(i),y(i)) is true for all i.
 
+
+## Warnings
+
+For controlling the extent to which errors and warnings occur in the ExactpAdics package.
+
+> **ExactpAdics_SetWarningAction** (name :: *MonStgElt*, action :: *MonStgElt*)
+{:.intrinsic}
+
+Sets how the warning `name` is displayed. `action` is one of:
+- `"Ignore"`: ignores the warning and does nothing
+- `"Warn"`: prints the warning to the screen
+- `"WarnOnce"`: prints the warning to the screen the first time it occurs
+- `"Error"`: raises an error
+
+
+> **ExactpAdics_WarningActionIsDefined** (name :: *MonStgElt*)
+> 
+> -> *BoolElt*, *MonStgElt*
+> {:.ret}
+{:.intrinsic}
+
+True if there is a warning action defined for warning `name`. If so, also returns the action.
+
+
+> **ExactpAdics_GetWarningAction** (name :: *MonStgElt*, dflt :: *MonStgElt*)
+> 
+> -> *MonStgElt*
+> {:.ret}
+{:.intrinsic}
+
+The warning action set for warning `name`, if set, or else `dflt`.
+
+
+> **ExactpAdics_Warn** (name :: *MonStgElt*, msg)
+{:.intrinsic}
+
+Raises the warning `name` with message `msg`.
+
+**Parameters**
+- `DefaultAction`
+- `Action`
 
 ## Promotion
 

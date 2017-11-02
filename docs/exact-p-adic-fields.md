@@ -887,15 +887,6 @@ A string describing the extension E/F with F described as FName.
 True if E/F is in standard form: E is a totally ramified extension of an unramified extension of F.
 
 
-> **StandardForm** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-Returns a standard form version of E/F (that is, a totally ramified extension of an unramified extension of F).
-
-
 ## Residue class field
 
 > **ResidueClassField** (F :: *FldPadExact*)
