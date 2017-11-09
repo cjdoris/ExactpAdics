@@ -1780,12 +1780,12 @@ end intrinsic;
 
 intrinsic ValuationGtValuation_Lazy(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:="default") -> ExactpAdics_Gettr
   {True iff x has greater valuation than y.}
-  return Apply(func<x | x gt 0>, ValuationCmpValuation_Lazy(x, y : Strategy:="default"));
+  return Apply(func<x | x gt 0>, ValuationCmpValuation_Lazy(x, y : Strategy:=Strategy));
 end intrinsic;
 
 intrinsic ValuationGtValuation(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:="default") -> BoolElt
   {"}
-  return ValuationCmpValuation(x, y : Strategy:="default") gt 0;
+  return ValuationCmpValuation(x, y : Strategy:=Strategy) gt 0;
 end intrinsic;
 
 ///### Smallest and closest
@@ -2500,11 +2500,15 @@ procedure assignResidueClassFieldNames(~R, F)
   when INERT:
     R0 := BaseField(R);
     F0 := BaseField(F);
-    assert Degree(R, R0) eq Degree(F);
-    if assigned F`varname then
-      AssignNames(~R, [F`varname cat "bar"]);
+    if Degree(R, R0) ne 1 and Degree(F) eq 1 then
+      assignResidueClassFieldNames(~R, F0);
+    else
+      assert Degree(R, R0) eq Degree(F);
+      if assigned F`varname then
+        AssignNames(~R, [F`varname cat "bar"]);
+      end if;
+      assignResidueClassFieldNames(~R0, F0);
     end if;
-    assignResidueClassFieldNames(~R0, F0);
   when EISEN:
     F0 := BaseField(F);
     assignResidueClassFieldNames(~R, F0);
