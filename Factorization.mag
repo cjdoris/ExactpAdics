@@ -47,6 +47,31 @@ function nicen(f)
   return f3, slope, val;
 end function;
 
+function wrap_factorization(xf : Certificates:=false, Extensions:=false, Ideals:=false)
+  // it seems to be faster to compute extensions separately, so we do this
+  Certificates or:= Extensions or Ideals;
+  facs, lc, certs := Factorization(xf : IsSquarefree:=true, Certificates:=Certificates);
+  if Extensions or Ideals then
+    for i in [1..#facs] do
+      facs2, lc2, certs2 := Factorization(facs[i][1] : IsSquarefree:=true, Certificates:=Certificates, Extensions:=Extensions, Ideals:=Ideals);
+      assert #facs2 eq 1;
+      assert facs2[1][2] eq 1;
+      if Extensions then
+        certs[i]`Extension := certs2[1]`Extension;
+      end if;
+      if Ideals then
+        certs[i]`IdealGen1 := certs2[1]`IdealGen1;
+        certs[i]`IdealGen2 := certs2[1]`IdealGen2;
+      end if;
+    end for;
+  end if;
+  if Certificates then
+    return facs, lc, certs;
+  else
+    return facs, lc, _;
+  end if;
+end function;
+
 CERT := recformat<E, F, Pi, Rho, IdealGen1, IdealGen2, Extension>;
 
 /// The factorization of f as a sequence of `<factor, multiplicity>` pairs.
@@ -75,13 +100,15 @@ intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certi
     xf /:= Coefficient(xf, degf);
     // try to factorize
     try
-      xfacs, _, xcerts := Factorization(xf : IsSquarefree:=true, Certificates:=true, Extensions:=Extensions, Ideals:=Ideals);
+      xfacs, _, xcerts := wrap_factorization(xf : Certificates:=true, Extensions:=Extensions, Ideals:=Ideals);
     catch err
       if _ExactpAdics_IsPrecisionError(err) then
         vprint ExactpAdics_Factorization: "precision error";
         return false, _;
       else
-        error err;
+        // run it again without catching the error, so we can enter the debugger
+        // (it would be nice if instead magma allowed us to just catch some errors and let others propagate)
+        xfacs, _, xcerts := wrap_factorization(xf : Certificates:=true, Extensions:=Extensions, Ideals:=Ideals);
       end if;
     end try;
     // the factorization should be squarefree
@@ -194,7 +221,7 @@ intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certi
             if Type(err`Object) eq MonStgElt and "does not define a unique extension" in err`Object then
               return false, _;
             else
-              error err;
+              cert`Extension := ExactpAdicField(xcert`Extension, xK, K);
             end if;
           end try;
         end if;
