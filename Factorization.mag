@@ -352,4 +352,4 @@ intrinsic NewtonPolygonFactorization(f :: RngUPolElt_FldPadExact : Strategy:="de
     end if;
   end for;
   return facs;
-end i
+end intrinsic;
