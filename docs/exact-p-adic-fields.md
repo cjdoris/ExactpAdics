@@ -1691,7 +1691,19 @@ True if x is precisely zero.
 > {:.ret}
 {:.intrinsic}
 
-True if x is zero up to precision.
+True if `x` is zero up to precision.
+
+
+**Parameters**
+- `Strategy := false`: When not `false`, this is a strategy used to increase the precision of `x` until it is non-zero.
+
+> **AreAllWeaklyZero** (xs :: [*FldPadExactElt*])
+> 
+> -> *BoolElt*, *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+True if each `x` in `xs` is weakly zero. If not, returns the index of a nonzero element.
 
 **Parameters**
 - `Strategy`

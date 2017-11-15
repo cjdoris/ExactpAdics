@@ -615,10 +615,12 @@ The weak resultant of fs, i.e. the resultant assuming the weak degree of each f 
 > {:.ret}
 {:.intrinsic}
 
-The Newton polygon of f.
+The Newton polygon of `f`.
+
 
 **Parameters**
 - `Strategy`
+- `AllowWeaklyZeroConstantCoefficient := false`: When true, do not raise an error if the constant coefficient is weakly zero; instead require that the linear coefficient is nonzero and return a Newton polygon starting at 1.
 
 > **WeakPartialNewtonPolygon** (f :: *RngUPolElt_FldPadExact*)
 > 

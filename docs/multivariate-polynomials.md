@@ -347,9 +347,9 @@ True if `xs` are Hensel liftable to a system of roots of `fs`.
 
 `fs` must be a system of `n` equations of rank `n`, and `xs` must be a sequence of `n` p-adic numbers.
 
-We use a generic formulation of Hensel's lemma which does not require the inputs to be integral.
-
 
 **Parameters**
 - `Strategy := "default"`: The precision strategy to use.
+- `Slopes`: When given, must be a sequence of `n` rationals to slope the equations by. That is, conceptually we multiply the `i`th variable by `pi^Slopes[i]` and `xs[i]` correspondingly by `pi^-Slopes[i]`. When not given, the zero slope is used.
+- `Shifts`: When given, must be a sequence of `n` rationals to shift the equations by. That is, conceptually we multiply the `i`th equation by `pi^Shifts[i]`. When not given, the best shifts are chosen.
 

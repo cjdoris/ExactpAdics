@@ -284,7 +284,7 @@ The lower bound.
 The value of b, assuming it is sharp.
 
 
-> **Print** (b :: *ExactpAdics_BndLow*, lvl :: *Magma*)
+> **Print** (b :: *ExactpAdics_BndLow*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
 Print.
