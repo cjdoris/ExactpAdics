@@ -342,7 +342,7 @@ end intrinsic;
 intrinsic _ExactpAdics_IsPrecisionError(e :: Err) -> BoolElt
   {True if e looks like a precision error.}
   x := e`Object;
-  if (Type(x) eq MonStgElt) and (("Insufficient precision" in x) or ("Field 'res_fact' is not assigned" in x) or ("valuation overflow in mult" in x) or ("List of factors must have length >= 2" in x) or ("Could not find the correct factor" in x) or ("Field 'f' is not assigned" in x)) then
+  if (Type(x) eq MonStgElt) and (("Insufficient precision" in x) or ("Insufficient prec in" in x) or ("Field 'res_fact' is not assigned" in x) or ("valuation overflow in mult" in x) or ("List of factors must have length >= 2" in x) or ("Could not find the correct factor" in x) or ("Field 'f' is not assigned" in x)) then
     return true;
   end if;
   if (assigned e`Position) and (("assert &and[Degree(fact[j][1]) eq Degree(Phi) div cert[i]" in e`Position) or ("assert 2*Valuation(Discriminant(Pi_new`chi)) lt Precision" in e`Position)) then
@@ -3992,6 +3992,9 @@ intrinsic IsDefinitelyZero(x :: FldPadExactElt) -> BoolElt
   return WZERO(x) and AbsolutePrecision(x) eq OO;
 end intrinsic;
 
+/// True if `x` is zero up to precision.
+/// 
+///param Strategy:=false When not `false`, this is a strategy used to increase the precision of `x` until it is non-zero.
 intrinsic IsWeaklyZero(x :: FldPadExactElt : Strategy:=false) -> BoolElt
   {True if x is zero up to precision.}
   if Strategy cmpeq false then
@@ -4003,6 +4006,31 @@ intrinsic IsWeaklyZero(x :: FldPadExactElt : Strategy:=false) -> BoolElt
       IncreaseBaselinePrecision(x, pr);
       return not WZERO(x`approximation), _;
     end function, Strategy);
+  end if;
+end intrinsic;
+
+intrinsic AreAllWeaklyZero(xs :: [FldPadExactElt] : Strategy:=false) -> BoolElt, RngIntElt
+  {True if each `x` in `xs` is weakly zero. If not, returns the index of a nonzero element.}
+  ok := exists(i){i : i in [1..#xs] | not WZERO(xs[i])};
+  if ok then
+    return false, i;
+  elif Strategy cmpeq false then
+    return true, _;
+  else
+    ok, _, i := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+      IncreaseAbsolutePrecisions([<x, BaselineValuation(x) + pr> : x in xs]);
+      ok := exists(i){i : i in [1..#xs] | not WZERO(xs[i])};
+      if ok then
+        return true, i;
+      else
+        return false, _;
+      end if;
+    end function, Strategy);
+    if ok then
+      return false, i;
+    else
+      return true, _;
+    end if;
   end if;
 end intrinsic;
 
@@ -4857,11 +4885,13 @@ intrinsic 'div'(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact : Strat
       procedure (xfg, ~pr, ~val)
         xf, xg := Explode(xfg);
         assert Degree(xg) eq dg;
-        Update(z, xf div xg);
-        if AbsolutePrecision(z) ge aprs then
+        xz := xf div xg;
+        d := &join(aprs - ExactpAdics_APr(xz));
+        if d le 0 then
+          Update(z, xz);
           val := true;
         else
-          pr +:= &join (aprs - AbsolutePrecision(z));
+          pr +:= d;
         end if;
       end procedure
     );
@@ -5363,7 +5393,10 @@ function nwtnpgon_integer_points(np)
   return &cat[i eq 1 select [vs[i]] else ([<j, y0+h*((j-x0) div e)> : j in [x0+e..x1 by e]] where h:=Numerator(s) where e:=Denominator(s) where s:=(y1-y0)/(x1-x0) where x0:=vs[i-1][1] where y0:=vs[i-1][2] where x1:=vs[i][1] where y1:=vs[i][2]) : i in [1..#vs]];
 end function;
 
-intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default") -> NwtnPgon
+/// The Newton polygon of `f`.
+/// 
+///param AllowWeaklyZeroConstantCoefficient:=false When true, do not raise an error if the constant coefficient is weakly zero; instead require that the linear coefficient is nonzero and return a Newton polygon starting at 1.
+intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default", AllowWeaklyZeroConstantCoefficient:=false) -> NwtnPgon
   {The Newton polygon of f.}
   if not assigned f`newton_polygon then
     d := Degree(f : Strategy:=Strategy);
@@ -5372,9 +5405,12 @@ intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default") -> Nw
       f`newton_polygon := NewtonPolygon([] : Faces:="Lower");
     else
       // check the top and bottom coefficients are nonzero simultaneously
-      assert not WZERO(Coefficient(f, d));
-      error if IsWeaklyZero(Coefficient(f, 0) : Strategy:=Strategy),
-        "constant coefficient is weakly zero";
+      assert not WZERO(Coefficient(f`approximation, d));
+      if AllowWeaklyZeroConstantCoefficient then
+        error if AreAllWeaklyZero([Coefficient(f, i) : i in [0..1]] : Strategy:=Strategy), "constant and linear coefficients are weakly zero";
+      else
+        error if IsWeaklyZero(Coefficient(f, 0) : Strategy:=Strategy), "constant coefficient is weakly zero";
+      end if;
       // get an initial Newton polygon based on what we already know
       np := func<|NewtonPolygon([
         <i, Valuation(c)>
@@ -5384,23 +5420,34 @@ intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default") -> Nw
       ] : Faces:="Lower")>;
       np0 := np();
       // increase precision of f just enough to determine if there are any more unknowns
-      IncreaseAbsolutePrecision(f, &cat[
-        (j eq 1)
-        select [<0,Ceiling(vs[j][2])>]
-        else ([ 
-            <i0+i,Ceiling(v0+i*s)>
-            : i in [1..i1-i0]
+      vs := ChangeUniverse(Vertices(np0), car<Z,Z>);
+      if #vs ge 2 then
+        IncreaseAbsolutePrecision(f, &cat[
+          [ 
+            <x, Ceiling(v0+(x-i0)*s)>
+            : x in [x0..x1]
           ] 
+          where x0:=j eq 2 select 0 else i0+1
+          where x1:=i1
           where s:=(v1-v0)/(i1-i0)
-          where i0:=CAST(Z, vs[j-1][1])
-          where i1:=CAST(Z, vs[j][1])
-          where v0:=CAST(Z, vs[j-1][2])
-          where v1:=CAST(Z, vs[j][2])
-        )
-        : j in [1..#vs]
-      ] where vs := Vertices(np0));
+          where i0,v0:=Explode(vs[j-1])
+          where i1,v1:=Explode(vs[j])
+          : j in [2..#vs]
+        ]);
+      else
+        assert AllowWeaklyZeroConstantCoefficient;
+        assert #vs eq 1;
+        assert d eq 1;
+        assert vs[1][1] eq 1;
+      end if;
       // get the actual Newton polygon
-      f`newton_polygon := np();
+      np1 := np();
+      if Vertices(np1)[1][1] eq 0 then
+        f`newton_polygon := np1;
+      else
+        assert AllowWeaklyZeroConstantCoefficient;
+        return np1;
+      end if;
     end if;
   end if;
   return f`newton_polygon;
@@ -5607,6 +5654,49 @@ intrinsic HenselLift(f :: RngUPolElt, x : Strategy:="default") -> FldPadExactElt
   end if;
 end intrinsic;
 
+/// True if `g` is Hensel-liftable to a factor of `f`. If so, also returns the factor (with the same leading coefficient as `g`) and its cofactor.
+/// 
+/// This uses a generalized statement of Hensel's lemma which does not require the inputs to be integral.
+///hide
+intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt, RngUPolElt_FldPadExact, RngUPolElt_FldPadExact
+  {True if g is Hensel-liftable to a factor of f, and the factor and cofactor.}
+  // cast to a common field
+  ok, R := ExistsCoveringStructure(Parent(f), Parent(g));
+  require ok: "Arguments must be coercible to a common ring";
+  f := R ! f;
+  g := R ! g;
+  // check degrees
+  df := WeakDegree(f);
+  dg := Degree(g : Strategy:=Strategy);
+  if dg lt 0 then
+    // g=0 is a factor of nothing
+    return false, _;
+  elif dg eq 0 then
+    // g=const is a factor of anything
+    return true, g;
+  elif dg eq df then
+    df := Degree(f : Strategy:=Strategy);
+    return true, f * (Coefficient(g, dg) / Coefficient(f, df));
+  elif dg gt df then
+    return false, _;
+  end if;
+  // form the multivariate problem
+  h := 'div'(f, g : Strategy:=Strategy);
+  dh := df - dg;
+  K := BaseRing(R);
+  S := PolynomialRing(K, df);
+  lcg := Coefficient(g, dg);
+  lch := Coefficient(h, dh);
+  T := car<K, PowerSequence(Z)>;
+  eqns := [S| <[ce[1] : ce in ces], [ce[2] : ce in ces]> where ces:=[T| <(i eq dg select lcg else 1)*(j eq dh select lch else 1), [ii eq i select 1 else 0 : ii in [0..dg-1]] cat [jj eq j select 1 else 0 : jj in [0..dh-1]]> where j:=k-i : i in [Max(0,k-dh)..Min(dg,k)]] cat [T| <-Coefficient(f,k), [0 : kk in [0..df-1]]>] : k in [0..df-1]];
+  soln := [K| Coefficient(g, i) : i in [0..dg-1]] cat [K| Coefficient(h, j) : j in [0..dh-1]];
+  ok, coeffs := IsHenselLiftable(eqns, soln : Strategy:=Strategy);
+  if ok then
+    return true, R![i eq dg select lcg else coeffs[i+1] : i in [0..dg]], R![j eq dh select lch else coeffs[dg+j+1] : j in [0..dh]];
+  else
+    return false, _;
+  end if;
+end intrinsic;
 
 ///## Approximation
 

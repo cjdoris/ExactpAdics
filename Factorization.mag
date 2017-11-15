@@ -302,3 +302,54 @@ intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default") -> []
     error "precision error";
   end if;
 end intrinsic;
+
+/// The factorization of `f` according to its Newton polygon, as a sequence of factors.
+///
+///param Residual:=false When `true` then further factorizes according to the factorization of each residual polynomial.
+///hide
+intrinsic NewtonPolygonFactorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Residual:=false) -> []
+  {The factorization of `f` along its Newton polygon, that is, one factor per face of the Newton polygon. If `Residual` is true, then further factorizes according to the coprime factorization of each residual polynomial.}
+  np := NewtonPolygon(f : Strategy:=Strategy, AllowWeaklyZeroConstantCoefficient);
+  vs := ChangeUniverse(Vertices(np), car<Z,Z>);
+  R := Parent(f);
+  K := BaseRing(f);
+  facs := [];
+  for i in [1..#vs] do
+    if i eq 1 then
+      if vs[1][1] eq 0 then
+        continue;
+      else
+        assert vs[1][1] eq 1;
+        ok, fac := IsHenselLiftable(f, R![0,1] : Strategy:=Strategy);
+        assert ok;
+        Append(~facs, fac);
+      end if;
+    else
+      x0,v0 := Explode(vs[i-1]);
+      x1,v1 := Explode(vs[i]);
+      w := x1 - x0;
+      slope := (v1-v0) / w;
+      h := Numerator(-slope);
+      e := Denominator(-slope);
+      ok, d := IsDivisibleBy(w, e);
+      assert ok;
+      resfld, resmap := ResidueClassField(K);
+      respol := Polynomial([ShiftValuation(Coefficient(f, x0+i*e), i*h-v0)@resmap : i in [0..d]]);
+      assert Degree(respol) eq d;
+      assert Coefficient(respol, d) ne 0;
+      assert Coefficient(respol, 0) ne 0;
+      if Residual then
+        resfacs := [x[1]^x[2] : x in Factorization(respol)];
+      else
+        resfacs := [respol];
+      end if;
+      for resfac in resfacs do
+        xfac := R![K| ok select ShiftValuation(WeakApproximation(Coefficient(resfac, j)@@resmap), v0-j*h) else 0 where ok,j:=IsDivisibleBy(i,e) : i in [0..w]];
+        ok, fac := IsHenselLiftable(f, xfac);
+        assert ok;
+        Append(~facs, fac);
+      end for;
+    end if;
+  end for;
+  return facs;
+end i
