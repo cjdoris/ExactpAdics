@@ -23,6 +23,9 @@ declare attributes PadExactElt
 declare type Val_PadExactElt;
 
 ///# Internals
+///
+///toc
+///
 ///## Generic interface
 ///
 /// The type `StrPadExact` is for structures whose elements are in terms of Exact p-adic numbers. Examples of subtypes include `FldPadExact` for p-adic fields, `RngUPol_FldPadExact` for polynomials over p-adic fields, `SetCart_PadExact` for cartesian products of such structures. Elements of such structures have type deriving from `PadExactElt`.

@@ -3,6 +3,13 @@
 
 Sometimes a collection of p-adic objects are highly related and should share a single update function. For example, if we Hensel-lift a system of roots of a system of multivariate polynomials, then updating one element of the system requires updating them all. In this case, we represent the whole aggregation as a single p-adic object.
 
+
+**Contents**
+* [Tuples](#tuples)
+  * [Cartesian products](#cartesian-products)
+  * [Creation of tuples](#creation-of-tuples)
+  * [Basic operations](#basic-operations)
+
 ## Tuples
 
 ### Cartesian products
