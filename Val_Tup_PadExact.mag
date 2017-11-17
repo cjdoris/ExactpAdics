@@ -1,0 +1,288 @@
+///# Valuations
+///## Val_Tup_PadExact
+/// Represents the valuation of a tuple of p-adic objects.
+
+import "Promotion.mag": do_binop;
+
+Z := Integers();
+OO := Infinity();
+
+declare type Val_Tup_PadExact: Val_PadExactElt;
+declare attributes Val_Tup_PadExact
+  : value    // REQ: a tuple of Val_PadExactElts
+  ;
+
+///### Creation
+
+intrinsic Val_Tup_PadExact_IsCoercible(v) -> BoolElt, Val_Tup_PadExact
+  {True if v is coercible to a Val_Tup_PadExact, and the coerced value.}
+  return false, "wrong type";
+end intrinsic;
+
+intrinsic Val_Tup_PadExact_IsCoercible(v :: Val_Tup_PadExact) -> BoolElt, Val_Tup_PadExact
+  {"}
+  return true, v;
+end intrinsic;
+
+intrinsic Val_Tup_PadExact_IsCoercible(v :: Tup) -> BoolElt, Val_Tup_PadExact
+  {"}
+  if forall{w : w in v | ISA(Type(w), Val_PadExactElt)} then
+    x := New(Val_Tup_PadExact);
+    x`value := v;
+    return true, x;
+  else
+    return false, "expecting a tuple of valuations";
+  end if;
+end intrinsic;
+
+intrinsic IsPromotable(v :: Val_Tup_PadExact, w) -> BoolElt, ., .
+  {True if v and w are coercible to a common type.}
+  ok, w2 := Val_Tup_PadExact_IsCoercible(w);
+  if ok then
+    return true, v, w2;
+  else
+    return false, _, _;
+  end if;
+end intrinsic;
+
+///hide
+intrinsic IsValidAbsolutePrecision(x :: Tup_PadExact, v) -> BoolElt, Val_Tup_PadExact
+  {True if v is coercible to an absolute precision for x.}
+  C := Parent(x);
+  n := #C`components;
+  t := ToTuple(x);
+  if ISA(Type(v), Tup) then
+    if #v eq n then
+      ws := [**];
+      for i in [1..n] do
+        ok, w := IsValidAbsolutePrecision(t[i], v[i]);
+        if ok then
+          Append(~ws, w);
+        else
+          return false, Sprintf("%o: %o", i, w);
+        end if;
+      end for;
+      return true, Val_Tup_PadExact_Make(<w : w in ws>);
+    else
+      return false, "wrong size";
+    end if;
+  elif Type(v) eq Val_Tup_PadExact then
+    return IsValidAbsolutePrecision(x, Value(v));
+  else
+    ws := [**];
+    for i in [1..n] do
+      ok, w := IsValidAbsolutePrecision(t[i], v);
+      if ok then
+        Append(~ws, w);
+      else
+        return false, Sprintf("%o: %o", i, w);
+      end if;
+    end for;
+    return true, Val_Tup_PadExact_Make(<w : w in ws>);
+  end if;
+end intrinsic;
+
+///hide
+intrinsic IsValidAbsolutePrecisionDiff(x :: Tup_PadExact, v) -> BoolElt, Val_Tup_PadExact
+  {True if v is coercible to an absolute precision for x.}
+  C := Parent(x);
+  n := #C`components;
+  t := ToTuple(x);
+  if ISA(Type(v), Tup) then
+    if #v eq n then
+      ws := [**];
+      for i in [1..n] do
+        ok, w := IsValidAbsolutePrecisionDiff(t[i], v[i]);
+        if ok then
+          Append(~ws, w);
+        else
+          return false, Sprintf("%o: %o", i, w);
+        end if;
+      end for;
+      return true, Val_Tup_PadExact_Make(<w : w in ws>);
+    else
+      return false, "wrong size";
+    end if;
+  elif Type(v) eq Val_Tup_PadExact then
+    return IsValidAbsolutePrecisionDiff(x, Value(v));
+  else
+    ws := [**];
+    for i in [1..n] do
+      ok, w := IsValidAbsolutePrecisionDiff(t[i], v);
+      if ok then
+        Append(~ws, w);
+      else
+        return false, Sprintf("%o: %o", i, w);
+      end if;
+    end for;
+    return true, Val_Tup_PadExact_Make(<w : w in ws>);
+  end if;
+end intrinsic;
+
+intrinsic Val_Tup_PadExact_Make(v) -> Val_Tup_PadExact
+  {Coerces v to a Val_Tup_PadExact.}
+  ok, w := Val_Tup_PadExact_IsCoercible(v);
+  require ok: w;
+  return w;
+end intrinsic;
+
+///hide
+intrinsic Print(v :: Val_Tup_PadExact, lvl :: MonStgElt)
+  {Print.}
+  case lvl:
+  when "Magma":
+    printf "Val_Tup_PadExact_Make(<%o>)", Join([Sprintf("%m", x) : x in v`value], ", ");
+  else
+    printf "<%o>", Join([Sprintf("%O", x, lvl) : x in v`value], ", ");
+  end case;
+end intrinsic;
+
+///hide
+intrinsic Value(v :: Val_Tup_PadExact) -> Tup
+  {The underlying value of v.}
+  return v`value;
+end intrinsic;
+
+///### Other operations
+
+intrinsic '@'(i :: RngIntElt, v :: Val_Tup_PadExact) -> Val_PadExactElt
+  {The valuation in the `i`th component of `v`.}
+  return v`value[i];
+end intrinsic;
+
+intrinsic '#'(v :: Val_Tup_PadExact) -> RngIntElt
+  {The number of components in `v`.}
+  return #v`value;
+end intrinsic;
+
+function ewo_unary(f, v)
+  return Val_Tup_PadExact_Make(<f(x) : x in v`value>);
+end function;
+
+function ewo_binary(f, v, w)
+  error if #v`value ne #w`value, "different lengths";
+  return Val_Tup_PadExact_Make(<f(v`value[i], w`value[i]) : i in [1..#v`value]>);
+end function;
+
+function ewo_forall_binary(f, v, w)
+  error if #v`value ne #w`value, "different lengths";
+  return forall{i : i in [1..#v`value] | f(v`value[i], w`value[i])};
+end function;
+
+///hide
+intrinsic '-'(v :: Val_Tup_PadExact) -> Val_Tup_PadExact
+  {Negation.}
+  return ewo_unary('-', v);
+end intrinsic;
+
+///hide
+intrinsic '+'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> Val_Tup_PadExact
+  {Addition.}
+  return ewo_binary('+', v, w);
+end intrinsic;
+
+///hide
+intrinsic '-'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> Val_Tup_PadExact
+  {Subtraction.}
+  return ewo_binary('-', v, w);
+end intrinsic;
+
+///hide
+intrinsic '*'(n :: RngIntElt, w :: Val_Tup_PadExact) -> Val_Tup_PadExact
+  {Addition.}
+  return ewo_binary('*', n, w);
+end intrinsic;
+
+///hide
+intrinsic '*'(n :: FldRatElt, w :: Val_Tup_PadExact) -> Val_Tup_PadExact
+  {Addition.}
+  return ewo_binary('*', n, w);
+end intrinsic;
+
+///hide
+intrinsic '*'(w :: Val_Tup_PadExact, n :: RngIntElt) -> Val_Tup_PadExact
+  {Addition.}
+  return ewo_binary('*', n, w);
+end intrinsic;
+
+///hide
+intrinsic '*'(w :: Val_Tup_PadExact, n :: FldRatElt) -> Val_Tup_PadExact
+  {Addition.}
+  return ewo_binary('*', n, w);
+end intrinsic;
+
+///hide
+intrinsic '/'(w :: Val_Tup_PadExact, n :: RngIntElt) -> Val_Tup_PadExact
+  {Addition.}
+  return ewo_binary('/', n, w);
+end intrinsic;
+
+///hide
+intrinsic '/'(w :: Val_Tup_PadExact, n :: FldRatElt) -> Val_Tup_PadExact
+  {Addition.}
+  return ewo_binary('/', n, w);
+end intrinsic;
+
+///hide
+intrinsic 'eq'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> BoolElt
+  {Equality.}
+  return ewo_forall_binary('eq', v, w);
+end intrinsic;
+
+///hide
+intrinsic 'ne'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> BoolElt
+  {Equality.}
+  return not (v eq w);
+end intrinsic;
+
+///hide
+intrinsic 'le'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> BoolElt
+  {Less than or equal.}
+  return ewo_forall_binary('le', v, w);
+end intrinsic;
+
+///hide
+intrinsic 'lt'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> BoolElt
+  {Less than.}
+  return ewo_forall_binary('lt', v, w);
+end intrinsic;
+
+///hide
+intrinsic 'ge'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> BoolElt
+  {Less than or equal.}
+  return ewo_forall_binary('ge', v, w);
+end intrinsic;
+
+///hide
+intrinsic 'gt'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> BoolElt
+  {Less than or equal.}
+  return ewo_forall_binary('gt', v, w);
+end intrinsic;
+
+///hide
+intrinsic 'join'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> Val_Tup_PadExact
+  {Join.}
+  return ewo_binary('join', v, w);
+end intrinsic;
+
+///hide
+intrinsic 'meet'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> Val_Tup_PadExact
+  {Meet.}
+  return ewo_binary('meet', v, w);
+end intrinsic;
+
+///hide
+intrinsic 'diff'(v :: Val_Tup_PadExact, w :: Val_Tup_PadExact) -> Val_Tup_PadExact
+  {Diff.}
+  return ewo_binary('diff', v, w);
+end intrinsic;
+
+intrinsic ExactpAdics_Val(t :: Tup) -> Val_Tup_PadExact
+  {The valuation of t.}
+  return Val_Tup_PadExact_Make(<ExactpAdics_Val(x) : x in t>);
+end intrinsic;
+
+intrinsic ExactpAdics_APr(t :: Tup) -> Val_Tup_PadExact
+  {The absolute precision of t.}
+  return Val_Tup_PadExact_Make(<ExactpAdics_APr(x) : x in t>);
+end intrinsic;

@@ -1,5 +1,6 @@
 {
   State.mag
+  Generics.mag
   ExactpAdics.mag
   PrecisionStrategy.mag
   Getter.mag
@@ -13,4 +14,6 @@
   Roots.mag
   Factorization.mag
   LowerBound.mag
+  Tuples.mag
+  Val_Tup_PadExact.mag
 }

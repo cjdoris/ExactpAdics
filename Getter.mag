@@ -1,10 +1,71 @@
-///# Getters
+// freeze;
+
+Z := Integers();
+LIST := _ExactpAdics_List;
+
+import "State.mag": STORE;
+
+// TODO: lock all updates while resolving dependencies
+
+declare verbose ExactpAdics_Update, 2;
+
+/////////////////////////////////////////////////////////////////////////////////
+// profiling
+
+///# Miscellany
+///## Profiling
+///
+/// To help isolate the slow parts of code, we provide some profiling tools.
+
+PROFILE_UPDATE := recformat<x, initial_apr, target_apr, initial_time, time_elapsed>;
+
+/// Turn profiling on or off.
+/// 
+///param Reset:=false When true, also resets the profile.
+intrinsic ExactpAdics_SetProfile(doProfile :: BoolElt : Reset:=false)
+  {Starts or stops profiling the exact p-adics updates.}
+  s := STORE;
+  s`profile_updates := doProfile;
+  if Reset then
+    ExactpAdics_ResetProfile();
+  end if;
+end intrinsic;
+
+/// True if profiling is enabled.
+intrinsic ExactpAdics_GetProfile() -> BoolElt
+  {True if profiling is enabled.}
+  return STORE`profile_updates;
+end intrinsic;
+
+/// Resets the profile.
+intrinsic ExactpAdics_ResetProfile()
+  {Resets the profiling data for the exact p-adics updates.}
+  s := STORE;
+  s`updates := [];
+end intrinsic;
+
+/// Returns the profile, a sequence of records for each update with the following fields:
+/// - `x`: the element being updated.
+/// - `initial_apr`: the initial absolute precision of the element.
+/// - `target_apr`: the absolute precision being updated to.
+/// - `initial_time`: the `Cputime()` when the update was made.
+/// - `time_elapsed`: the time taken to perform the update.
+intrinsic ExactpAdics_GetProfileUpdates() -> []
+  {Gets a list of records, one per update, with fields recording the element, the initial precision, the target precision, and the time to perform the update.}
+  return STORE`updates;
+end intrinsic;
+
+//////////////////////////////////////////////////////////////////////////////////
+// dependencies
+
+///# Internals
+///## Getters
 ///
 /// *Advanced users only.* You only need to know about getters if you wish to implement a new exact p-adic algorithm at a low-level (i.e. not built entirely out of intrinsics already supplied by this package) or implement a new compound p-adic type.
 ///
 ///toc
 ///
-///## Overview
+///### Overview
 ///
 /// In this package, a *getter* is a computation which has p-adic dependencies in the sense that it requires certain p-adic values to be known to certain precisions before it can be evaluated. Getters underpin the whole package: a `FldPadExactElt` has a field `update` which is a function taking as input an absolute precision and returning a getter; evaluating this getter has the side-effect of increasing the absolute precision of the element to at least the given precision.
 /// 
@@ -13,56 +74,6 @@
 /// A getter is essentially represented by a function `getDeps` returning a list of dependencies, and a function `getValue` which computes the value assuming the dependencies are met. There is also a state which is passed around by these functions so they can be stateful. A dependency is simply a pair `<x,apr>` of a p-adic value `x` (a `FldPadExactElt` or `RngUPolElt_FldPadExact`, etc.) and an absolute precision `apr` (a `Val_FldPadExact`, etc.), meaning that `x` is required to be known to absolute precision `apr`. Note that these dependencies may themselves have dependencies, and so we have a tree of dependencies. Evaluating the getter therefore involves traversing this tree from the leaves upward, satisfying dependencies as we go and computing values.
 /// 
 /// As an optimization, if two dependencies `<x,apr1>`, `<x,apr2>` in the tree are for the same p-adic value `x`, then the nodes are fused into the node `<x, apr1 join apr2>`. Also if `<x,apr>` is a dependency and the absolute precision of `x` is already `apr` then we may immediately trim the whole subtree.
-
-// freeze;
-
-Z := Integers();
-LIST := _ExactpAdics_List;
-
-// TODO: lock all updates while resolving dependencies
-
-declare verbose ExactpAdics_Update, 2;
-
-/////////////////////////////////////////////////////////////////////////////////
-// global state
-
-declare type ExactpAdics_Getter_Store;
-declare attributes ExactpAdics_Getter_Store
-  : lock
-  , profile       // when true, populate the 'updates' field
-  , updates       // list of information about each update which occurs
-  ;
-STORE := New(ExactpAdics_Getter_Store);
-STORE`profile := false;
-STORE`updates := [];
-
-PROFILE_UPDATE := recformat<id, initial_apr, apr>;
-
-///hide
-intrinsic ExactpAdics_SetProfile(doProfile :: BoolElt : Reset:=false)
-  {Starts or stops profiling the exact p-adics updates.}
-  s := STORE;
-  s`profile := doProfile;
-  if Reset then
-    ExactpAdics_ResetProfile();
-  end if;
-end intrinsic;
-
-///hide
-intrinsic ExactpAdics_ResetProfile()
-  {Resets the profiling data for the exact p-adics updates.}
-  s := STORE;
-  s`updates := [];
-end intrinsic;
-
-///hide
-intrinsic ExactpAdics_GetProfileUpdates() -> []
-  {Gets a list of records, one per update, with fields recording the element, the initial precision, the target precision, and the time to perform the update.}
-  return STORE`updates;
-end intrinsic;
-
-//////////////////////////////////////////////////////////////////////////////////
-// dependencies
 
 DEP := recformat<id, x, apr, st, g, childids>;
 
@@ -169,6 +180,8 @@ procedure deps_add_list(~deps, ds, maxid)
 end procedure;
 
 procedure deps_satisfy(~deps)
+  store := STORE;
+  prof := store`profile_updates;
   while true do
     keys := deps_keys(deps);
     if #keys eq 0 then
@@ -181,7 +194,14 @@ procedure deps_satisfy(~deps)
         vprint ExactpAdics_Update, 2: d`id, "has dependencies outstanding";
       else
         vprint ExactpAdics_Update: d`id, "updating to", d`apr;
+        if prof then
+          u := rec<PROFILE_UPDATE | x:=d`x, initial_apr:=AbsolutePrecision(d`x), target_apr:=d`apr, initial_time:=Cputime()>;
+        end if;
         dep_doUpdate(~d, ~done);
+        if prof then
+          u`time_elapsed := Cputime() - u`initial_time;
+          Append(~store`updates, u);
+        end if;
         if done then
           // as soon as the update worked, remove it from the dependency tree
           error if not dep_isDone(d), "update did not increase precision enough";
@@ -301,7 +321,7 @@ declare attributes ExactpAdics_Gettr: state, getDeps, getValue, explode;
 //   end case;
 // end function;
 
-///## Creation
+///### Creation
 
 /// Creates a new getter with initial state `state`. `getDeps` must be a `procedure(~state, ~deps)` assigning to `deps` a list of `<x,apr>` pairs such that the computation depends on the absolute precision of `x` being at least `apr`. `getValue` must be a `procedure(~state, ~value)` which either assigns to `value`, giving the value of the getter, or does not assign to `value` meaning that the computation has more dependencies, and hence `getDeps` needs to be called again.
 intrinsic ExactpAdics_Getter(state, getDeps, getValue) -> ExactpAdics_Gettr
@@ -351,7 +371,7 @@ intrinsic ExactpAdics_GeneralGetter(state, getGetter, getValue) -> ExactpAdics_G
     end procedure);
 end intrinsic;
 
-///## Evaluation
+///### Evaluation
 
 intrinsic Evaluate(g :: ExactpAdics_Gettr) -> .
   {Evaluates the getter and retuns its value.}
@@ -483,7 +503,7 @@ intrinsic ComposeGetter(g :: ExactpAdics_Gettr, f) -> ExactpAdics_Gettr
   return ApplyGetter(f, g);
 end intrinsic;
 
-///## Reductions
+///### Reductions
 
 intrinsic Flatten(gs :: [ExactpAdics_Gettr] : Sequence:=false, Universe:=false) -> ExactpAdics_Gettr
   {The getter whose value is the list of values of the given gettrs. If Sequence is true, the value is coerced to a sequence. If Universe is given, the value is coerced to a sequence with this universe.}
@@ -549,7 +569,7 @@ intrinsic '/'(g :: ExactpAdics_Gettr, n :: RngIntElt) -> ExactpAdics_Gettr
   return g;
 end intrinsic;
 
-///## Short-circuit reductions
+///### Short-circuit reductions
 
 intrinsic ShortCircuitReduce(gs :: [ExactpAdics_Gettr], f) -> ExactpAdics_Gettr
   {Given a function f taking any subsequence of S=[<i, Evaluate(gs[i])> : i in [1..#gs]] and returning either false,_ when the result is unknown or true,val when the result is known, where val is independent of the subsequence of S, returns the getter which evaluates to val. f(S) must return true.}

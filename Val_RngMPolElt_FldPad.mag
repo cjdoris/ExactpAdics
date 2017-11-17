@@ -13,7 +13,7 @@ import "Val_FldPadElt.mag": VAL_FLDPADELT_INFINITY, VAL_FLDPADELT_NEGINFINITY, V
 Z := Integers();
 
 // the valuation of a RngMPolElt[FldPad], RngMPolElt_FldPadExact or similar
-declare type Val_RngMPolElt_FldPad;
+declare type Val_RngMPolElt_FldPad: Val_PadExactElt;
 declare attributes Val_RngMPolElt_FldPad
   : values          // REQ: AssocDflt: [[RngIntElt]] -> Val_FldPadElt (valuation at each degree)
   ;
@@ -642,4 +642,16 @@ intrinsic ShiftSlope(v :: Val_RngMPolElt_FldPad, s :: []) -> Val_RngMPolElt_FldP
   require Type(a`dflt`value) eq Infty: "The constant part of argument 1 must be infinite";
   ks := SetToSequence(Keys(a`array));
   return Val_RngMPolElt_FldPad_Make(a`dflt, ks, [a`array[k] + scalar_product(s, k) : k in ks]);
+end intrinsic;
+
+intrinsic ExactpAdics_Val(f :: RngMPolElt) -> Val_RngMPolElt_FldPad
+  {The valuation of f.}
+  cs, ms := CoefficientsAndMonomials(f);
+  return Val_RngMPolElt_FldPad_Make(VAL_FLDPADELT_INFINITY, [Exponents(m) : m in ms], [ExactpAdics_Val(c) : c in cs]);
+end intrinsic;
+
+intrinsic ExactpAdics_APr(f :: RngMPolElt) -> Val_RngMPolElt_FldPad
+  {The absolute precision of f.}
+  cs, ms := CoefficientsAndMonomials(f);
+  return Val_RngMPolElt_FldPad_Make(VAL_FLDPADELT_INFINITY, [Exponents(m) : m in ms], [ExactpAdics_APr(c) : c in cs]);
 end intrinsic;

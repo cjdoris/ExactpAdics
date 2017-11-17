@@ -82,35 +82,72 @@ CERT := recformat<E, F, Pi, Rho, IdealGen1, IdealGen2, Extension>;
 ///param Certificates When `true`, also returns a corresponding sequence of certificates including fields `F`, `E`, `Rho` and `Pi`.
 ///param Extensions When `true` implies `Certificates` and also includes `Extension` in each certificate.
 ///param Ideals When `true` implies `Certificates` and also includes `IdealGen1` and `IdealGen2` in each certificate.
-intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certificates:=false, Extensions:=false, Ideals:=false) -> [], FldPadElt, []
+///param UseNP:=false When `true`, factorizes `f` first by its Newton polygon. This can be a significant performance improvement for large degree polynomials with several faces.
+intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certificates:=false, Extensions:=false, Ideals:=false, UseNP:=false) -> [], FldPadElt, []
   {The factorization of f.}
   Certificates or:= Extensions or Ideals;
+  // factor by Newton polygons first
+  if UseNP then
+    npfacs := NewtonPolygonFactorization(f : Strategy:=Strategy, Residual);
+    facs := [];
+    certs := [];
+    for npfac in npfacs do
+      facs1, _, certs1 := Factorization(npfac : Strategy:=Strategy, Certificates:=Certificates, Extensions:=Extensions, Ideals:=Ideals, UseNP:=false);
+      facs cat:= facs1;
+      if Certificates then
+        certs cat:= certs1;
+      end if;
+    end for;
+    lc := LeadingCoefficient(f : Strategy:=Strategy);
+    if Certificates then
+      return facs, lc, certs;
+    else
+      return facs, lc, _;
+    end if;
+  end if;
   // approximate factorization
   degf := WeakDegree(f);
   R := Parent(f);
   K := BaseRing(R);
   ok, _, data := ExactpAdics_ExecutePrecisionStrategy(function (pr)
     vprint ExactpAdics_Factorization: "precision =", pr;
-    xf, slope, shift := nicen(Approximation(f, BaselineValuation(f) + pr));
-    xK := BaseRing(xf);
-    // ensure full degree and monic
-    if WZERO(Coefficient(xf, degf)) then
+    xf0 := Approximation(f, BaselineValuation(f) + pr : FixPr);
+    xR := Parent(xf0);
+    xK := BaseRing(xR);
+    // ensure full degree
+    if WZERO(Coefficient(xf0, degf)) then
       return false, _;
     end if;
-    xf /:= Coefficient(xf, degf);
-    // try to factorize
-    try
-      xfacs, _, xcerts := wrap_factorization(xf : Certificates:=true, Extensions:=Extensions, Ideals:=Ideals);
-    catch err
-      if _ExactpAdics_IsPrecisionError(err) then
-        vprint ExactpAdics_Factorization: "precision error";
-        return false, _;
-      else
-        // run it again without catching the error, so we can enter the debugger
-        // (it would be nice if instead magma allowed us to just catch some errors and let others propagate)
-        xfacs, _, xcerts := wrap_factorization(xf : Certificates:=true, Extensions:=Extensions, Ideals:=Ideals);
+    if degf eq 1 then
+      xf := xf0;
+      slope := 0;
+      shift := 0;
+      xfacs := [<xf / Coefficient(xf, degf), 1>];
+      xcerts := [rec<CERT | F:=1, E:=1, Pi:=xR!UniformizingElement(xK), Rho:=xR!1>];
+      if Extensions then
+        xcerts[1]`Extension := xK;
       end if;
-    end try;
+      if Ideals then
+        error "not implemented";
+      end if;
+    else
+      xf, slope, shift := nicen(xf0);
+      // ensure monic
+      xf /:= Coefficient(xf, degf);
+      // try to factorize
+      try
+        xfacs, _, xcerts := wrap_factorization(xf : Certificates:=true, Extensions:=Extensions, Ideals:=Ideals);
+      catch err
+        if _ExactpAdics_IsPrecisionError(err) then
+          vprint ExactpAdics_Factorization: "precision error";
+          return false, _;
+        else
+          // run it again without catching the error, so we can enter the debugger
+          // (it would be nice if instead magma allowed us to just catch some errors and let others propagate)
+          xfacs, _, xcerts := wrap_factorization(xf : Certificates:=true, Extensions:=Extensions, Ideals:=Ideals);
+        end if;
+      end try;
+    end if;
     // the factorization should be squarefree
     if exists{fac : fac in xfacs | fac[2] ne 1} then
       vprint ExactpAdics_Factorization: "not squarefree";
@@ -142,7 +179,7 @@ intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certi
       init := reslope(Parent(xfac) ! [CAP_APR(c, s-t) : c in Coefficients(xfac)], slope);
       mkupdate := func<z | function (apr)
         xfac0 := GetData(z);
-        pr := &join(apr - WVAL(z));
+        pr := &join(apr - WVAL(z)) join (2*t+1);
         return ExactpAdics_GeneralGetter(pr,
           procedure (~pr, ~dep)
             dep := Approximation_Lazy(f, BaselineValuation(f) + pr) mod func<xf | reshift(reslope(xf, -slope), -shift)>;
@@ -169,12 +206,11 @@ intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certi
               assert VAL(J) eq t;
               Minv := M^-1;
               delta := Vector([Coefficient(xerr, i) : i in [0..degf-1]]) * M^-1;
-              new_xfac := xfac + xR!Eltseq(delta)[1..deg];
-              new_xcofac := xcofac + xR!Eltseq(delta)[deg+1..deg+codeg];
+              new_xfac := incpr(xfac + xR!Eltseq(delta)[1..deg]);
+              new_xcofac := incpr(xcofac + xR!Eltseq(delta)[deg+1..deg+codeg]);
               new_xerr := xf - new_xfac * new_xcofac;
               new_s := Min([Valuation(c) : c in Coefficients(new_xerr)]);
               vprint ExactpAdics_Factorization, 2: "new_s =", new_s;
-              assert new_s gt 2*t;
               if new_s gt s then
                 xfac := new_xfac;
                 xcofac := new_xcofac;
@@ -249,107 +285,135 @@ end intrinsic;
 /// `f` must not have repeated roots, and hence `multiplicity` will always be 1.
 /// 
 ///param Strategy The precision strategy.
-intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default") -> []
+intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default", UseNP:=false) -> []
   {The roots of f.}
-  R := Parent(f);
-  K := BaseRing(R);
-  df := WeakDegree(f);
-  ok, _, roots := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-    vprint ExactpAdics_Roots: "precision =", pr;
-    // get an approximation
-    xf, slope, shift := nicen(Approximation(f, BaselineValuation(f) + pr));
-    vprint ExactpAdics_Roots: "xf =", xf;
-    // require that we can see the full degree of xf
-    if WZERO(Coefficient(xf, df)) then
-      vprint ExactpAdics_Roots: "not full degree";
-      return false, _;
-    end if;
-    // call Magma's root-finding routine
-    try
-      xroots := Roots(xf : IsSquarefree);
-    catch err
-      if _ExactpAdics_IsPrecisionError(err) then
-        vprint ExactpAdics_Roots: "precision error";
-        return false, _;
-      else
-        error err;
-      end if;
-    end try;
-    vprint ExactpAdics_Roots: "xroots =", xroots;
-    vprint ExactpAdics_Roots: "D =", Discriminant(xf);
-    // the roots should be distinct
-    if exists{r : r in xroots | r[2] ne 1} then
-      vprint ExactpAdics_Roots: "repeated roots";
-      return false, _;
-    end if;
-    // check they are hensel-liftable
-    roots := [];
-    for xr in xroots do
-      ok, r := IsHenselLiftable(f, WeakApproximation(K ! ShiftValuation(xr[1], -slope)) : Strategy:=Strategy);
+  if not assigned f`roots then
+    if UseNP then
+      facs := NewtonPolygonFactorization(f : Strategy:=Strategy);
+      f`roots := &cat[PowerSequence(car<BaseRing(f), Z>) | Roots(fac : Strategy:=Strategy, UseNP:=false) : fac in facs];
+    else
+      R := Parent(f);
+      K := BaseRing(R);
+      df := WeakDegree(f);
+      ok, _, roots := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+        vprint ExactpAdics_Roots: "precision =", pr;
+        // get an approximation
+        xf0 := Approximation(f, BaselineValuation(f) + pr : FixPr);
+        // require that we can see the full degree of xf
+        if WZERO(Coefficient(xf0, df)) then
+          vprint ExactpAdics_Roots: "not full degree";
+          return false, _;
+        end if;
+        if df eq 1 then
+          xf := xf0;
+          slope := 0;
+          shift := 0;
+          xroots := [<-Coefficient(xf,0)/Coefficient(xf,1), 1>];
+        else
+          xf, slope, shift := nicen(xf0);
+          vprint ExactpAdics_Roots: "xf =", xf;
+          // call Magma's root-finding routine
+          try
+            xroots := Roots(xf : IsSquarefree);
+          catch err
+            if _ExactpAdics_IsPrecisionError(err) then
+              vprint ExactpAdics_Roots: "precision error";
+              return false, _;
+            else
+              error err;
+            end if;
+          end try;
+        end if;
+        vprint ExactpAdics_Roots: "xroots =", xroots;
+        vprint ExactpAdics_Roots: "D =", Discriminant(xf);
+        // the roots should be distinct
+        if exists{r : r in xroots | r[2] ne 1} then
+          vprint ExactpAdics_Roots: "repeated roots";
+          return false, _;
+        end if;
+        // check they are hensel-liftable
+        roots := [];
+        for xr in xroots do
+          ok, r := IsHenselLiftable(f, WeakApproximation(K ! ShiftValuation(xr[1], -slope)) : Strategy:=Strategy);
+          if ok then
+            Append(~roots, <r, 1>);
+          else
+            vprint ExactpAdics_Roots: "not Hensel liftable";
+            return false, _;
+          end if;
+        end for;
+        vprint ExactpAdics_Roots: "success";
+        return true, roots;
+      end function, Strategy);
       if ok then
-        Append(~roots, <r, 1>);
+        f`roots := roots;
       else
-        vprint ExactpAdics_Roots: "not Hensel liftable";
-        return false, _;
+        error "precision error";
       end if;
-    end for;
-    vprint ExactpAdics_Roots: "success";
-    return true, roots;
-  end function, Strategy);
-  if ok then
-    return roots;
-  else
-    error "precision error";
+    end if;
   end if;
+  return f`roots;
 end intrinsic;
 
 /// The factorization of `f` according to its Newton polygon, as a sequence of factors.
 ///
 ///param Residual:=false When `true` then further factorizes according to the factorization of each residual polynomial.
-///hide
 intrinsic NewtonPolygonFactorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Residual:=false) -> []
   {The factorization of `f` along its Newton polygon, that is, one factor per face of the Newton polygon. If `Residual` is true, then further factorizes according to the coprime factorization of each residual polynomial.}
-  np := NewtonPolygon(f : Strategy:=Strategy, AllowWeaklyZeroConstantCoefficient);
-  vs := ChangeUniverse(Vertices(np), car<Z,Z>);
-  R := Parent(f);
-  K := BaseRing(f);
-  facs := [];
-  for i in [1..#vs] do
-    if i eq 1 then
-      if vs[1][1] eq 0 then
-        continue;
+  if not assigned f`npfactorization then
+    f`npfactorization := AssociativeArray();
+  end if;
+  if not IsDefined(f`npfactorization, Residual) then
+    R := Parent(f);
+    K := BaseRing(f);
+    facs := [R|];
+    np := NewtonPolygon(f : Strategy:=Strategy, Support:=<1,WeakDegree(f)>);
+    vs := ChangeUniverse(Vertices(np), car<Z,Z>);
+    for i in [1..#vs] do
+      if i eq 1 then
+        if vs[1][1] eq 0 then
+          continue;
+        else
+          assert vs[1][1] eq 1;
+          v1 := vs[1][2];
+          v0 := Valuation(Coefficient(f`approximation, 0));
+          if v0 eq OO then
+            fac := R![0,1];
+          else
+            ok, fac := IsHenselLiftable(f, R![0,1] : Strategy:=Strategy, Slope:=v1-v0, fShift:=v0, gShift:=v0-v1);
+            assert ok;
+          end if;
+          Append(~facs, fac);
+        end if;
       else
-        assert vs[1][1] eq 1;
-        ok, fac := IsHenselLiftable(f, R![0,1] : Strategy:=Strategy);
+        x0,v0 := Explode(vs[i-1]);
+        x1,v1 := Explode(vs[i]);
+        w := x1 - x0;
+        slope := (v1-v0) / w;
+        h := Numerator(-slope);
+        e := Denominator(-slope);
+        ok, d := IsDivisibleBy(w, e);
         assert ok;
-        Append(~facs, fac);
+        resfld, resmap := ResidueClassField(K);
+        respol := Polynomial([ShiftValuation(Coefficient(f, x0+i*e), i*h-v0)@resmap : i in [0..d]]);
+        assert Degree(respol) eq d;
+        assert Coefficient(respol, d) ne 0;
+        assert Coefficient(respol, 0) ne 0;
+        if Residual then
+          resfacs := [x[1]^x[2] : x in Factorization(respol)];
+        else
+          resfacs := [respol / Coefficient(respol, d)];
+        end if;
+        for resfac in resfacs do
+          d2 := Degree(resfac);
+          xfac := R![K| ok select ShiftValuation(WeakApproximation(Coefficient(resfac, j)@@resmap), d2*h-j*h) else 0 where ok,j:=IsDivisibleBy(i,e) : i in [0..e*d2]];
+          ok, fac := IsHenselLiftable(f, xfac : Strategy:=Strategy, Slope:=slope, fShift:=v0-slope*x0, gShift:=d2*h);
+          assert ok;
+          Append(~facs, fac);
+        end for;
       end if;
-    else
-      x0,v0 := Explode(vs[i-1]);
-      x1,v1 := Explode(vs[i]);
-      w := x1 - x0;
-      slope := (v1-v0) / w;
-      h := Numerator(-slope);
-      e := Denominator(-slope);
-      ok, d := IsDivisibleBy(w, e);
-      assert ok;
-      resfld, resmap := ResidueClassField(K);
-      respol := Polynomial([ShiftValuation(Coefficient(f, x0+i*e), i*h-v0)@resmap : i in [0..d]]);
-      assert Degree(respol) eq d;
-      assert Coefficient(respol, d) ne 0;
-      assert Coefficient(respol, 0) ne 0;
-      if Residual then
-        resfacs := [x[1]^x[2] : x in Factorization(respol)];
-      else
-        resfacs := [respol];
-      end if;
-      for resfac in resfacs do
-        xfac := R![K| ok select ShiftValuation(WeakApproximation(Coefficient(resfac, j)@@resmap), v0-j*h) else 0 where ok,j:=IsDivisibleBy(i,e) : i in [0..w]];
-        ok, fac := IsHenselLiftable(f, xfac);
-        assert ok;
-        Append(~facs, fac);
-      end for;
-    end if;
-  end for;
-  return facs;
+    end for;
+    f`npfactorization[Residual] := facs;
+  end if;
+  return f`npfactorization[Residual];
 end intrinsic;

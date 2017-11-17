@@ -119,6 +119,66 @@ end procedure;
 // UTILITY FUNCTIONS
 ///hide-all
 
+intrinsic _ExactpAdics_FixPrecision(xx :: FldPadExactElt, pr :: RngIntElt) -> .
+  {Coerces xx to a fixed-precision structure.}
+  return ChangePrecision(Parent(xx), Max(1,pr)) ! xx;
+end intrinsic;
+
+intrinsic _ExactpAdics_FixPrecision(xf :: RngUPolElt[FldPad], pr :: RngIntElt) -> .
+  {Coerces xx to a fixed-precision structure.}
+  return ChangeRing(xf, ChangePrecision(BaseRing(xf), Max(1, pr)));
+end intrinsic;
+
+intrinsic _ExactpAdics_FixPrecision(xf :: RngMPolElt, pr :: RngIntElt) -> .
+  {Coerces xx to a fixed-precision structure.}
+  return ChangeRing(xf, ChangePrecision(BaseRing(Parent(xf)), Max(1, pr)));
+end intrinsic;
+
+intrinsic _ExactpAdics_FixPrecision(t :: Tup, pr :: Tup) -> .
+  {Coerces xx to a fixed-precision structure.}
+  return <_ExactpAdics_FixPrecision(t[i], pr[i]) : i in [1..#t]>;
+end intrinsic;
+
+intrinsic _ExactpAdics_UpdateApproximation(F :: FldPadExact, ~xx :: FldPadElt, app :: FldPadElt)
+  {Updates xx, an approximation of an element of F, to app.}
+  FUDGE := GLOBAL_FUDGE(F);
+  if FUDGE ne 0 then
+    app := CHANGE_APR(app, APR(app) - FUDGE);
+  end if;
+  if UPDATE_CONSISTENCY_CHECK then
+    require WEQ(xx, app): "inconsistent";
+  end if;
+  if AbsolutePrecision(app) gt AbsolutePrecision(xx) then
+    xx := app;
+  end if;
+end intrinsic;
+
+function merge_polys(f, g)
+  // assuming f and g have the same parent and are weakly equal, returns the polynomial got by taking the most precise coefficients from each
+  assert Parent(f) eq Parent(g);
+  r := CAST(Parent(f), [
+    AbsolutePrecision(cf) ge AbsolutePrecision(cg)
+    select cf
+    else cg
+    where cf := Coefficient(f,i)
+    where cg := Coefficient(g,i)
+    : i in [0..Min(Degree(f), Degree(g))]
+  ]);
+  return r;
+end function;
+
+intrinsic _ExactpAdics_UpdateApproximation(R :: RngUPol_FldPadExact, ~xf :: RngUPolElt[FldPad], app :: RngUPolElt[FldPad])
+  {Updates f to app.}
+  FUDGE := GLOBAL_FUDGE(BaseRing(R));
+  if FUDGE ne 0 then
+    app := CHANGE_APR(app, [APR(c)-FUDGE : c in Coefficients(app)]);
+  end if;
+  if UPDATE_CONSISTENCY_CHECK then
+    require WEQ(xf, app): "inconsistent";
+  end if;
+  xf := merge_polys(xf, app);
+end intrinsic;
+
 intrinsic _ExactpAdics_Monomial(R :: RngMPol, e :: [RngIntElt]) -> RngMPolElt
   {The monomial x^e in R.}
   // MAGMA BUG: R.i is cached, so its coefficient may be to a lower precision than the precision of the base ring!
@@ -176,7 +236,7 @@ end intrinsic;
 
 intrinsic _ExactpAdics_IsValidApproximation(F :: FldPadExact, app :: FldPadElt) -> BoolElt, FldPadElt
   {True if app is a valid approximation to an element of F, and the coerced version.}
-  xF := F`approximation_field;
+  xF := F`approximation;
   xF2 := Parent(app);
   pr := Precision(xF2);
   if pr eq OO and xF2 eq xF then
@@ -189,7 +249,7 @@ end intrinsic;
 
 intrinsic _ExactpAdics_IsValidApproximation(R :: RngUPol_FldPadExact, app :: RngUPolElt[FldPad]) -> BoolElt, RngUPolElt
   {True if app is a valid approximation to an element of R, and the coerced version.}
-  xR := R`approximation_ring;
+  xR := R`approximation;
   xR2 := Parent(app);
   xF := BaseRing(xR);
   xF2 := BaseRing(xR2);
@@ -339,6 +399,16 @@ intrinsic _ExactpAdics_CapAbsolutePrecision(x :: FldPadElt, apr) -> FldPadElt
   return y;
 end intrinsic;
 
+intrinsic _ExactpAdics_CapAbsolutePrecision(f :: RngUPolElt[FldPad], n :: Val_RngUPolElt_FldPad) -> RngUPolElt
+  {Caps the absolute precision of `f` to `n`.}
+  // <HACK>
+  // you can't make a FldPadElt with valuation -OO
+  n join:= VAL_FLDPADELT_MIN;
+  // </HACK>
+  g := CHANGE_APR(f, n meet ExactpAdics_APr(f));
+  return g;
+end intrinsic;
+
 intrinsic _ExactpAdics_IsPrecisionError(e :: Err) -> BoolElt
   {True if e looks like a precision error.}
   x := e`Object;
@@ -364,13 +434,12 @@ end intrinsic;
 
 // TYPE DECLARATIONS
 
-declare type FldPadExact[FldPadExactElt];
+declare type FldPadExact[FldPadExactElt]: StrPadExact;
 declare attributes FldPadExact
+  // DEFINING DATA
   : type                               // PRIME, INERT, EISEN or EMBED
-  , id                                 // NEXTID()
   , defining_polynomial                // DefiningPolynomial(*)
   , defining_embedding                 // 
-  , approximation_field                // FldPad approximating this
   // CACHE
   , embeddings                         // automatic embeddings of other rings/fields
   , subfield_data                      // [id] -> data about subfield with id
@@ -398,17 +467,10 @@ declare attributes FldPadExact
   , temporary                          // Temporary(*)
   ;
 
-declare type FldPadExactElt;
+declare type FldPadExactElt: PadExactElt;
 declare attributes FldPadExactElt
-  : parent                          // parent field
-  , id                              // NEXTID()
-  , data                            // element-specific data, used/modified by update
-  , approximation                   // the approximation
-  , update                          // the update function
-  , update_expecting_apr            // when assigned, Update(*, app) will check that the update is to at least this precision
-  , baseline_valuation              // wrt which baseline precision is computed
   // CACHE
-  , residue_class                   // ResidueClass(*)
+  : residue_class                   // ResidueClass(*)
   , valuation                       // Valuation(*)
   , negation                        // '-'(*)
   , coefficient                     // [i] -> Coefficient(*,i)
@@ -417,17 +479,16 @@ declare attributes FldPadExactElt
   , power                           // [n] -> '^'(*,n)
   ;
 
-declare type RngUPol_FldPadExact[RngUPolElt_FldPadExact];
+declare type RngUPol_FldPadExact[RngUPolElt_FldPadExact]: StrPadExact;
 declare attributes RngUPol_FldPadExact
+  // DEFINING DATA
   : base_ring                       // BaseRing(*)
-  , id                              // NEXTID()
-  , approximation_ring              // RngUPol[FldPad] approximating this
   , varname                         // printing name of the variable
   // CACHE
   , generator                       // Generator(*)
   ;
 
-declare type RngUPolElt_FldPadExact;
+declare type RngUPolElt_FldPadExact: PadExactElt;
 declare attributes RngUPolElt_FldPadExact
   : parent               // Parent(*)
   , id                   // NEXTID()
@@ -549,7 +610,7 @@ intrinsic ExactpAdicField(p :: RngIntElt) -> FldPadExact
   F`id := NEXTID();
   F`type := PRIME;
   F`prime := p;
-  F`approximation_field := pAdicField(p);
+  F`approximation := pAdicField(p);
   return F;
 end intrinsic;
 
@@ -613,13 +674,13 @@ intrinsic UnramifiedExtension(f :: RngUPolElt_FldPadExact) -> FldPadExact
   IncreaseAbsolutePrecision(f, 1);
   require IsInertial(f) and Degree(f) gt 0: "f must be inertial";
   F0 := BaseRing(f);
-  xF0 := F0`approximation_field;
+  xF0 := F0`approximation;
   xF0`DefaultPrecision := 1;
   F := New(FldPadExact);
   F`id := NEXTID();
   F`type := INERT;
   F`defining_polynomial := f;
-  F`approximation_field := ext<xF0 | map<Z -> PolynomialRing(xF0) | k :-> get_approximation(f, k)>>;
+  F`approximation := ext<xF0 | map<Z -> PolynomialRing(xF0) | k :-> get_approximation(f, k)>>;
   return F;
 end intrinsic;
 
@@ -642,7 +703,7 @@ intrinsic UnramifiedExtension(F :: FldPadExact, n :: RngIntElt) -> FldPadExact
   Ubar := ext<Fbar | n>;
   fmodp := DefiningPolynomial(Ubar, Fbar);
   R := PolynomialRing(F);
-  xR := PolynomialRing(F`approximation_field);
+  xR := PolynomialRing(F`approximation);
   f := WeakApproximation(R ! xR ! [cmodp @@ xmodp : cmodp in Coefficients(fmodp)]);
   return UnramifiedExtension(f);
 end intrinsic;
@@ -654,13 +715,13 @@ intrinsic TotallyRamifiedExtension(f :: RngUPolElt_FldPadExact) -> FldPadExact
   require IsEisenstein(f) and Degree(f) gt 0: "f must be Eisenstein";
   d := Degree(f);
   F0 := BaseRing(f);
-  xF0 := F0`approximation_field;
+  xF0 := F0`approximation;
   xF0`DefaultPrecision := 2;
   F := New(FldPadExact);
   F`id := NEXTID();
   F`type := EISEN;
   F`defining_polynomial := f;
-  F`approximation_field := ext<xF0 | map<Z -> PolynomialRing(xF0) | k :-> get_approximation(f, k)>>;
+  F`approximation := ext<xF0 | map<Z -> PolynomialRing(xF0) | k :-> get_approximation(f, k)>>;
   return F;
 end intrinsic;
 
@@ -707,7 +768,7 @@ function completion(K, P)
     KtoxxC := KtoxxC_old;
   end if;
   C, xxCtoxC := ExactpAdicField(xxC);
-  xC := C`approximation_field;
+  xC := C`approximation;
   KtoxC := KtoxxC * xxCtoxC;
   function _KtoC(x)
     assert Parent(x) eq K;
@@ -798,7 +859,7 @@ intrinsic ExactpAdicField(xxL :: FldPad : NoCheckUnique:=false) -> FldPadExact, 
   {Given a p-adic field xxL, returns L isomorphic to xxL and a map xxL -> xL.}
   if IsPrimeField(xxL) then
     L := ExactpAdicField(Prime(xxL));
-    L`approximation_field := xxL;
+    L`approximation := xxL;
     return L, map<xxL -> xxL | x :-> x, y :-> y>;
   else
     return ExactpAdicField(xxL, ExactpAdicField(PrimeField(xxL)) : NoCheckUnique:=NoCheckUnique);
@@ -811,7 +872,7 @@ intrinsic ExactpAdicField(xxL :: FldPad, mK :: Map, K :: FldPadExact : NoCheckUn
   xxK := Domain(mK);
   // base case
   if xxL eq xxK then
-    require Codomain(mK) eq K`approximation_field: "";
+    require Codomain(mK) eq K`approximation: "";
     return K, mK;
   end if;
   // check xxL is a good extension
@@ -822,11 +883,11 @@ intrinsic ExactpAdicField(xxL :: FldPad, mK :: Map, K :: FldPadExact : NoCheckUn
   // recursively find the base field
   xxL0 := BaseField(xxL);
   L0, mL0 := ExactpAdicField(xxL0, mK, K : NoCheckUnique:=NoCheckUnique);
-  xL0 := L0`approximation_field;
+  xL0 := L0`approximation;
   // make the defining polynomial
   xxf := DefiningPolynomial(xxL);
   R := PolynomialRing(L0);
-  xR := R`approximation_ring;
+  xR := R`approximation;
   xf := CAST(xR, [c @ mL0 : c in Coefficients(xxf)]);
   if Precision(xxL) eq OO then
     e := RamificationDegree(xxL);
@@ -848,7 +909,7 @@ intrinsic ExactpAdicField(xxL :: FldPad, mK :: Map, K :: FldPadExact : NoCheckUn
   end if;
   // make the extension
   L := Extension(f);
-  xL := L`approximation_field;
+  xL := L`approximation;
   // make the map
   mL := map<xxL -> xL |
     y :-> CAST(xL, [c@mL0 : c in Eltseq(y)]),
@@ -859,14 +920,14 @@ end intrinsic;
 
 intrinsic ExactpAdicField(xxL :: FldPad, xxK :: FldPad, K :: FldPadExact : NoCheckUnique:=false) -> FldPadExact, Map
   {Given xxL/xxK where xxK is coercible to and from xK where xK is the approximation field of K, returns L/K isomorphic to xxL/xxK, and a map xxL -> xL.}
-  xK := K`approximation_field;
+  xK := K`approximation;
   mK := map<xxK -> xK | x :-> CAST(xK, x), y :-> CAST(xxK, y)>;
   return ExactpAdicField(xxL, mK, K : NoCheckUnique:=NoCheckUnique);
 end intrinsic;
 
 intrinsic ExactpAdicField(xxL :: FldPad, K :: FldPadExact : NoCheckUnique:=false) -> FldPadExact, Map
   {Given xxL/xK where xK is the approximation field of K, returns L/K isomorphic to xxL/xK, and a map xL -> xxL.}
-  xK := K`approximation_field;
+  xK := K`approximation;
   mK := map<xK -> xK | x :-> x, y :-> y>;
   return ExactpAdicField(xxL, mK, K : NoCheckUnique:=NoCheckUnique);
 end intrinsic;
@@ -1262,11 +1323,6 @@ end intrinsic;
 
 
 ///## Basic operations on p-adic numbers
-
-intrinsic Parent(x :: FldPadExactElt) -> FldPadExact
-  {The field containing x.}
-  return x`parent;
-end intrinsic;
 
 intrinsic Coefficient(x :: FldPadExactElt, i :: RngIntElt) -> FldPadExactElt
   {The generator^i coefficient of x in K(generator)/K.}
@@ -2008,7 +2064,7 @@ intrinsic AssignNames(~F :: FldPadExact, names :: [MonStgElt])
   require not IsPrimeField(F): "F must be an extension";
   require #names eq 1: "names must have one element";
   F`varname := names[1];
-  AssignNames(~F`approximation_field, names);
+  AssignNames(~F`approximation, names);
 end intrinsic;
 
 intrinsic Name(F :: FldPadExact, i :: RngIntElt) -> FldPadExactElt
@@ -3526,7 +3582,7 @@ intrinsic IsCoercible(T :: TmpFldPadExact, X) -> BoolElt, .
 end intrinsic;
 
 function cast_up_extension(X, x)
-  assert x in X`base_field`approximation_field;
+  assert x in X`base_field`approximation;
   case X`type:
   when COMPOUND:
     for Y in X`list do
@@ -3534,7 +3590,7 @@ function cast_up_extension(X, x)
     end for;
     return x;
   when EISEN, INERT:
-    return CAST(X`top_field`approximation_field, [x]);
+    return CAST(X`top_field`approximation, [x]);
   when EMBED:
     error "not implemented";
   else
@@ -3573,7 +3629,7 @@ function tmpFromRational(T, X)
   if X eq 0 then
     Y`weak_valuation := OO;
     Y`absolute_precision := OO;
-    Y`get_approximation := func<apr | T`field`approximation_field ! 0>;
+    Y`get_approximation := func<apr | T`field`approximation ! 0>;
     Y`valuation := OO;
   else
     e := AbsoluteRamificationDegree(T`field);
@@ -3810,16 +3866,6 @@ intrinsic SetBaselineValuation(x :: FldPadExactElt, n)
   x`baseline_valuation := n;
 end intrinsic;
 
-intrinsic BaselineValuation(x :: FldPadExactElt) -> RngIntElt
-  {The baseline valuation.}
-  return x`baseline_valuation;
-end intrinsic;
-
-intrinsic BaselinePrecision(x :: FldPadExactElt) -> Val_FldPadElt
-  {The baseline precision of x: AbsolutePrecision(x) - BaselineValuation(x).}
-  return APR(x) - BVAL(x);
-end intrinsic;
-
 intrinsic IncreaseBaselinePrecision(x :: FldPadExactElt, n)
   {Increases the baseline precision.}
   INC_APR(x, BVAL(x) + n);
@@ -3832,7 +3878,7 @@ intrinsic WeakApproximation(x :: FldPadExactElt) -> FldPadExactElt
     return F ! 0;
   else
     mkupdate := func<z | function (apr)
-      pr := PrecisionRequired(z, apr);
+      pr := _ExactpAdics_PrecisionRequired(z, apr);
       return IncreaseAbsolutePrecision_Lazy(F, pr) mod function (ig)
         Update(z, CHANGE_APR(z`approximation, apr));
         return true;
@@ -3842,38 +3888,14 @@ intrinsic WeakApproximation(x :: FldPadExactElt) -> FldPadExactElt
   end if;
 end intrinsic;
 
-intrinsic PrecisionRequired(x :: FldPadExactElt, apr) -> RngIntElt
+intrinsic _ExactpAdics_PrecisionRequired(F :: FldPadExact, xx :: FldPadElt, apr) -> RngIntElt
   {(A bound on) the precision required in the parent field of x to approximate x to the given absolute precision.}
-  return Max(1, Ceiling(Value(apr - WVAL(x))));
+  return Max(1, Ceiling(Value(apr - _ExactpAdics_WeakValuationOfApproximation(F, xx))));
 end intrinsic;
 
-intrinsic PrecisionRequired(f :: RngUPolElt_FldPadExact, apr) -> RngIntElt
+intrinsic _ExactpAdics_PrecisionRequired(R :: RngUPol_FldPadExact, xf :: RngUPolElt[FldPad], apr) -> RngIntElt
   {The precision required to approximate f with the given parameters.}
-  return Max(1, Ceiling(Value(&join(apr - WVAL(f)))));
-end intrinsic;
-
-intrinsic Approximation_Lazy(x :: FldPadExactElt, apr : Quick:=false, FixPr:=true) -> ExactpAdics_Gettr
-  {An approximation to x.}
-  ok, apr := IsValidAbsolutePrecisionDiff(x, apr);
-  require ok: "Argument 2: " cat apr;
-  pr := PrecisionRequired(x, apr);
-  iapF := IncreaseAbsolutePrecision_Lazy(Parent(x), pr);
-  return iapF mod function (ig)
-    iap := IncreaseAbsolutePrecision_Lazy(x, apr);
-    return iap mod function (ig)
-      y := (Quick or apr`value eq OO) select x`approximation else CAP_APR(x`approximation, apr);
-      if FixPr then
-        y := ChangePrecision(Parent(y), Max(1, pr)) ! y;
-      end if;
-      assert apr le APR(y);
-      return y;
-    end function;
-  end function;
-end intrinsic;
-
-intrinsic Approximation(x :: FldPadExactElt, apr : Quick:=false, FixPr:=true) -> FldPadElt
-  {An approximation to x.}
-  return Evaluate(Approximation_Lazy(x, apr : Quick:=Quick, FixPr:=FixPr));
+  return Max(1, Ceiling(Value(&join(apr - _ExactpAdics_WeakValuationOfApproximation(R, xf)))));
 end intrinsic;
 
 intrinsic IncreaseAbsolutePrecision_Lazy(F :: FldPadExact, pr :: RngIntElt) -> ExactpAdics_Gettr
@@ -3909,82 +3931,27 @@ intrinsic Approximation_Lazy(F :: FldPadExact, pr) -> ExactpAdics_Gettr
   end case;
   require pr gt 0: "pr must be positive";
   return IncreaseAbsolutePrecision_Lazy(F, pr) mod function (ig)
-    xF := F`approximation_field;
+    xF := F`approximation;
     CHANGE_DPR(xF, pr);
     return xF;
   end function;
 end intrinsic;
 
-intrinsic Approximation(F :: FldPadExact, pr :: RngIntElt) -> FldPad
-  {"}
-  return Evaluate(Approximation_Lazy(F, pr));
+///hide
+intrinsic _ExactpAdics_AbsolutePrecisionOfApproximation(F :: FldPadExact, x) -> Val_FldPadElt
+  {The absolute precision of an element of F with approximation x.}
+  return Val_FldPadElt_Make(APR(x));
 end intrinsic;
 
-intrinsic Approximation(F :: FldPadExact) -> FldPad
-  {The approximating field.}
-  return F`approximation_field;
-end intrinsic;
-
-intrinsic IncreaseAbsolutePrecision(x :: FldPadExactElt, n)
-  {Increases the absolute precision of x to n.}
-  satisfy_dep(x, n);
-end intrinsic;
-
-intrinsic IncreaseAbsolutePrecision_Lazy(x :: FldPadExactElt, n) -> ExactpAdics_Gettr
-  {"}
-  ok, n := IsValidAbsolutePrecisionDiff(x, n);
-  if not ok then
-    error "invalid n";
-  end if;
-  return ExactpAdics_Getter(false,
-    procedure (~st, ~deps)
-      deps := [*[*x,n*]*];
-    end procedure,
-    procedure (~st, ~val)
-      assert n le APR(x);
-      val := true;
-    end procedure);
-end intrinsic;
-
-intrinsic AbsolutePrecision(x :: FldPadExactElt) -> RngIntElt
-  {The absolute precision of x.}
-  return Val_FldPadElt_Make(APR(x`approximation));
-end intrinsic;
-
-intrinsic Precision(x :: FldPadExactElt) -> RngIntElt
-  {The precision of x.}
-  return APR(x) - WVAL(x);
-  // return Val_FldPadElt_Make(PR(x`approximation));
-end intrinsic;
-
-intrinsic WeakValuation(x :: FldPadExactElt) -> RngIntElt
-  {The weak valuation of x.}
-  return Val_FldPadElt_Make(VAL(x`approximation));
-end intrinsic;
-
-intrinsic Update(x :: FldPadExactElt, app :: FldPadElt)
-  {Updates x to app.}
-  F := x`parent;
-  ok, app := IS_VALID_APPROX(F, app);
-  require ok: "app is in the wrong field";
-  FUDGE := GLOBAL_FUDGE(F);
-  if FUDGE ne 0 then
-    app := CHANGE_APR(app, APR(app) - FUDGE);
-  end if;
-  if UPDATE_CONSISTENCY_CHECK then
-    require WEQ(x`approximation, app): "inconsistent";
-  end if;
-  if AbsolutePrecision(app) gt AbsolutePrecision(x`approximation) then
-    x`approximation := app;
-  end if;
-  if assigned x`update_expecting_apr then
-    assert APR(x) ge x`update_expecting_apr;
-  end if;
+///hide
+intrinsic _ExactpAdics_WeakValuationOfApproximation(F :: FldPadExact, x) -> Val_FldPadElt
+  {The weak valuation of the approximation x of an element of F.}
+  return Val_FldPadElt_Make(VAL(x));
 end intrinsic;
 
 intrinsic UpdateZero(x :: FldPadExactElt, apr :: RngIntElt)
   {Updates x to O(pi^apr).}
-  Update(x, Zero(x`parent`approximation_field, apr));
+  Update(x, Zero(x`parent`approximation, apr));
 end intrinsic;
 
 intrinsic IsDefinitelyZero(x :: FldPadExactElt) -> BoolElt
@@ -4056,21 +4023,9 @@ intrinsic IsWeaklyEqual(x :: FldPadExactElt, y :: FldPadExactElt : Strategy:=fal
   end if;
 end intrinsic;
 
-///## Internals
+///# Internals
 
-///### FldPadExactElt
-
-intrinsic SetData(x :: FldPadExactElt, data)
-  {Sets the custom data field.}
-  x`data := data;
-end intrinsic;
-
-intrinsic GetData(x :: FldPadExactElt) -> .
-  {Retrieves the custom data field.}
-  return x`data;
-end intrinsic;
-
-///### ExtDataFldPadExact
+///## ExtDataFldPadExact
 
 intrinsic '/'(E :: FldPadExact, F :: FldPadExact) -> ExtDataFldPadExact
   {The extension E/F.}
@@ -4161,7 +4116,7 @@ intrinsic PolynomialRing(F :: FldPadExact) -> RngUPol_FldPadExact
     R := New(RngUPol_FldPadExact);
     R`id := NEXTID();
     R`base_ring := F;
-    R`approximation_ring := PolynomialRing(F`approximation_field);
+    R`approximation := PolynomialRing(F`approximation);
     F`polynomial_ring := R;
   end if;
   return F`polynomial_ring;
@@ -4178,7 +4133,7 @@ intrinsic AssignNames(~R :: RngUPol_FldPadExact, names :: [MonStgElt])
   {Assigns the name of the variable of R.}
   require #names eq 1: "Argument 2 must have length 1";
   R`varname := names[1];
-  AssignNames(~R`approximation_ring, names);
+  AssignNames(~R`approximation, names);
 end intrinsic;
 
 intrinsic Names(R :: RngUPol_FldPadExact) -> []
@@ -4491,11 +4446,6 @@ intrinsic BaseRing(f :: RngUPolElt_FldPadExact) -> FldPadExact
   return f`base_ring;
 end intrinsic;
 
-intrinsic Parent(f :: RngUPolElt_FldPadExact) -> RngUPol_FldPadExact
-  {The polynomial ring containing f.}
-  return f`parent;
-end intrinsic;
-
 ///### Degree
 
 intrinsic Degree(f :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt
@@ -4805,7 +4755,7 @@ intrinsic '&*'(fs :: [RngUPolElt_FldPadExact]) -> RngUPolElt_FldPadExact
   elif #fs eq 1 then
     return fs[1];
   else
-
+    return fs[1] * &*fs[2..#fs];
     // OLD VERSION: works, but uses a bad lower bound on the valuation for simplicity
     // init := &*[Approximation(f, CAPR(f)) : f in fs];
     // mkupdate := func<z | function (aprs)
@@ -5395,62 +5345,106 @@ end function;
 
 /// The Newton polygon of `f`.
 /// 
-///param AllowWeaklyZeroConstantCoefficient:=false When true, do not raise an error if the constant coefficient is weakly zero; instead require that the linear coefficient is nonzero and return a Newton polygon starting at 1.
-intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default", AllowWeaklyZeroConstantCoefficient:=false) -> NwtnPgon
+///param Support:=<0,WeakDegree(f)> When given, must be a tuple `<a,b>` of two integers representing an interval; the support of the returned Newton polygon contains this. By default, returns the whole Newton polygon. If you are ok with f having one root very close to 0, then `Support:=<1,WeakDegree(f)>` may be appropriate.
+intrinsic NewtonPolygon(f :: RngUPolElt_FldPadExact : Strategy:="default", Support:=false) -> NwtnPgon
   {The Newton polygon of f.}
-  if not assigned f`newton_polygon then
-    d := Degree(f : Strategy:=Strategy);
-    // trivial case
-    if d lt 0 then
-      f`newton_polygon := NewtonPolygon([] : Faces:="Lower");
+  d := WeakDegree(f);
+  if Support cmpeq false then
+    supp := <0, d>;
+  else
+    ok, supp := IsCoercible(car<Z,Z>, Support);
+    require ok: "Support must be false or a tuple of two integers";
+    // intersect supp with <0,WeakDegree(f)>
+    if (supp[1] gt supp[2]) or (supp[1] gt d) or (supp[2] lt 0) then
+      return NewtonPolygon([] : Faces:="Lower");
     else
-      // check the top and bottom coefficients are nonzero simultaneously
-      assert not WZERO(Coefficient(f`approximation, d));
-      if AllowWeaklyZeroConstantCoefficient then
-        error if AreAllWeaklyZero([Coefficient(f, i) : i in [0..1]] : Strategy:=Strategy), "constant and linear coefficients are weakly zero";
-      else
-        error if IsWeaklyZero(Coefficient(f, 0) : Strategy:=Strategy), "constant coefficient is weakly zero";
-      end if;
-      // get an initial Newton polygon based on what we already know
-      np := func<|NewtonPolygon([
-        <i, Valuation(c)>
-        : i in [0..d]
-        | not WZERO(c)
-        where c := Coefficient(f`approximation, i)
-      ] : Faces:="Lower")>;
-      np0 := np();
-      // increase precision of f just enough to determine if there are any more unknowns
-      vs := ChangeUniverse(Vertices(np0), car<Z,Z>);
-      if #vs ge 2 then
-        IncreaseAbsolutePrecision(f, &cat[
-          [ 
-            <x, Ceiling(v0+(x-i0)*s)>
-            : x in [x0..x1]
-          ] 
-          where x0:=j eq 2 select 0 else i0+1
-          where x1:=i1
-          where s:=(v1-v0)/(i1-i0)
-          where i0,v0:=Explode(vs[j-1])
-          where i1,v1:=Explode(vs[j])
-          : j in [2..#vs]
-        ]);
-      else
-        assert AllowWeaklyZeroConstantCoefficient;
-        assert #vs eq 1;
-        assert d eq 1;
-        assert vs[1][1] eq 1;
-      end if;
-      // get the actual Newton polygon
-      np1 := np();
-      if Vertices(np1)[1][1] eq 0 then
-        f`newton_polygon := np1;
-      else
-        assert AllowWeaklyZeroConstantCoefficient;
-        return np1;
-      end if;
+      supp := <Max(supp[1], 0), Min(supp[2], d)>;
     end if;
   end if;
-  return f`newton_polygon;
+  if assigned f`newton_polygon then
+    return f`newton_polygon;
+  end if;
+  assert supp[1] ge 0;
+  assert supp[2] le d;
+  assert supp[1] le supp[2];
+  function hasval(x)
+    if (not IsWeaklyZero(x)) and (Valuation(x) lt OO) then
+      return true, Valuation(x);
+    else
+      return false, _;
+    end if;
+  end function;
+  function NP(xf, x0, x1 : Weak:=false)
+    return NewtonPolygon([<i, v> : i in [x0..x1] | (v lt OO) and (Weak or not IsWeaklyZero(c)) where v:=Valuation(c) where c:=Coefficient(xf, i)] : Faces:="Lower");
+  end function;
+  function NPV(np)
+    return ChangeUniverse(Vertices(np), car<Z,Z>);
+  end function;
+  ok, _, np := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+    // take an approximation to f
+    xf := Approximation(f, BaselineValuation(f) + pr);
+    // find the places where the valuation is known either side of the support
+    lefts := Reverse([i : i in [0..supp[1]] | hasval(Coefficient(xf, i))]);
+    rights := [i : i in [supp[2]..d] | hasval(Coefficient(xf, i))];
+    // if either is empty, try again
+    if (#lefts eq 0) or (#rights eq 0) then
+      return false, _;
+    end if;
+    // compute a Newton polygon around all known valuations
+    np0 := NP(xf, 0, d);
+    vs := NPV(np0);
+    if #vs eq 1 then
+      // a single vertex is a special case
+      assert vs[1][1] eq supp[1];
+      assert vs[1][1] eq supp[2];
+      // compute a Newton polygon around all weak valuations
+      wnp := NP(xf, 0, d : Weak);
+      // if the vertex is a vertex of the weak polygon, we are done
+      if vs[1] in NPV(wnp) then
+        return true, np0;
+      else
+        print vs, NPV(wnp);
+        return false, _;
+      end if;
+    else
+      assert #vs ge 2;
+      // when there are at least two vertices, we have slopes that we can extend to the limits of the polynomial to check all the valuations
+      xf := Approximation(f, &cat[[<j, Floor(y0+(j-x0)*s+1)> : j in [j0..j1]] where j0:=(i eq 2) select 0 else x0+1 where j1:=(i eq #vs) select d else x1 where s:=(y1-y0)/(x1-x0) where x0,y0:=Explode(vs[i-1]) where x1,y1:=Explode(vs[i]) : i in [2..#vs]]);
+      // now compute a weak Newton polygon
+      wnp := NP(xf, 0, d : Weak);
+      vs := NPV(wnp);
+      // find the vertices either side of the support
+      leftvs := Reverse([v : v in vs | v[1] le supp[1]]);
+      rightvs := [v : v in vs | v[1] ge supp[2]];
+      assert #leftvs ne 0;
+      assert #rightvs ne 0;
+      // the vertices nearest the support must be known
+      assert hasval(Coefficient(xf, leftvs[1][1]));
+      assert hasval(Coefficient(xf, rightvs[1][1]));
+      // find the unknown vertices
+      leftbadvs := [i : i in [1..#leftvs] | not hasval(Coefficient(xf, leftvs[i][1]))];
+      rightbadvs := [i : i in [1..#rightvs] | not hasval(Coefficient(xf, rightvs[i][1]))];
+      // truncate the vertices
+      leftgoodvs := (#leftbadvs eq 0) select leftvs else leftvs[1..leftbadvs[1]-1];
+      rightgoodvs := (#rightbadvs eq 0) select rightvs else rightvs[1..rightbadvs[1]-1];
+      assert #leftgoodvs ne 0;
+      assert #rightgoodvs ne 0;
+      // compute the Newton polygon around the good vertices
+      np := NP(xf, leftgoodvs[#leftgoodvs][1], rightgoodvs[#rightgoodvs][1] : Weak);
+      vs := NPV(np);
+      // check all vertices are good
+      assert forall{v : v in vs | hasval(Coefficient(xf, v[1]))};
+      return true, np;
+    end if;
+  end function, Strategy);
+  if not ok then
+    error "precision error";
+  end if;
+  vs := NPV(np);
+  if vs[1][1] eq 0 and vs[#vs][1] eq d then
+    f`newton_polygon := np;
+  end if;
+  return np;
 end intrinsic;
 
 intrinsic WeakPartialNewtonPolygon(f :: RngUPolElt_FldPadExact) -> NwtnPgon
@@ -5656,29 +5650,39 @@ end intrinsic;
 
 /// True if `g` is Hensel-liftable to a factor of `f`. If so, also returns the factor (with the same leading coefficient as `g`) and its cofactor.
 /// 
-/// This uses a generalized statement of Hensel's lemma which does not require the inputs to be integral.
-///hide
-intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact : Strategy:="default") -> BoolElt, RngUPolElt_FldPadExact, RngUPolElt_FldPadExact
+/// **Future.** Optionally choose Slope, fShift and gShift automagically.
+/// 
+///param Slope:=0 A rational number, deslope the polynomials by this amount before applying Hensel's lemma; usually Slope will be a slope of the Newton polygon of `g`.
+///param fShift:=0 A rational number, subtract this from the valuation of `f` after applying `Slope`.
+///param gShift:=0 A rational number, subtract this from the valuation of `g` after applying `Slope`.
+intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact : Strategy:="default", Slope:=0, fShift:=0, gShift:=0) -> BoolElt, RngUPolElt_FldPadExact, RngUPolElt_FldPadExact
   {True if g is Hensel-liftable to a factor of f, and the factor and cofactor.}
   // cast to a common field
   ok, R := ExistsCoveringStructure(Parent(f), Parent(g));
   require ok: "Arguments must be coercible to a common ring";
   f := R ! f;
   g := R ! g;
+  // check parameters
+  ok, Slope := IsCoercible(Q, Slope);
+  require ok: "Slope must be a rational number";
+  ok, fShift := IsCoercible(Q, fShift);
+  require ok: "fShift must be a rational number";
+  ok, gShift := IsCoercible(Q, gShift);
+  require ok: "gShift must be a rational number";
   // check degrees
   df := WeakDegree(f);
   dg := Degree(g : Strategy:=Strategy);
   if dg lt 0 then
     // g=0 is a factor of nothing
-    return false, _;
+    return false, _, _;
   elif dg eq 0 then
     // g=const is a factor of anything
-    return true, g;
+    return true, g, f / Coefficient(g, dg);
   elif dg eq df then
     df := Degree(f : Strategy:=Strategy);
-    return true, f * (Coefficient(g, dg) / Coefficient(f, df));
+    return true, f * (Coefficient(g, dg) / Coefficient(f, df)), Coefficient(f, df) / Coefficient(g, dg);
   elif dg gt df then
-    return false, _;
+    return false, _, _;
   end if;
   // form the multivariate problem
   h := 'div'(f, g : Strategy:=Strategy);
@@ -5686,35 +5690,38 @@ intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadEx
   K := BaseRing(R);
   S := PolynomialRing(K, df);
   lcg := Coefficient(g, dg);
+  vlcg := Valuation(lcg : Strategy:=Strategy);
   lch := Coefficient(h, dh);
   T := car<K, PowerSequence(Z)>;
   eqns := [S| <[ce[1] : ce in ces], [ce[2] : ce in ces]> where ces:=[T| <(i eq dg select lcg else 1)*(j eq dh select lch else 1), [ii eq i select 1 else 0 : ii in [0..dg-1]] cat [jj eq j select 1 else 0 : jj in [0..dh-1]]> where j:=k-i : i in [Max(0,k-dh)..Min(dg,k)]] cat [T| <-Coefficient(f,k), [0 : kk in [0..df-1]]>] : k in [0..df-1]];
   soln := [K| Coefficient(g, i) : i in [0..dg-1]] cat [K| Coefficient(h, j) : j in [0..dh-1]];
-  ok, coeffs := IsHenselLiftable(eqns, soln : Strategy:=Strategy);
+  ok, coeffs := IsHenselLiftable(eqns, soln : Strategy:=Strategy, Slopes:=[Slope*i+gShift : i in [0..dg-1]] cat [Slope*i+fShift-gShift : i in [0..dh-1]], Shifts:=[-fShift-i*Slope : i in [0..df-1]]);
   if ok then
     return true, R![i eq dg select lcg else coeffs[i+1] : i in [0..dg]], R![j eq dh select lch else coeffs[dg+j+1] : j in [0..dh]];
   else
-    return false, _;
+    return false, _, _;
   end if;
 end intrinsic;
 
 ///## Approximation
+
+///hide
+intrinsic _ExactpAdics_AbsolutePrecisionOfApproximation(R :: RngUPol_FldPadExact, xf :: RngUPolElt[FldPad]) -> Val_RngUPolElt_FldPad
+  {The absolute precision of `xf`.}
+  return Val_RngUPolElt_FldPad_Make(OO, [0..Degree(xf)], [APR(c) : c in Coefficients(xf)]);
+end intrinsic;
+
+///hide
+intrinsic _ExactpAdics_WeakValuationOfApproximation(R :: RngUPol_FldPadExact, xf :: RngUPolElt[FldPad]) -> Val_RngUPolElt_FldPad
+  {The absolute precision of `xf`.}
+  return Val_RngUPolElt_FldPad_Make(OO, [0..Degree(xf)], [VAL(c) : c in Coefficients(xf)]);
+end intrinsic;
 
 intrinsic SetBaselineValuation(f :: RngUPolElt_FldPadExact, n)
   {Sets the baseline valuation of f to n.}
   ok, n := IsValidAbsolutePrecision(f, n);
   require ok: "invalid n";
   f`baseline_valuation := n;
-end intrinsic;
-
-intrinsic BaselineValuation(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPad
-  {The baseline valuation of f.}
-  return f`baseline_valuation;
-end intrinsic;
-
-intrinsic BaselinePrecision(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPad
-  {The baseline precision of f: AbsolutePrecision(f) - BaselineValuation(f).}
-  return APR(f) - BVAL(f);
 end intrinsic;
 
 intrinsic IncreaseBaselinePrecision(f :: RngUPolElt_FldPadExact, n)
@@ -5733,7 +5740,7 @@ intrinsic WeakApproximation(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExa
     g`parent := R;
     g`approximation := f`approximation;
     g`update := function (apr)
-      pr := PrecisionRequired(g, apr);
+      pr := _ExactpAdics_PrecisionRequired(g, apr);
       // dg := WeakDegree(g);
       // xg := g`approximation;
       // pr := Max([(WZERO(c) or v eq OO select 0 else aprs[i+1]-v)
@@ -5750,57 +5757,9 @@ intrinsic WeakApproximation(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExa
   end if;
 end intrinsic;
 
-intrinsic WeakValuation(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPad
-  {The valuations of the coefficients of the approximation of f.}
-  return Val_RngUPolElt_FldPad_Make(OO, [0..WeakDegree(f)], [VAL(c) : c in Coefficients(f`approximation)]);
-end intrinsic;
-
 intrinsic WeakMinValuation(f :: RngUPolElt_FldPadExact) -> Val_FldPadElt
   {The minimum valuation of the coefficients of the approximation of f.}
   return &meet WeakValuation(f);
-end intrinsic;
-
-intrinsic AbsolutePrecision(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPad
-  {The absolute precisions of the coefficients of the approximation of f.}
-  return Val_RngUPolElt_FldPad_Make(OO, [0..WeakDegree(f)], [APR(c) : c in Coefficients(f`approximation)]);
-end intrinsic;
-
-intrinsic Precision(f :: RngUPolElt_FldPadExact) -> Val_RngUPolElt_FldPad
-  {The precisions of the coefficients of the approximation of f.}
-  return APR(f) - PR(f);
-end intrinsic;
-
-intrinsic Approximation_Lazy(f :: RngUPolElt_FldPadExact, apr : Quick:=false, FixPr:=true) -> ExactpAdics_Gettr
-  {An approximation to f.}
-  ok, apr := IsValidAbsolutePrecisionDiff(f, apr);
-  require ok: "Argument 2: " cat apr;
-  pr := PrecisionRequired(f, apr);
-  // vs := [Valuation(c) : c in Coefficients(f`approximation)];
-  // Pr := Max([vs[i] eq OO select 0 else APr[i] - vs[i]  : i in [1..#vs]]);
-  iapR := IncreaseAbsolutePrecision_Lazy(Parent(f), pr);
-  return iapR mod function (ig)
-    iap := IncreaseAbsolutePrecision_Lazy(f, apr);
-    return iap mod function (ig)
-      if Quick then
-        xf := f`approximation;
-      else
-        coeffs := Coefficients(f`approximation);
-        U := Universe(coeffs);
-        xf := Polynomial([U | CAP_APR(coeffs[i], apr(i-1)) : i in [1..#coeffs]]);
-      end if;
-      if FixPr then
-        xf := ChangeRing(xf, ChangePrecision(BaseRing(xf), Max(1, pr)));
-      end if;
-      assert forall{i : i in [0..WeakDegree(f)] |
-        AbsolutePrecision(Coefficient(xf, i)) ge apr(i)};
-      return xf;
-    end function;
-  end function;
-end intrinsic;
-
-intrinsic Approximation(f :: RngUPolElt_FldPadExact, apr : Quick:=false, FixPr:=true) -> ExactpAdics_Gettr
-  {"}
-  return Evaluate(Approximation_Lazy(f, apr : Quick:=Quick, FixPr:=FixPr));
 end intrinsic;
 
 intrinsic IncreaseAbsolutePrecision_Lazy(R :: RngUPol_FldPadExact, pr :: RngIntElt) -> ExactpAdics_Gettr
@@ -5813,40 +5772,16 @@ intrinsic Approximation_Lazy(R :: RngUPol_FldPadExact, pr :: RngIntElt) -> Exact
   {An approximation to R whose base field has default precision pr.}
   require pr gt 0: "pr must be positive";
   return IncreaseAbsolutePrecision_Lazy(R, pr) mod function (ig)
-    xR := R`approximation_ring;
+    xR := R`approximation;
     xK := BaseRing(xR);
-    xK`DefaultPrecision := pr;
+    CHANGE_DPR(xK, pr);
     return xR;
   end function;
-end intrinsic;
-
-intrinsic Approximation(R :: RngUPol_FldPadExact, pr :: RngIntElt) -> RngUPol
-  {"}
-  return Evaluate(Approximation_Lazy(R, pr));
-end intrinsic;
-
-intrinsic Approximation(R :: RngUPol_FldPadExact) -> RngUPol
-  {The approximation to R.}
-  return R`approximation_ring;
 end intrinsic;
 
 intrinsic IsDefinitelyZero(f :: RngUPolElt_FldPadExact) -> BoolElt
   {True if f is precisely zero.}
   return WZERO(f) and AbsolutePrecision(f) eq OO;
-end intrinsic;
-
-intrinsic IncreaseAbsolutePrecision(f :: RngUPolElt_FldPadExact, n)
-  {Increases the absolute precision of f to n.}
-  satisfy_dep(f, n);
-end intrinsic;
-
-intrinsic IncreaseAbsolutePrecision_Lazy(f :: RngUPolElt_FldPadExact, n) -> ExactpAdics_Gettr
-  {A getter which when evaluated increases the absolute precision of f.}
-  ok, n := IsValidAbsolutePrecisionDiff(f, n);
-  if not ok then
-    error "invalid n";
-  end if;
-  return ExactpAdics_Getter(false, procedure (~st, ~deps) deps := [*[*f,n*]*]; end procedure, procedure (~st, ~val) assert n le AbsolutePrecision(f); val := true; end procedure);
 end intrinsic;
 
 ///hide
@@ -5855,57 +5790,12 @@ intrinsic IncreaseAbsolutePrecisions(xs)
   satisfy_deps_list(xs, Infinity());
 end intrinsic;
 
-function merge_polys(f, g)
-  // assuming f and g have the same parent and are weakly equal, returns the polynomial got by taking the most precise coefficients from each
-  assert Parent(f) eq Parent(g);
-  r := CAST(Parent(f), [
-    AbsolutePrecision(cf) ge AbsolutePrecision(cg)
-    select cf
-    else cg
-    where cf := Coefficient(f,i)
-    where cg := Coefficient(g,i)
-    : i in [0..Min(Degree(f), Degree(g))]
-  ]);
-  return r;
-end function;
-
-// intrinsic Update(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact)
-//   {Updates f to the weak value of g.}
-//   R := Parent(f);
-//   require R eq Parent(g): "f and g must belong to the same field";
-//   renewEltApproximation_poly(f);
-//   renewEltApproximation_poly(g);
-//   require WEQ(f`approximation, g`approximation)
-//   and Degree(g`approximation) le Degree(f`approximation):
-//     "inconsistent";
-//   f`approximation := merge_polys(f`approximation, g`approximation);
-// end intrinsic;
-
-intrinsic Update(f :: RngUPolElt_FldPadExact, app :: RngUPolElt[FldPad])
-  {Updates f to app.}
-  R := Parent(f);
-  xR := R`approximation_ring;
-  ok, app := IS_VALID_APPROX(R, app);
-  require ok: "app is in the wrong ring";
-  FUDGE := GLOBAL_FUDGE(BaseRing(R));
-  if FUDGE ne 0 then
-    app := CHANGE_APR(app, [APR(c)-FUDGE : c in Coefficients(app)]);
-  end if;
-  if UPDATE_CONSISTENCY_CHECK then
-    require WEQ(f`approximation, app): "inconsistent";
-  end if;
-  f`approximation := merge_polys(f`approximation, app);
-  if assigned f`update_expecting_apr then
-    assert APR(f) ge f`update_expecting_apr;
-  end if;
-end intrinsic;
-
 intrinsic UpdateZero(f :: RngUPolElt_FldPadExact, aprs :: [RngIntElt])
   {Updates f to sum_i(O(pi^aprs[i+1])*x^i).}
   R := f`parent;
-  xR := R`approximation_ring;
+  xR := R`approximation;
   K := BaseRing(R);
-  xK := K`approximation_field;
+  xK := K`approximation;
   Update(f, CAST(xR, [Zero(xK, a) : a in aprs]));
 end intrinsic;
 
@@ -5959,17 +5849,5 @@ intrinsic IsWeaklyEqual(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadExact
   // renewEltApproximation_poly(f);
   // renewEltApproximation_poly(g);
   return WEQ(f`approximation, g`approximation);
-end intrinsic;
-
-///## Internals
-
-intrinsic SetData(f :: RngUPolElt_FldPadExact, data)
-  {Sets the custom data field.}
-  f`data := data;
-end intrinsic;
-
-intrinsic GetData(f :: RngUPolElt_FldPadExact) -> .
-  {Gets the custom data field.}
-  return f`data;
 end intrinsic;
 

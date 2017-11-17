@@ -57,19 +57,20 @@
 /// True if `v` may be coerced to a valuation for `x`. If so, also returns the coerced valuation.
 ///~intrinsic IsValidAbsolutePrecision(x, v) -> Val {"} end intrinsic;
 
-/// True if `v` may be coerced to a valuation for `x`. If so also returns the coerced valuation. Differs from `IsValidAbsolutePrecision` in that, for example, for polynomials, if the constant value is not implied by `v`, then it is taken to be 0 instead of infinity.
+/// True if `v` may be coerced to a valuation for `x`. If so also returns the coerced valuation. Differs from `IsValidAbsolutePrecision` in that, for example, for polynomials, if the constant value is not implied by `v`, then it is taken to be -infinity instead of infinity.
 ///~intrinsic IsValidAbsolutePrecisionDiff(x, v) -> Val {"} end intrinsic;
 
 ///## Val_FldPadElt
 /// Represents the valuation of a p-adic number.
 
+import "ExactpAdics.mag": VAL, APR;
 import "Promotion.mag": do_binop;
 
 Z := Integers();
 OO := Infinity();
 
 // the valuation of a FldPadElt or FldPadExactElt or similar
-declare type Val_FldPadElt;
+declare type Val_FldPadElt: Val_PadExactElt;
 declare attributes Val_FldPadElt
   : value            // REQ: FldRatElt, RngIntElt or Infty
   ;
@@ -121,7 +122,7 @@ intrinsic Val_FldPadElt_IsCoercible(v :: FldRatElt) -> BoolElt, .
   return true, r;
 end intrinsic;
 
-intrinsic IsPromotable(v :: Val_FldPadElt, w) -> BoolElt, .
+intrinsic IsPromotable(v :: Val_FldPadElt, w) -> BoolElt, ., .
   {True if v and w are promotable to a common type.}
   ok, w2 := Val_FldPadElt_IsCoercible(w);
   if ok then
@@ -586,3 +587,12 @@ intrinsic 'gt'(v:: Val_FldPadElt, w :: Infty) -> .
   return do_binop('gt', v, w);
 end intrinsic;
 
+intrinsic ExactpAdics_Val(x :: FldPadElt) -> Val_FldPadElt
+  {The valuation of x.}
+  return Val_FldPadElt(VAL(x));
+end intrinsic;
+
+intrinsic ExactpAdics_APr(x :: FldPadElt) -> Val_FldPadElt
+  {The absolute precision of x.}
+  return Val_FldPadElt_Make(APR(x));
+end intrinsic;

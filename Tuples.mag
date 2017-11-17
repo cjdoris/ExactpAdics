@@ -1,0 +1,277 @@
+///# Aggregates
+///
+/// Sometimes a collection of p-adic objects are highly related and should share a single update function. For example, if we Hensel-lift a system of roots of a system of multivariate polynomials, then updating one element of the system requires updating them all. In this case, we represent the whole aggregation as a single p-adic object.
+
+import "ExactpAdics.mag": NEXTID;
+Z := Integers();
+OO := Infinity();
+
+///## Tuples
+
+declare type SetCart_PadExact[Tup_PadExact]: StrPadExact;
+declare attributes SetCart_PadExact
+  : id
+  , components     // tuple of PadExacts
+  ;
+
+declare type Tup_PadExact: PadExactElt;
+declare attributes Tup_PadExact
+  : id
+  , parent           // SetCart_PadExact
+  , elements         // tuple of PadExactElts
+  , update           // update function
+  , update_expecting_apr
+  , baseline_valuation
+  , data
+  ;
+
+///hide-all
+
+intrinsic _ExactpAdics_IsValidApproximation(C :: SetCart_PadExact, x :: Tup) -> BoolElt, .
+  {True iff x is a valid approximation to an element of C.}
+  n := NumberOfComponents(C);
+  if #x ne n then
+    return false, _;
+  end if;
+  ys := [**];
+  for i in [1..n] do
+    ok, y := _ExactpAdics_IsValidApproximation(C`components[i], x[i]);
+    if ok then
+      Append(~ys, y);
+    else
+      return false, _;
+    end if;
+  end for;
+  return true, <y : y in ys>;
+end intrinsic;
+
+intrinsic _ExactpAdics_UpdateApproximation(C :: SetCart_PadExact, ~xt :: Tup, app :: Tup)
+  {Updates the approximation `xt` of an element of `C` from `app`.}
+  for i in [1..#xt] do
+    _ExactpAdics_UpdateApproximation(C`components[i], ~xt[i], app[i]);
+  end for;
+end intrinsic;
+
+intrinsic _ExactpAdics_CapAbsolutePrecision(t :: Tup, apr :: Val_Tup_PadExact) -> Tup
+  {Caps the absolute precision of each component of `t`.}
+  return <_ExactpAdics_CapAbsolutePrecision(t[i], apr(i)) : i in [1..#t]>;
+end intrinsic;
+
+///hide-none
+
+///### Cartesian products
+
+/// The cartesian product of the given `components`, which must all be p-adic sets.
+intrinsic ExactpAdics_CartesianProduct(components :: Tup) -> SetCart_PadExact
+  {The cartesian product with the given components.}
+  require forall{c : c in components | ISA(Type(c), StrPadExact)}: "Each component must be a p-adic set.";
+  C := New(SetCart_PadExact);
+  C`id := NEXTID();
+  C`components := components;
+  C`approximation := CartesianProduct(<c`approximation : c in components>);
+  return C;
+end intrinsic;
+
+intrinsic ExactpAdics_CartesianPower(X :: StrPadExact, n :: RngIntElt) -> SetCart_PadExact
+  {The `n`th cartesian power `X`, which must be a p-adic set.}
+  require n ge 0: "n must not be negative";
+  return ExactpAdics_CartesianProduct(<X : i in [1..n]>);
+end intrinsic;
+
+///hide
+intrinsic Print(C :: SetCart_PadExact, lvl :: MonStgElt)
+  {Print.}
+  case lvl:
+  when "Magma":
+    printf "ExactpAdics_CartesianProduct(%m)", C`components;
+  else
+    if #C`components eq 0 then
+      printf "Empty cartesian product";
+    elif #{x`id : x in C`components} eq 1 then
+      printf "Cartesian power %o x %O", #C`components, C`components[1], lvl;
+    else
+      printf "Cartesian product of %o", Join([Sprintf("%O", c, lvl) : c in C`components], ", ");
+    end if;
+  end case;
+end intrinsic;
+
+///### Creation of tuples
+
+function makeTup(C, init, mkupdate)
+  T := New(Tup_PadExact);
+  T`parent := C;
+  T`update := mkupdate(T);
+  T`id := NEXTID();
+  case Type(init):
+  when Tup:
+    if #init ne #C`components then
+      return false, "init wrong size";
+    end if;
+    elts := [**];
+    for i in [1..#init] do
+      ok, elt := _ExactpAdics_IsValidApproximation(C`components[i], init[i]);
+      if ok then
+        Append(~elts, elt);
+      else
+        return false, Sprintf("init[%o] not a valid approximation: %o", i, elt);
+      end if;
+    end for;
+    T`approximation := <elt : elt in elts>;
+  else
+    return false, "init wrong type";
+  end case;
+  T`baseline_valuation := WeakValuation(T);
+  return true, T;
+end function;
+
+/// True if `X` is coercible to a tuple in `C`. If so, also returns such a tuple.
+/// 
+/// Succeeds if `X` is:
+/// - An element of `C`.
+/// - A tuple of the right length of elements coercible to each component of `C`.
+/// - A tuple `<init,mkupdate>` or `<init,mkupdate,data>`.
+intrinsic IsCoercible(C :: SetCart_PadExact, X) -> BoolElt, .
+  {True if `X` is coercible to a tuple in `C`. If so, also returns such a tuple.}
+  return false, "wrong type";
+end intrinsic;
+
+///hide
+intrinsic IsCoercible(C :: SetCart_PadExact, X :: Tup) -> BoolElt, .
+  {"}
+  n := #X;
+  if n in [2,3] and Type(X[2]) eq UserProgram then
+    ok, t := makeTup(C, X[1], X[2]);
+    if ok then
+      if n ge 3 then
+        t`data := X[3];
+      end if;
+      return true, t;
+    else
+      return false, t;
+    end if;
+  elif n ne #C`components then
+    return false, "wrong size";
+  end if;
+  elts := [**];
+  for i in [1..n] do
+    ok, elt := IsCoercible(C`components[i], X[i]);
+    if ok then
+      Append(~elts, elt);
+    else
+      return false, Sprintf("%o: %o", i, elt);
+    end if;
+  end for;
+  ok, t := makeTup(C, <e`approximation : e in elts>, func<z | function (apr)
+    return Flatten([Approximation_Lazy(elts[i], apr(i)) : i in [1..n]]) mod function (xxs)
+      Update(z, <xx : xx in xxs>);
+      return true;
+    end function;
+  end function>);
+  assert ok;
+  return true, t;
+end intrinsic;
+
+///hide
+intrinsic IsCoercible(C :: SetCart_PadExact, X :: Tup_PadExact) -> BoolElt, .
+  {"}
+  if Parent(X) eq C then
+    return true, C;
+  elif #X eq NumberOfComponents(C) then
+    return IsCoercible(C, ToTuple(X));
+  else
+    return false, "wrong length";
+  end if;
+end intrinsic;
+
+///hide
+intrinsic Print(T :: Tup_PadExact, lvl :: MonStgElt)
+  {Print.}
+  printf "<%o>", Join([Sprintf("%O", x, lvl) : x in ToTuple(T)], ", ");
+end intrinsic;
+
+///### Basic operations
+
+intrinsic Parent(T :: Tup_PadExact) -> SetCart_PadExact
+  {The cartesian product containing `T`.}
+  return T`parent;
+end intrinsic;
+
+intrinsic ToTuple(T :: Tup_PadExact) -> Tup
+  {Converts T to an ordinary tuple.}
+  if not assigned T`elements then
+    T`elements := <C`components[i] ! <T`approximation[i], func<z | function (apr)
+      return Approximation_Lazy(T, <i eq j select apr else -99999 : j in [1..n]>) mod function (xt)
+        Update(z, xt[i]);
+        return true;
+      end function;
+    end function>> : i in [1..n]> where n:=#C`components where C:=Parent(T);
+  end if;
+  return T`elements;
+end intrinsic;
+
+intrinsic ToSequence(T :: Tup_PadExact) -> []
+  {Converts T to a sequence.}
+  return [x : x in ToTuple(T)];
+end intrinsic;
+
+intrinsic NumberOfComponents(C :: SetCart_PadExact) -> RngIntElt
+  {The number of components of C.}
+  return #C`components;
+end intrinsic;
+
+intrinsic '@'(i :: RngIntElt, C :: SetCart_PadExact) -> StrPadExact
+  {The `i`th component of `C`.}
+  require i ge 0 and i le NumberOfComponents(C): Sprintf("Expecting i in range [%o..%o]", 0, NumberOfComponents(C));
+  return C`components[i];
+end intrinsic;
+
+intrinsic '#'(T :: Tup_PadExact) -> RngIntElt
+  {The number of elements of T.}
+  return NumberOfComponents(Parent(T));
+end intrinsic;
+
+intrinsic '@'(i :: RngIntElt, T :: Tup_PadExact) -> PadExactElt
+  {The `i`th element of `T`.}
+  require i ge 0 and i le #T: Sprintf("Expecting i in range [%o..%o]", 0, #T);
+  return ToTuple(T)[i];
+end intrinsic;
+
+intrinsic _ExactpAdics_WeakValuationOfApproximation(C :: SetCart_PadExact, x) -> Val_Tup_PadExact
+  {The weak valuation of an element of `C` with approximation `x`.}
+  n := NumberOfComponents(C);
+  return Val_Tup_PadExact_Make(<_ExactpAdics_WeakValuationOfApproximation(C`components[i], x[i]) : i in [1..n]>);
+end intrinsic;
+
+intrinsic _ExactpAdics_AbsolutePrecisionOfApproximation(C :: SetCart_PadExact, x) -> Val_Tup_PadExact
+  {The weak valuation of an element of `C` with approximation `x`.}
+  n := NumberOfComponents(C);
+  return Val_Tup_PadExact_Make(<_ExactpAdics_AbsolutePrecisionOfApproximation(C`components[i], x[i]) : i in [1..n]>);
+end intrinsic;
+
+intrinsic Format(T :: Tup_PadExact : APr:=AbsolutePrecision(T)) -> MonStgElt
+  {Returns a string representation of `T`.}
+  ok, apr := IsValidAbsolutePrecision(T, APr);
+  require ok: apr;
+  return Sprintf("<%o>", Join([Format(T(i) : APr:=apr(i)) : i in [1..#T]], ", "));
+end intrinsic;
+
+intrinsic _ExactpAdics_PrecisionRequired(C :: SetCart_PadExact, xt :: Tup, apr) -> Tup
+  {The precision required in `C` to update an element with approximation `xt` to `apr`.}
+  return <_ExactpAdics_PrecisionRequired(C`components[i], xt[i], apr(i)) : i in [1..NumberOfComponents(C)]>;
+end intrinsic;
+
+intrinsic IncreaseAbsolutePrecision_Lazy(C :: SetCart_PadExact, pr :: Tup) -> ExactpAdics_Gettr
+  {Increases the absolute precision of `C` to `pr`, which must be a tuple of precisions for each component.}
+  n := NumberOfComponents(C);
+  require #pr eq n: "pr has wrong size";
+  return Flatten([IncreaseAbsolutePrecision_Lazy(C`components[i], pr[i]) : i in [1..n]]);
+end intrinsic;
+
+intrinsic Approximation_Lazy(C :: SetCart_PadExact, pr :: Tup) -> ExactpAdics_Gettr
+  {The approximation of `C` to precision `pr`.}
+  n := NumberOfComponents(C);
+  require #pr eq n: "pr has wrong size";
+  return Flatten([Approximation_Lazy(C`components[i], pr[i]) : i in [1..n]]) mod function (ig)
+    return C`approximation;
+  end function;
+end intrinsic;

@@ -1,0 +1,195 @@
+import "ExactpAdics.mag": APR, CAP_APR;
+import "Getter.mag": satisfy_dep;
+
+// ABSTRACT TYPE
+// A set of exact p-adic objects (i.e. p-adic numbers, polynomials over p-adics, aggregates of p-adics, etc) and its elements
+declare type StrPadExact[PadExactElt];
+declare attributes StrPadExact
+  : id                     // unique identifier, from NEXTID()
+  , approximation          // an approximation of the set
+  ;
+declare attributes PadExactElt
+  : id                     // unique identifier, from NEXTID()
+  , parent                 // the parent, a StrPadExact
+  , approximation          // an approximation of the element
+  , data                   // element-specific data
+  , update                 // update function (apr) -> Getter, which updates the approximation
+  , update_expecting_apr   // when assigned, Update() will check that the absolute precision is updated to at least this
+  , baseline_valuation     // the baseline valuation, usually the weak valuation of the initial approximation
+  ;
+
+// ABSTRACT TYPE
+// Valuations of PadExactElts
+declare type Val_PadExactElt;
+
+///# Internals
+///## Generic interface
+///
+/// The type `StrPadExact` is for structures whose elements are in terms of Exact p-adic numbers. Examples of subtypes include `FldPadExact` for p-adic fields, `RngUPol_FldPadExact` for polynomials over p-adic fields, `SetCart_PadExact` for cartesian products of such structures. Elements of such structures have type deriving from `PadExactElt`.
+/// 
+/// All subtypes of `StrPadExact` adhere to a generic interface. That interface is documented here.
+/// 
+/// Elements (deriving from `PadExactElt`) have valuations which are a subtype of `Val_PadExactElt`. The generic interface for valuations is described [here]({{site.baseurl}}/valuations).
+
+intrinsic Update(x :: PadExactElt, app)
+  {Updates `x` from `app`.}
+  ok, app := _ExactpAdics_IsValidApproximation(Parent(x), app);
+  require ok: "invalid approximation";
+  _ExactpAdics_UpdateApproximation(Parent(x), ~x`approximation, app);
+  if assigned x`update_expecting_apr then
+    assert APR(x) ge x`update_expecting_apr;
+  end if;
+end intrinsic;
+
+intrinsic Parent(x :: PadExactElt) -> StrPadExact
+  {The parent structure of `x`.}
+  return x`parent;
+end intrinsic;
+
+intrinsic BaselineValuation(x :: PadExactElt) -> Val_PadExactElt
+  {The baseline valuation of `x`.}
+  return x`baseline_valuation;
+end intrinsic;
+
+///hide
+intrinsic _ExactpAdics_WeakValuationOfApproximation(X :: StrPadExact, x) -> Val_PadExactElt
+  {The weak valuation of an element of `X` with approximation `x`.}
+  error "not implemented";
+end intrinsic;
+
+///hide
+intrinsic _ExactpAdics_AbsolutePrecisionOfApproximation(X :: StrPadExact, x) -> Val_PadExactElt
+  {The absolute precision of an element of `X` with approximation `x`.}
+  error "not implemented";
+end intrinsic;
+
+///hide
+intrinsic _ExactpAdics_PrecisionRequired(X :: StrPadExact, xx, apr) -> Val_PadExactElt
+  {The precision required to represent `xx` approximating an element of `X` to absolute precision `apr`.}
+  error "not implemented";
+end intrinsic;
+
+intrinsic _ExactpAdics_PrecisionRequired(x :: PadExactElt, apr) -> Val_PadExactElt
+  {The precision required to represent `x` to absolute precision `apr`.}
+  return _ExactpAdics_PrecisionRequired(Parent(x), x`approximation, apr);
+end intrinsic;
+
+intrinsic WeakValuation(x :: PadExactElt) -> Val_PadExactElt
+  {The valuation of `x` up to current precision.}
+  return _ExactpAdics_WeakValuationOfApproximation(Parent(x), x`approximation);
+end intrinsic;
+
+intrinsic AbsolutePrecision(x :: PadExactElt) -> Val_PadExactElt
+  {The current absolute precision of `x`.}
+  return _ExactpAdics_AbsolutePrecisionOfApproximation(Parent(x), x`approximation);
+end intrinsic;
+
+/// The baseline precision of `x`.
+intrinsic BaselinePrecision(x :: PadExactElt) -> Val_PadExactElt
+  {The basline precision of `x` up to current precision.}
+  return AbsolutePrecision(x) - BaselineValuation(x);
+end intrinsic;
+
+/// The relative precision of `x`.
+intrinsic Precision(x :: PadExactElt) -> Val_PadExactElt
+  {The relative precision of `x` up to current precision.}
+  return AbsolutePrecision(x) - WeakValuation(x);
+end intrinsic;
+
+///hide
+intrinsic _ExactpAdics_IsValidApproximation(X :: StrPadExact, app) -> BoolElt, .
+  {True if `app` is coercible to a valid approximation for `X`. If so, also returns the coerced approximation.}
+  return false, _;
+end intrinsic;
+
+///hide
+intrinsic _ExactpAdics_UpdateApproximation(X :: StrPadExact, ~x :: PadExactElt, app)
+  {Updates the approximation `x` of an element of `X` from `app`, which is assumed to have been returned by `_ExactpAdics_IsValidApproximation`.}
+  error "not implemented";
+end intrinsic;
+
+///hide
+intrinsic _ExactpAdics_FixPrecision(xx, pr) -> .
+  {Coerces xx to a fixed-precision structure.}
+  error "not implemented";
+end intrinsic;
+
+intrinsic Approximation_Lazy(X :: StrPadExact, pr) -> ExactpAdics_Gettr
+  {The approximation structure of `X` to precision `pr`.}
+  error "not implemented";
+end intrinsic;
+
+intrinsic Approximation(X :: StrPadExact, pr) -> .
+  {"}
+  return Evaluate(Approximation_Lazy(X, pr));
+end intrinsic;
+
+intrinsic Approximation(X :: StrPadExact) -> .
+  {The approximating structure of `X`.}
+  return X`approximation;
+end intrinsic;
+
+intrinsic Approximation_Lazy(x :: PadExactElt, apr : Quick:=false, FixPr:=false) -> ExactpAdics_Gettr
+  {An approximation of `x` to absolute precision `apr`.}
+  ok, apr := IsValidAbsolutePrecisionDiff(x, apr);
+  require ok: "apr: " cat apr;
+  pr := _ExactpAdics_PrecisionRequired(x, apr);
+  return IncreaseAbsolutePrecision_Lazy(Parent(x), pr) mod function (ig)
+    return IncreaseAbsolutePrecision_Lazy(x, apr) mod function (ig)
+      y := x`approximation;
+      if not Quick then
+        y := CAP_APR(y, apr);
+      end if;
+      if FixPr then
+        y := _ExactpAdics_FixPrecision(y, pr);
+      end if;
+      apr2 := ExactpAdics_APr(y);
+      assert apr2 ge apr;
+      return y;
+    end function;
+  end function;
+end intrinsic;
+
+intrinsic Approximation(x :: PadExactElt, apr : Quick:=false, FixPr:=false) -> .
+  {"}
+  return Evaluate(Approximation_Lazy(x, apr : Quick:=Quick, FixPr:=FixPr));
+end intrinsic;
+
+intrinsic Approximation(x :: PadExactElt) -> .
+  {The current approximation to `x`.}
+  return x`approximation;
+end intrinsic;
+
+///hide
+intrinsic GetData(x :: PadExactElt) -> .
+  {The `data` field of `x`.}
+  return x`data;
+end intrinsic;
+
+///hide
+intrinsic SetData(x :: PadExactElt, val)
+  {Sets the `data` field of `x` to `val`.}
+  x`data := val;
+end intrinsic;
+
+intrinsic IncreaseAbsolutePrecision(x :: PadExactElt, apr)
+  {Increases the absolute precision of `x` to `apr`.}
+  satisfy_dep(x, apr);
+end intrinsic;
+
+intrinsic IncreaseAbsolutePrecision_Lazy(x :: PadExactElt, apr) -> ExactpAdics_Gettr
+  {"}
+  ok, apr := IsValidAbsolutePrecisionDiff(x, apr);
+  if not ok then
+    error "invalid apr";
+  end if;
+  return ExactpAdics_Getter(false,
+    procedure (~st, ~deps)
+      deps := [*[*x,apr*]*];
+    end procedure,
+    procedure (~st, ~val)
+      assert apr le APR(x);
+      val := true;
+    end procedure);
+end intrinsic;
+

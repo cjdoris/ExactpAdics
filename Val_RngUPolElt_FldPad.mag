@@ -13,7 +13,7 @@ import "Val_FldPadElt.mag": VAL_FLDPADELT_INFINITY, VAL_FLDPADELT_NEGINFINITY, V
 Z := Integers();
 
 // the valuation of a RngUPolElt[FldPad], RngUPolElt_FldPadExact or similar
-declare type Val_RngUPolElt_FldPad;
+declare type Val_RngUPolElt_FldPad: Val_PadExactElt;
 declare attributes Val_RngUPolElt_FldPad
   : values          // REQ: AssocDflt: [RngIntElt] -> Val_FldPadElt (valuation at each degree)
   ;
@@ -636,10 +636,10 @@ end intrinsic;
 
 intrinsic ExactpAdics_Val(f :: RngUPolElt[FldPad]) -> Val_RngUPolElt_FldPad
   {The valuation of f.}
-  return Val_RngUPolElt_FldPad_Make(VAL_FLDPADELT_INFINITY, [0..Degree(f)], [Valuation(c) : c in Coefficients(f)]);
+  return Val_RngUPolElt_FldPad_Make(VAL_FLDPADELT_INFINITY, [0..Degree(f)], [ExactpAdics_Val(c) : c in Coefficients(f)]);
 end intrinsic;
 
 intrinsic ExactpAdics_APr(f :: RngUPolElt[FldPad]) -> Val_RngUPolElt_FldPad
-  {The valuation of f.}
-  return Val_RngUPolElt_FldPad_Make(VAL_FLDPADELT_INFINITY, [0..Degree(f)], [AbsolutePrecision(c) : c in Coefficients(f)]);
+  {The absolute precision of f.}
+  return Val_RngUPolElt_FldPad_Make(VAL_FLDPADELT_INFINITY, [0..Degree(f)], [ExactpAdics_APr(c) : c in Coefficients(f)]);
 end intrinsic;

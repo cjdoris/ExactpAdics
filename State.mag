@@ -1,10 +1,12 @@
 freeze;
 
 declare type ExactpAdics_Store;
-declare attributes ExactpAdics_Store: nextId, warnings;
+declare attributes ExactpAdics_Store: nextId, warnings, profile_updates, updates;
 STORE := New(ExactpAdics_Store);
 STORE`nextId := 0;
 STORE`warnings := AssociativeArray();
+STORE`profile_updates := false;
+STORE`updates := [];
 
 ///hide
 intrinsic ExactpAdics_NextId() -> .
