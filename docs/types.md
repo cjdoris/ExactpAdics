@@ -3,6 +3,10 @@
 
 # Index of new types
 
+## StrPadExact, PadExactElt
+
+[Abstract base types]({{site.baseurl}}/internals#generic-interface) for p-adic structures and elements.
+
 ## FldPadExact, FldPadExactElt
 
 [Exact p-adic fields]({{site.baseurl}}/exact-p-adic-fields) and their elements.
@@ -15,7 +19,7 @@
 
 [Rings of multivariate polynomials over exact p-adic fields]({{site.baseurl}}/multivariate-polynomials), and their elements.
 
-## Val_FldPadElt, Val_RngUPolElt_FldPad, Val_RngMPolElt_FldPad
+## Val_PadExact, Val_FldPadElt, Val_RngUPolElt_FldPad, Val_RngMPolElt_FldPad
 
 [Valuations of p-adic objects]({{site.baseurl}}/valuations).
 
