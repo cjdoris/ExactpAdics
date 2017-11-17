@@ -3,10 +3,54 @@
 Bits and bobs not belonging to the main features of the package, but needed by the package and useful nonetheless.
 
 **Contents**
+* [Profiling](#profiling)
 * [Default associative arrays](#default-associative-arrays)
 * [Warnings](#warnings)
 * [Promotion](#promotion)
 * [Lower bounds](#lower-bounds)
+
+## Profiling
+
+
+To help isolate the slow parts of code, we provide some profiling tools.
+
+> **ExactpAdics_SetProfile** (doProfile :: *BoolElt*)
+{:.intrinsic}
+
+Turn profiling on or off.
+
+
+**Parameters**
+- `Reset := false`: When true, also resets the profile.
+
+> **ExactpAdics_GetProfile** ()
+> 
+> -> *BoolElt*
+> {:.ret}
+{:.intrinsic}
+
+True if profiling is enabled.
+
+
+> **ExactpAdics_ResetProfile** ()
+{:.intrinsic}
+
+Resets the profile.
+
+
+> **ExactpAdics_GetProfileUpdates** ()
+> 
+> -> []
+> {:.ret}
+{:.intrinsic}
+
+Returns the profile, a sequence of records for each update with the following fields:
+- `x`: the element being updated.
+- `initial_apr`: the initial absolute precision of the element.
+- `target_apr`: the absolute precision being updated to.
+- `initial_time`: the `Cputime()` when the update was made.
+- `time_elapsed`: the time taken to perform the update.
+
 
 ## Default associative arrays
 

@@ -35,9 +35,6 @@
 * [Temporary field (incomplete feature)](#temporary-field-incomplete-feature)
 * [Integer ring (incomplete feature)](#integer-ring-incomplete-feature)
 * [Approximation](#approximation)
-* [Internals](#internals)
-  * [FldPadExactElt](#fldpadexactelt)
-  * [ExtDataFldPadExact](#extdatafldpadexact)
 
 ## Creation of p-adic fields
 
@@ -320,15 +317,6 @@ A random element of F of value v.
 
 
 ## Basic operations on p-adic numbers
-
-> **Parent** (x :: *FldPadExactElt*)
-> 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The field containing x.
-
 
 > **Coefficient** (x :: *FldPadExactElt*, i :: *RngIntElt*)
 > 
@@ -1515,24 +1503,6 @@ Intrinsics to do with the current approximation of a p-adic number.
 Sets the baseline valuation.
 
 
-> **BaselineValuation** (x :: *FldPadExactElt*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The baseline valuation.
-
-
-> **BaselinePrecision** (x :: *FldPadExactElt*)
-> 
-> -> *Val_FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-The baseline precision of x: AbsolutePrecision(x) - BaselineValuation(x).
-
-
 > **IncreaseBaselinePrecision** (x :: *FldPadExactElt*, n)
 {:.intrinsic}
 
@@ -1548,7 +1518,7 @@ Increases the baseline precision.
 An element weakly equal to x.
 
 
-> **PrecisionRequired** (x :: *FldPadExactElt*, apr)
+> **_ExactpAdics_PrecisionRequired** (F :: *FldPadExact*, xx :: *FldPadElt*, apr)
 > 
 > -> *RngIntElt*
 > {:.ret}
@@ -1557,7 +1527,7 @@ An element weakly equal to x.
 (A bound on) the precision required in the parent field of x to approximate x to the given absolute precision.
 
 
-> **PrecisionRequired** (f :: *RngUPolElt_FldPadExact*, apr)
+> **_ExactpAdics_PrecisionRequired** (R :: *RngUPol_FldPadExact*, xf :: *RngUPolElt*[*FldPad*], apr)
 > 
 > -> *RngIntElt*
 > {:.ret}
@@ -1565,30 +1535,6 @@ An element weakly equal to x.
 
 The precision required to approximate f with the given parameters.
 
-
-> **Approximation_Lazy** (x :: *FldPadExactElt*, apr)
-> 
-> -> *ExactpAdics_Gettr*
-> {:.ret}
-{:.intrinsic}
-
-An approximation to x.
-
-**Parameters**
-- `Quick`
-- `FixPr`
-
-> **Approximation** (x :: *FldPadExactElt*, apr)
-> 
-> -> *FldPadElt*
-> {:.ret}
-{:.intrinsic}
-
-An approximation to x.
-
-**Parameters**
-- `Quick`
-- `FixPr`
 
 > **IncreaseAbsolutePrecision_Lazy** (F :: *FldPadExact*, pr :: *RngIntElt*)
 > 
@@ -1603,71 +1549,9 @@ Getter which, when evaluated, the approximation field of F has at least precisio
 > 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
-> 
-> **Approximation** (F :: *FldPadExact*, pr :: *RngIntElt*)
-> 
-> -> *FldPad*
-> {:.ret}
 {:.intrinsic}
 
 The approximating field of F with default precision pr.
-
-
-
-
-> **Approximation** (F :: *FldPadExact*)
-> 
-> -> *FldPad*
-> {:.ret}
-{:.intrinsic}
-
-The approximating field.
-
-
-> **IncreaseAbsolutePrecision** (x :: *FldPadExactElt*, n)
-> 
-> **IncreaseAbsolutePrecision_Lazy** (x :: *FldPadExactElt*, n)
-> 
-> -> *ExactpAdics_Gettr*
-> {:.ret}
-{:.intrinsic}
-
-Increases the absolute precision of x to n.
-
-
-
-
-> **AbsolutePrecision** (x :: *FldPadExactElt*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The absolute precision of x.
-
-
-> **Precision** (x :: *FldPadExactElt*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The precision of x.
-
-
-> **WeakValuation** (x :: *FldPadExactElt*)
-> 
-> -> *RngIntElt*
-> {:.ret}
-{:.intrinsic}
-
-The weak valuation of x.
-
-
-> **Update** (x :: *FldPadExactElt*, app :: *FldPadElt*)
-{:.intrinsic}
-
-Updates x to app.
 
 
 > **UpdateZero** (x :: *FldPadExactElt*, apr :: *RngIntElt*)
@@ -1718,88 +1602,4 @@ True if x and y are weakly equal up to precision.
 
 **Parameters**
 - `Strategy`
-
-## Internals
-
-### FldPadExactElt
-
-> **SetData** (x :: *FldPadExactElt*, data)
-{:.intrinsic}
-
-Sets the custom data field.
-
-
-> **GetData** (x :: *FldPadExactElt*)
-> 
-> -> Any
-> {:.ret}
-{:.intrinsic}
-
-Retrieves the custom data field.
-
-
-### ExtDataFldPadExact
-
-> **\'/\'** (E :: *FldPadExact*, F :: *FldPadExact*)
-> 
-> -> *ExtDataFldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The extension E/F.
-
-
-> **\'/\'** (E :: *FldPadExact*, X :: *ExtDataFldPadExact*)
-> 
-> -> *ExtDataFldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-Extension E/X.
-
-
-> **\'/\'** (X :: *ExtDataFldPadExact*, F :: *FldPadExact*)
-> 
-> -> *ExtDataFldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-Extension X/F.
-
-
-> **\'/\'** (X1 :: *ExtDataFldPadExact*, X2 :: *ExtDataFldPadExact*)
-> 
-> -> *ExtDataFldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-Extension X1/X2.
-
-
-> **Flatten** (x :: *ExtDataFldPadExact*)
-> 
-> -> *ExtDataFldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-Returns a version of x with type COMPOUND and all elements of x`list have type not COMPOUND.
-
-
-> **TopField** (x :: *ExtDataFldPadExact*)
-> 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The top field of x.
-
-
-> **BaseField** (x :: *ExtDataFldPadExact*)
-> 
-> -> *FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The base field of x.
-
 

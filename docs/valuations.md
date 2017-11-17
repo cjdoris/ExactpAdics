@@ -17,6 +17,9 @@
   * [Creation](#creation)
   * [Special values](#special-values)
   * [Other operations](#other-operations)
+* [Val_Tup_PadExact](#val_tup_padexact)
+  * [Creation](#creation)
+  * [Other operations](#other-operations)
 
 
 ## Introduction
@@ -150,7 +153,7 @@ True if `v` may be coerced to a valuation for `x`. If so, also returns the coerc
 > {:.ret}
 {:.intrinsic}
 
-True if `v` may be coerced to a valuation for `x`. If so also returns the coerced valuation. Differs from `IsValidAbsolutePrecision` in that, for example, for polynomials, if the constant value is not implied by `v`, then it is taken to be 0 instead of infinity.
+True if `v` may be coerced to a valuation for `x`. If so also returns the coerced valuation. Differs from `IsValidAbsolutePrecision` in that, for example, for polynomials, if the constant value is not implied by `v`, then it is taken to be -infinity instead of infinity.
 
 
 ## Val_FldPadElt
@@ -190,7 +193,7 @@ True if v is coercible to a Val_FldPadElt, and the coerced value.
 
 > **IsPromotable** (v :: *Val_FldPadElt*, w)
 > 
-> -> *BoolElt*, Any
+> -> *BoolElt*, Any, Any
 > {:.ret}
 {:.intrinsic}
 
@@ -271,6 +274,24 @@ The value of v coerced to an integer.
 {:.intrinsic}
 
 The integer valuation larger than v, or just v if infinite.
+
+
+> **ExactpAdics_Val** (x :: *FldPadElt*)
+> 
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
+
+The valuation of x.
+
+
+> **ExactpAdics_APr** (x :: *FldPadElt*)
+> 
+> -> *Val_FldPadElt*
+> {:.ret}
+{:.intrinsic}
+
+The absolute precision of x.
 
 
 ## Val_RngUPolElt_FldPad
@@ -445,7 +466,7 @@ The valuation of f.
 > {:.ret}
 {:.intrinsic}
 
-The valuation of f.
+The absolute precision of f.
 
 
 ## Val_RngMPolElt_FldPad
@@ -630,5 +651,102 @@ The valuation of coefficient Exponents(m).
 {:.intrinsic}
 
 Adds i.s onto v(i).
+
+
+> **ExactpAdics_Val** (f :: *RngMPolElt*)
+> 
+> -> *Val_RngMPolElt_FldPad*
+> {:.ret}
+{:.intrinsic}
+
+The valuation of f.
+
+
+> **ExactpAdics_APr** (f :: *RngMPolElt*)
+> 
+> -> *Val_RngMPolElt_FldPad*
+> {:.ret}
+{:.intrinsic}
+
+The absolute precision of f.
+
+
+## Val_Tup_PadExact
+
+Represents the valuation of a tuple of p-adic objects.
+
+### Creation
+
+> **Val_Tup_PadExact_IsCoercible** (v)
+> 
+> **Val_Tup_PadExact_IsCoercible** (v :: *Val_Tup_PadExact*)
+> 
+> **Val_Tup_PadExact_IsCoercible** (v :: *Tup*)
+> 
+> -> *BoolElt*, *Val_Tup_PadExact*
+> {:.ret}
+{:.intrinsic}
+
+True if v is coercible to a Val_Tup_PadExact, and the coerced value.
+
+
+
+
+
+
+> **IsPromotable** (v :: *Val_Tup_PadExact*, w)
+> 
+> -> *BoolElt*, Any, Any
+> {:.ret}
+{:.intrinsic}
+
+True if v and w are coercible to a common type.
+
+
+> **Val_Tup_PadExact_Make** (v)
+> 
+> -> *Val_Tup_PadExact*
+> {:.ret}
+{:.intrinsic}
+
+Coerces v to a Val_Tup_PadExact.
+
+
+### Other operations
+
+> **\'@\'** (i :: *RngIntElt*, v :: *Val_Tup_PadExact*)
+> 
+> -> *Val_PadExactElt*
+> {:.ret}
+{:.intrinsic}
+
+The valuation in the `i`th component of `v`.
+
+
+> **\'#\'** (v :: *Val_Tup_PadExact*)
+> 
+> -> *RngIntElt*
+> {:.ret}
+{:.intrinsic}
+
+The number of components in `v`.
+
+
+> **ExactpAdics_Val** (t :: *Tup*)
+> 
+> -> *Val_Tup_PadExact*
+> {:.ret}
+{:.intrinsic}
+
+The valuation of t.
+
+
+> **ExactpAdics_APr** (t :: *Tup*)
+> 
+> -> *Val_Tup_PadExact*
+> {:.ret}
+{:.intrinsic}
+
+The absolute precision of t.
 
 

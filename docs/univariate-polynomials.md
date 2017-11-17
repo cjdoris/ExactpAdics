@@ -19,7 +19,6 @@
 * [Newton polygon](#newton-polygon)
 * [Hensel lifting](#hensel-lifting)
 * [Approximation](#approximation)
-* [Internals](#internals)
 * [Root-finding and factorization](#root-finding-and-factorization)
 
 ## Creation of rings
@@ -194,15 +193,6 @@ Change the ring of f to K.
 {:.intrinsic}
 
 The base ring of f.
-
-
-> **Parent** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *RngUPol_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The polynomial ring containing f.
 
 
 ### Degree
@@ -620,7 +610,7 @@ The Newton polygon of `f`.
 
 **Parameters**
 - `Strategy`
-- `AllowWeaklyZeroConstantCoefficient := false`: When true, do not raise an error if the constant coefficient is weakly zero; instead require that the linear coefficient is nonzero and return a Newton polygon starting at 1.
+- `Support := <0,WeakDegree(f)>`: When given, must be a tuple `<a,b>` of two integers representing an interval; the support of the returned Newton polygon contains this. By default, returns the whole Newton polygon. If you are ok with f having one root very close to 0, then `Support:=<1,WeakDegree(f)>` may be appropriate.
 
 > **WeakPartialNewtonPolygon** (f :: *RngUPolElt_FldPadExact*)
 > 
@@ -671,30 +661,29 @@ The root of `f` uniquely closest to `x` (see `IsHenselLiftable`).
 **Parameters**
 - `Strategy`
 
+> **IsHenselLiftable** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
+> 
+> -> *BoolElt*, *RngUPolElt_FldPadExact*, *RngUPolElt_FldPadExact*
+> {:.ret}
+{:.intrinsic}
+
+True if `g` is Hensel-liftable to a factor of `f`. If so, also returns the factor (with the same leading coefficient as `g`) and its cofactor.
+
+**Future.** Optionally choose Slope, fShift and gShift automagically.
+
+
+**Parameters**
+- `Strategy`
+- `Slope := 0`: A rational number, deslope the polynomials by this amount before applying Hensel's lemma; usually Slope will be a slope of the Newton polygon of `g`.
+- `fShift := 0`: A rational number, subtract this from the valuation of `f` after applying `Slope`.
+- `gShift := 0`: A rational number, subtract this from the valuation of `g` after applying `Slope`.
+
 ## Approximation
 
 > **SetBaselineValuation** (f :: *RngUPolElt_FldPadExact*, n)
 {:.intrinsic}
 
 Sets the baseline valuation of f to n.
-
-
-> **BaselineValuation** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *Val_RngUPolElt_FldPad*
-> {:.ret}
-{:.intrinsic}
-
-The baseline valuation of f.
-
-
-> **BaselinePrecision** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *Val_RngUPolElt_FldPad*
-> {:.ret}
-{:.intrinsic}
-
-The baseline precision of f: AbsolutePrecision(f) - BaselineValuation(f).
 
 
 > **IncreaseBaselinePrecision** (f :: *RngUPolElt_FldPadExact*, n)
@@ -712,15 +701,6 @@ Increases the baseline precision of f to n.
 An element weakly equal to x.
 
 
-> **WeakValuation** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *Val_RngUPolElt_FldPad*
-> {:.ret}
-{:.intrinsic}
-
-The valuations of the coefficients of the approximation of f.
-
-
 > **WeakMinValuation** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *Val_FldPadElt*
@@ -729,40 +709,6 @@ The valuations of the coefficients of the approximation of f.
 
 The minimum valuation of the coefficients of the approximation of f.
 
-
-> **AbsolutePrecision** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *Val_RngUPolElt_FldPad*
-> {:.ret}
-{:.intrinsic}
-
-The absolute precisions of the coefficients of the approximation of f.
-
-
-> **Precision** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> *Val_RngUPolElt_FldPad*
-> {:.ret}
-{:.intrinsic}
-
-The precisions of the coefficients of the approximation of f.
-
-
-> **Approximation_Lazy** (f :: *RngUPolElt_FldPadExact*, apr)
-> 
-> **Approximation** (f :: *RngUPolElt_FldPadExact*, apr)
-> 
-> -> *ExactpAdics_Gettr*
-> {:.ret}
-{:.intrinsic}
-
-An approximation to f.
-
-
-
-**Parameters**
-- `Quick`
-- `FixPr`
 
 > **IncreaseAbsolutePrecision_Lazy** (R :: *RngUPol_FldPadExact*, pr :: *RngIntElt*)
 > 
@@ -777,25 +723,9 @@ Increases the precision of the approximation to R to at least pr.
 > 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
-> 
-> **Approximation** (R :: *RngUPol_FldPadExact*, pr :: *RngIntElt*)
-> 
-> -> *RngUPol*
-> {:.ret}
 {:.intrinsic}
 
 An approximation to R whose base field has default precision pr.
-
-
-
-
-> **Approximation** (R :: *RngUPol_FldPadExact*)
-> 
-> -> *RngUPol*
-> {:.ret}
-{:.intrinsic}
-
-The approximation to R.
 
 
 > **IsDefinitelyZero** (f :: *RngUPolElt_FldPadExact*)
@@ -805,27 +735,6 @@ The approximation to R.
 {:.intrinsic}
 
 True if f is precisely zero.
-
-
-> **IncreaseAbsolutePrecision** (f :: *RngUPolElt_FldPadExact*, n)
-{:.intrinsic}
-
-Increases the absolute precision of f to n.
-
-
-> **IncreaseAbsolutePrecision_Lazy** (f :: *RngUPolElt_FldPadExact*, n)
-> 
-> -> *ExactpAdics_Gettr*
-> {:.ret}
-{:.intrinsic}
-
-A getter which when evaluated increases the absolute precision of f.
-
-
-> **Update** (f :: *RngUPolElt_FldPadExact*, app :: *RngUPolElt*[*FldPad*])
-{:.intrinsic}
-
-Updates f to app.
 
 
 > **UpdateZero** (f :: *RngUPolElt_FldPadExact*, aprs :: [*RngIntElt*])
@@ -854,23 +763,6 @@ True if f is weakly zero.
 True if f and g are weakly equal.
 
 
-## Internals
-
-> **SetData** (f :: *RngUPolElt_FldPadExact*, data)
-{:.intrinsic}
-
-Sets the custom data field.
-
-
-> **GetData** (f :: *RngUPolElt_FldPadExact*)
-> 
-> -> Any
-> {:.ret}
-{:.intrinsic}
-
-Gets the custom data field.
-
-
 ## Root-finding and factorization
 
 > **Factorization** (f :: *RngUPolElt_FldPadExact*)
@@ -889,6 +781,7 @@ It is only possible to factorize squarefree polynomials, so `multiplicity` is al
 - `Certificates`: When `true`, also returns a corresponding sequence of certificates including fields `F`, `E`, `Rho` and `Pi`.
 - `Extensions`: When `true` implies `Certificates` and also includes `Extension` in each certificate.
 - `Ideals`: When `true` implies `Certificates` and also includes `IdealGen1` and `IdealGen2` in each certificate.
+- `UseNP := false`: When `true`, factorizes `f` first by its Newton polygon. This can be a significant performance improvement for large degree polynomials with several faces.
 
 > **Roots** (f :: *RngUPolElt_FldPadExact*)
 > 
@@ -903,4 +796,18 @@ The roots of `f` as a sequence of `<root, multiplicity>` pairs.
 
 **Parameters**
 - `Strategy`: The precision strategy.
+- `UseNP`
+
+> **NewtonPolygonFactorization** (f :: *RngUPolElt_FldPadExact*)
+> 
+> -> []
+> {:.ret}
+{:.intrinsic}
+
+The factorization of `f` according to its Newton polygon, as a sequence of factors.
+
+
+**Parameters**
+- `Strategy`
+- `Residual := false`: When `true` then further factorizes according to the factorization of each residual polynomial.
 

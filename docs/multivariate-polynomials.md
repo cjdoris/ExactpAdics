@@ -110,15 +110,6 @@ True if `f` can be coerced to a polynomial over `K`. If so, also returns the coe
 
 ## Basic operations on polynomials
 
-> **Parent** (f :: *RngMPolElt_FldPadExact*)
-> 
-> -> *RngMPol_FldPadExact*
-> {:.ret}
-{:.intrinsic}
-
-The parent ring of `f`.
-
-
 > **BaseRing** (f :: *RngMPolElt_FldPadExact*)
 > 
 > -> *FldPadExact*
@@ -195,7 +186,7 @@ Sum.
 
 Intrinsics to do with the current approximation of an exact p-adic polynomial.
 
-> **PrecisionRequired** (f :: *RngMPolElt_FldPadExact*, apr)
+> **_ExactpAdics_PrecisionRequired** (R :: *RngMPol_FldPadExact*, xf :: *RngMPolElt*, apr)
 > 
 > -> *RngIntElt*
 > {:.ret}
@@ -204,43 +195,22 @@ Intrinsics to do with the current approximation of an exact p-adic polynomial.
 The (relative) precision required in the base ring to approximate `f` to absolue precision `apr`.
 
 
-> **AbsolutePrecision** (f :: *RngMPolElt_FldPadExact*)
+> **_ExactpAdics_WeakValuationOfApproximation** (R :: *RngMPol_FldPadExact*, xf :: *RngMPolElt*)
 > 
 > -> *Val_RngMPolElt_FldPad*
 > {:.ret}
 {:.intrinsic}
 
-The absolute precision of `f`.
+The weak valuation of `xf`.
 
 
-> **WeakValuation** (f :: *RngMPolElt_FldPadExact*)
+> **_ExactpAdics_AbsolutePrecisionOfApproximation** (R :: *RngMPol_FldPadExact*, xf :: *RngMPolElt*)
 > 
 > -> *Val_RngMPolElt_FldPad*
 > {:.ret}
 {:.intrinsic}
 
-The weak valuation of `f`.
-
-
-> **BaselineValuation** (f :: *RngMPolElt_FldPadExact*)
-> 
-> -> *Val_RngMPolElt_FldPad*
-> {:.ret}
-{:.intrinsic}
-
-The baseline valuation of `f`, an unchanging lower bound on the valuation of `f`.
-
-
-> **IncreaseAbsolutePrecision** (f :: *RngMPolElt_FldPadExact*, n)
-{:.intrinsic}
-
-Increases the absolute precision of `f` to `n`.
-
-
-> **Update** (f :: *RngMPolElt_FldPadExact*, app :: *RngMPolElt*)
-{:.intrinsic}
-
-Merges `app` into the current approximation of `f`.
+The weak valuation of `xf`.
 
 
 > **IncreaseAbsolutePrecision_Lazy** (R :: *RngMPol_FldPadExact*, pr :: *RngIntElt*)
@@ -256,25 +226,9 @@ Increases the precision of the approximation to `R` to at least `pr`.
 > 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
-> 
-> **Approximation** (R :: *RngMPol_FldPadExact*, pr :: *RngIntElt*)
-> 
-> -> *RngUPol*
-> {:.ret}
 {:.intrinsic}
 
 An approximation to `R` whose base field has default precision `pr`.
-
-
-
-
-> **Approximation** (R :: *RngMPol_FldPadExact*)
-> 
-> -> *RngUPol*
-> {:.ret}
-{:.intrinsic}
-
-The current approximation to `R`.
 
 
 > **MinValuation** (f :: *RngMPolElt_FldPadExact*)
@@ -299,28 +253,6 @@ True if `f` is weakly zero.
 **Parameters**
 - `Strategy`
 
-> **IncreaseAbsolutePrecision_Lazy** (f :: *RngMPolElt_FldPadExact*, n)
-> 
-> -> *ExactpAdics_Gettr*
-> {:.ret}
-{:.intrinsic}
-
-Increases the absolute precision of `f` to `n`.
-
-
-> **Approximation_Lazy** (f :: *RngMPolElt_FldPadExact*, APr)
-> 
-> **Approximation** (f :: *RngMPolElt_FldPadExact*, APr)
-> 
-> -> *ExactpAdics_Gettr*
-> {:.ret}
-{:.intrinsic}
-
-
-
-
-
-
 ## Printing
 
 > **Format** (f :: *RngMPolElt_FldPadExact*)
@@ -343,7 +275,7 @@ A string representation of `f`.
 > {:.ret}
 {:.intrinsic}
 
-True if `xs` are Hensel liftable to a system of roots of `fs`.
+True if `xs` are Hensel liftable to a system of roots of `fs`. If so, also returns the system of roots.
 
 `fs` must be a system of `n` equations of rank `n`, and `xs` must be a sequence of `n` p-adic numbers.
 

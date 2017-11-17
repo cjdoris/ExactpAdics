@@ -20,9 +20,10 @@ Please direct any bugs, comments or queries to [the GitHub issue tracker](https:
 * [Exact p-adic fields]({{site.baseurl}}/exact-p-adic-fields)
 * [Univariate polynomials]({{site.baseurl}}/univariate-polynomials)
 * [Multivariate polynomials]({{site.baseurl}}/multivariate-polynomials)
-* [Getters]({{site.baseurl}}/getters)
 * [Valuations]({{site.baseurl}}/valuations)
 * [Precision strategies]({{site.baseurl}}/precision-strategies)
+* [Tuples, etc.]({{site.baseurl}}/aggregates)
+* [Internals]({{site.baseurl}}/internals)
 * [Miscellany]({{site.baseurl}}/miscellany)
 * [Index of new types]({{site.baseurl}}/types)
 
