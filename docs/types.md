@@ -19,7 +19,7 @@
 
 [Rings of multivariate polynomials over exact p-adic fields]({{site.baseurl}}/multivariate-polynomials), and their elements.
 
-## Val_PadExact, Val_FldPadElt, Val_RngUPolElt_FldPad, Val_RngMPolElt_FldPad
+## Val_PadExact, Val_FldPadElt, Val_RngUPolElt_FldPad, ...
 
 [Valuations of p-adic objects]({{site.baseurl}}/valuations).
 
@@ -39,9 +39,13 @@
 
 [Homomorphisms of exact p-adic fields]({{site.baseurl}}/exact-p-adic-fields#homomorphisms-incomplete-feature).
 
+## SetCart_PadExact, Tup_PadExact
+
+[Cartesian products and tuples]({{site.baseurl}}/aggregates#tuples) of p-adic objects.
+
 ## TmpFldPadExact, TmpFldPadExactElt
 
-[Temporary p-adic fields]({{site.baseurl}}/exact-p-adic-fields#temporary-field-incomplete-feature)
+[Temporary p-adic fields]({{site.baseurl}}/exact-p-adic-fields#temporary-field-incomplete-feature), and their elements.
 
 ## RngPadExact, RngPadExactElt
 
