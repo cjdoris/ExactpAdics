@@ -1,4 +1,5 @@
 # Exact p-adic fields
+{:#exact-p-adic-fields}
 
 
 **Contents**
@@ -18,7 +19,7 @@
   * [Comparison to constant](#comparison-to-constant)
   * [Comparison between elements](#comparison-between-elements)
   * [Smallest and closest](#smallest-and-closest)
-* [Extensions](#extensions)
+* [Extensions](#extensions-2)
   * [Basic information](#basic-information)
   * [Invariants](#invariants)
   * [Ramification predicates](#ramification-predicates)
@@ -37,9 +38,12 @@
 * [Approximation](#approximation)
 
 ## Creation of p-adic fields
+{:#creation-of-p-adic-fields}
 
 ### Prime fields
+{:#prime-fields}
 
+<a id="ExactpAdicField--RngIntElt"></a><a id="ExactpAdicField"></a>
 > **ExactpAdicField** (p :: *RngIntElt*)
 > 
 > -> *FldPadExact*
@@ -50,7 +54,9 @@ The exact `p`-adic field.
 
 
 ### Extensions
+{:#extensions}
 
+<a id="ExtConstructor"></a><a id="ExtConstructor--FldPadExact--etc"></a><a id="ExtConstructor--FldPadExact--Tup"></a>
 > **ext** \<E :: *FldPadExact* \| ...>
 > 
 > -> *FldPadExact*
@@ -62,6 +68,7 @@ An extension of `E`, where the right hand side is either:
 - coercible to a defining polynomial (Eisenstein or inertial)
 
 
+<a id="Extension"></a><a id="Extension--FldPadExact--any"></a><a id="Extension--RngUPolElt_FldPadExact"></a><a id="Extension--FldPadExact--etc"></a>
 > **Extension** (f :: *RngUPolElt_FldPadExact*)
 > 
 > **Extension** (F :: *FldPadExact*, f)
@@ -75,6 +82,7 @@ The extension defined by `f` over its base field or `F`.
 
 
 
+<a id="UnramifiedExtension--FldPadExact--any"></a><a id="UnramifiedExtension--RngUPolElt_FldPadExact"></a><a id="UnramifiedExtension"></a><a id="UnramifiedExtension--FldPadExact--etc"></a>
 > **UnramifiedExtension** (f :: *RngUPolElt_FldPadExact*)
 > 
 > **UnramifiedExtension** (F :: *FldPadExact*, f)
@@ -88,6 +96,7 @@ The unramified extension defined by `f` over its base field or `F`.
 
 
 
+<a id="UnramifiedExtension--FldPadExact--RngIntElt"></a><a id="UnramifiedExtension-2"></a><a id="UnramifiedExtension--FldPadExact--etc-2"></a>
 > **UnramifiedExtension** (F :: *FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *FldPadExact*
@@ -97,6 +106,7 @@ The unramified extension defined by `f` over its base field or `F`.
 The unramified extension of `F` of degree `n`.
 
 
+<a id="TotallyRamifiedExtension--FldPadExact--etc"></a><a id="TotallyRamifiedExtension--RngUPolElt_FldPadExact"></a><a id="TotallyRamifiedExtension--FldPadExact--any"></a><a id="TotallyRamifiedExtension"></a>
 > **TotallyRamifiedExtension** (f :: *RngUPolElt_FldPadExact*)
 > 
 > **TotallyRamifiedExtension** (F :: *FldPadExact*, f)
@@ -110,6 +120,7 @@ The totally ramified extension defined by `f` over its base field or `F`.
 
 
 
+<a id="TotallyRamifiedExtension--FldPadExact--etc-2"></a><a id="TotallyRamifiedExtension--FldPadExact--RngIntElt--any"></a><a id="TotallyRamifiedExtension--FldPadExact--RngIntElt"></a><a id="TotallyRamifiedExtension-2"></a>
 > **TotallyRamifiedExtension** (F :: *FldPadExact*, n :: *RngIntElt*, pi)
 > 
 > **TotallyRamifiedExtension** (F :: *FldPadExact*, n :: *RngIntElt*)
@@ -124,7 +135,9 @@ The totally ramified extension of `F` of degree `n` got by adjoining the `n`th r
 
 
 ### Completions
+{:#completions}
 
+<a id="ExactCompletion--FldRat--RngIntElt"></a><a id="ExactCompletion--FldNum--etc"></a><a id="ExactCompletion--FldNum--RngOrdIdl"></a><a id="ExactCompletion"></a><a id="ExactCompletion--FldRat--etc"></a><a id="ExactCompletion--FldNum--PlcNumElt"></a><a id="ExactCompletion--FldRat--RngInt"></a>
 > **ExactCompletion** (K :: *FldRat*, P :: *RngIntElt*)
 > 
 > **ExactCompletion** (K :: *FldRat*, P :: *RngInt*)
@@ -147,7 +160,9 @@ The completion C of `K` at `P` as an exact p-adic field. Also returns the embedd
 
 
 ### From approximate fields
+{:#from-approximate-fields}
 
+<a id="ExactpAdicField-2"></a><a id="ExactpAdicField--FldPad"></a>
 > **ExactpAdicField** (xxL :: *FldPad*)
 > 
 > -> *FldPadExact*, *Map*
@@ -159,6 +174,7 @@ Given a p-adic field `xxL`, returns L isomorphic to `xxL` and a map `xxL` -> xL.
 **Parameters**
 - `NoCheckUnique`
 
+<a id="ExactpAdicField--FldPad--etc"></a><a id="ExactpAdicField--FldPad--Map--FldPadExact"></a><a id="ExactpAdicField-3"></a>
 > **ExactpAdicField** (xxL :: *FldPad*, mK :: *Map*, K :: *FldPadExact*)
 > 
 > -> *FldPadExact*, *Map*
@@ -170,6 +186,7 @@ Given an extension `xxL`/xxK and `mK` : xxK -> xK where xK is the approximation 
 **Parameters**
 - `NoCheckUnique`
 
+<a id="ExactpAdicField--FldPad--etc-2"></a><a id="ExactpAdicField--FldPad--FldPad--FldPadExact"></a><a id="ExactpAdicField-4"></a>
 > **ExactpAdicField** (xxL :: *FldPad*, xxK :: *FldPad*, K :: *FldPadExact*)
 > 
 > -> *FldPadExact*, *Map*
@@ -181,6 +198,7 @@ Given `xxL`/`xxK` where `xxK` is coercible to and from xK where xK is the approx
 **Parameters**
 - `NoCheckUnique`
 
+<a id="ExactpAdicField--FldPad--etc-3"></a><a id="ExactpAdicField-5"></a><a id="ExactpAdicField--FldPad--FldPadExact"></a>
 > **ExactpAdicField** (xxL :: *FldPad*, K :: *FldPadExact*)
 > 
 > -> *FldPadExact*, *Map*
@@ -193,9 +211,12 @@ Given `xxL`/xK where xK is the approximation field of `K`, returns L/`K` isomorp
 - `NoCheckUnique`
 
 ## Creation of p-adic numbers
+{:#creation-of-p-adic-numbers}
 
 ### Distinguished elements
+{:#distinguished-elements}
 
+<a id="Zero"></a><a id="Zero--FldPadExact"></a>
 > **Zero** (F :: *FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -205,6 +226,7 @@ Given `xxL`/xK where xK is the approximation field of `K`, returns L/`K` isomorp
 Zero.
 
 
+<a id="One"></a><a id="One--FldPadExact"></a>
 > **One** (F :: *FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -214,6 +236,7 @@ Zero.
 One.
 
 
+<a id="UniformizingElement--FldPadExact"></a><a id="UniformizingElement"></a>
 > **UniformizingElement** (F :: *FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -223,6 +246,7 @@ One.
 The uniformizing element of `F`.
 
 
+<a id="InertiaGenerator--FldPadExact"></a><a id="InertiaGenerator"></a>
 > **InertiaGenerator** (F :: *FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -232,6 +256,7 @@ The uniformizing element of `F`.
 An element of `F` generating the maximal unramified subextension of `F` over its prime subfield, and its minimal polynomial.
 
 
+<a id="PrimitiveElement--FldPadExact--etc"></a><a id="PrimitiveElement"></a><a id="PrimitiveElement--FldPadExact"></a><a id="PrimitiveElement--FldPadExact--FldPadExact"></a>
 > **PrimitiveElement** (E :: *FldPadExact*)
 > 
 > **PrimitiveElement** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -246,7 +271,9 @@ A primitive element of `E` over its prime subfield or `F`.
 
 
 ### From coefficients
+{:#from-coefficients}
 
+<a id="EltConstructor--FldPadExact--any"></a><a id="EltConstructor--FldPadExact--etc"></a><a id="EltConstructor"></a>
 > **elt** \<E :: *FldPadExact* \| ...>
 > 
 > -> *FldPadExactElt*
@@ -259,7 +286,9 @@ Constructs an element of `E`, where the right hand side is either:
 
 
 ### Coercion
+{:#coercion}
 
+<a id="IsCoercible"></a><a id="IsCoercible--FldPadExact--etc"></a><a id="IsCoercible--FldPadExact--any"></a>
 > **IsCoercible** (F :: *FldPadExact*, X)
 > 
 > -> *BoolElt*, Any
@@ -279,7 +308,9 @@ True if `X` is coercible to an element of `F`, and the coerced element.
 
 
 ### Random
+{:#random}
 
+<a id="RandomInteger--FldPadExact"></a><a id="RandomInteger"></a>
 > **RandomInteger** (F :: *FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -289,6 +320,7 @@ True if `X` is coercible to an element of `F`, and the coerced element.
 A random integer of `F`.
 
 
+<a id="Random--FldPadExact--etc"></a><a id="Random"></a><a id="Random--FldPadExact--RngIntElt"></a>
 > **Random** (F :: *FldPadExact*, v :: *RngIntElt*)
 > 
 > -> *FldPadExactElt*
@@ -298,6 +330,7 @@ A random integer of `F`.
 A random element of `F` of value at least `v`.
 
 
+<a id="RandomUnit--FldPadExact"></a><a id="RandomUnit"></a>
 > **RandomUnit** (F :: *FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -307,6 +340,7 @@ A random element of `F` of value at least `v`.
 A random unit of `F`.
 
 
+<a id="RandomUnit--FldPadExact--RngIntElt"></a><a id="RandomUnit--FldPadExact--etc"></a><a id="RandomUnit-2"></a>
 > **RandomUnit** (F :: *FldPadExact*, v :: *RngIntElt*)
 > 
 > -> *FldPadExactElt*
@@ -317,7 +351,9 @@ A random element of `F` of value `v`.
 
 
 ## Basic operations on p-adic numbers
+{:#basic-operations-on-p-adic-numbers}
 
+<a id="Coefficient--FldPadExactElt--etc"></a><a id="Coefficient"></a><a id="Coefficient--FldPadExactElt--RngIntElt"></a>
 > **Coefficient** (x :: *FldPadExactElt*, i :: *RngIntElt*)
 > 
 > -> *FldPadExactElt*
@@ -327,6 +363,7 @@ A random element of `F` of value `v`.
 The generator^`i` coefficient of `x` in K(generator)/K.
 
 
+<a id="Eltseq--FldPadExactElt"></a><a id="Eltseq"></a><a id="Coefficients--FldPadExactElt"></a><a id="Coefficients"></a>
 > **Coefficients** (x :: *FldPadExactElt*)
 > 
 > **Eltseq** (x :: *FldPadExactElt*)
@@ -341,7 +378,9 @@ The coefficients of `x` in the basis generator^i in K(generator)/K.
 
 
 ## Arithmetic
+{:#arithmetic}
 
+<a id="*--FldPadExactElt--etc"></a><a id="---FldPadExactElt--etc"></a><a id="+--FldPadExactElt--etc"></a><a id="*"></a><a id="&+--seq-FldPadExactElt"></a><a id="&*--seq-FldPadExactElt"></a><a id="+--FldPadExactElt--FldPadExactElt"></a><a id="-"></a><a id="---FldPadExactElt"></a><a id="*--FldPadExactElt--FldPadExactElt"></a><a id="+"></a><a id="---FldPadExactElt--FldPadExactElt"></a><a id="&+"></a><a id="&*"></a>
 > **\'-\'** (x :: *FldPadExactElt*)
 > 
 > **\'+\'** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
@@ -371,6 +410,7 @@ Negate, add, subtract, sum, multiply, product.
 
 
 
+<a id="/--FldPadExactElt--etc"></a><a id="/"></a><a id="/--FldPadExactElt--FldPadExactElt"></a>
 > **\'/\'** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 > 
 > -> *FldPadExactElt*
@@ -382,6 +422,7 @@ Division.
 **Parameters**
 - `Strategy`: Used to confirm that `y` is nonzero.
 
+<a id="^--FldPadExactElt--RngIntElt"></a><a id="^"></a><a id="^--FldPadExactElt--etc"></a>
 > **\'^\'** (x :: *FldPadExactElt*, n :: *RngIntElt*)
 > 
 > -> *FldPadExactElt*
@@ -393,6 +434,7 @@ Powering.
 **Parameters**
 - `Strategy`: Used when `n` is negative to confirm that `x` is nonzero.
 
+<a id="ShiftValuation--FldPadExactElt--etc"></a><a id="ShiftValuation"></a><a id="ShiftValuation--FldPadExactElt--any"></a>
 > **ShiftValuation** (x :: *FldPadExactElt*, n)
 > 
 > -> *FldPadExactElt*
@@ -402,6 +444,7 @@ Powering.
 Multiplies `x` by the `n`th power of the uniformizing element.
 
 
+<a id="IsSquare"></a><a id="IsSquare--FldPadExactElt"></a>
 > **IsSquare** (x :: *FldPadExactElt*)
 > 
 > -> *BoolElt*, *FldPadExactElt*
@@ -413,6 +456,7 @@ True iff `x` is a square. (`Strategy` is used to determine if `x` is nonzero.)
 **Parameters**
 - `Strategy`
 
+<a id="IsPower--FldPadExactElt--etc"></a><a id="IsPower--FldPadExactElt--RngIntElt"></a><a id="IsPower"></a>
 > **IsPower** (x :: *FldPadExactElt*, n :: *RngIntElt*)
 > 
 > -> *BoolElt*, *FldPadExactElt*
@@ -425,7 +469,9 @@ True iff `x` is an `n`th power. (`Strategy` is used to determine if `x` is nonze
 - `Strategy`
 
 ## Valuation
+{:#valuation}
 
+<a id="Valuation--FldPadExactElt"></a><a id="Valuation"></a>
 > **Valuation** (x :: *FldPadExactElt*)
 > 
 > -> *RngIntElt*
@@ -438,7 +484,9 @@ The valuation of `x`.
 - `Strategy`
 
 ### Comparison to constant
+{:#comparison-to-constant}
 
+<a id="ValuationEq--FldPadExactElt--any"></a><a id="ValuationNe--FldPadExactElt--any"></a><a id="ValuationGe--FldPadExactElt--any"></a><a id="ValuationGt"></a><a id="ValuationEq--FldPadExactElt--etc"></a><a id="ValuationGt--FldPadExactElt--etc"></a><a id="ValuationLe--FldPadExactElt--any"></a><a id="ValuationLt--FldPadExactElt--etc"></a><a id="ValuationLe--FldPadExactElt--etc"></a><a id="ValuationGt--FldPadExactElt--any"></a><a id="ValuationLe"></a><a id="ValuationNe--FldPadExactElt--etc"></a><a id="ValuationGe"></a><a id="ValuationEq"></a><a id="ValuationGe--FldPadExactElt--etc"></a><a id="ValuationLt"></a><a id="ValuationNe"></a><a id="ValuationLt--FldPadExactElt--any"></a>
 > **ValuationEq** (x :: *FldPadExactElt*, v)
 > 
 > **ValuationNe** (x :: *FldPadExactElt*, v)
@@ -468,6 +516,7 @@ Compares the valuation of `x` with `v`.
 
 
 
+<a id="IsUniformizingElement"></a><a id="IsUniformizingElement--FldPadExactElt"></a>
 > **IsUniformizingElement** (x :: *FldPadExactElt*)
 > 
 > -> *BoolElt*
@@ -477,6 +526,7 @@ Compares the valuation of `x` with `v`.
 True if `x` is a uniformizing element; that is, its valuation is 1.
 
 
+<a id="IsUnit--FldPadExactElt"></a><a id="IsUnit"></a>
 > **IsUnit** (x :: *FldPadExactElt*)
 > 
 > -> *BoolElt*
@@ -486,6 +536,7 @@ True if `x` is a uniformizing element; that is, its valuation is 1.
 True if `x` is a unit; that is, its valuation is 0.
 
 
+<a id="IsIntegral--FldPadExactElt"></a><a id="IsIntegral"></a>
 > **IsIntegral** (x :: *FldPadExactElt*)
 > 
 > -> *BoolElt*
@@ -496,7 +547,9 @@ True if `x` is an integer; that is, its valuation is at least 0.
 
 
 ### Comparison between elements
+{:#comparison-between-elements}
 
+<a id="ValuationCmpValuation_Lazy"></a><a id="ValuationCmpValuation--FldPadExactElt--FldPadExactElt"></a><a id="ValuationCmpValuation_Lazy--FldPadExactElt--FldPadExactElt"></a><a id="ValuationCmpValuation_Lazy--FldPadExactElt--etc"></a><a id="ValuationCmpValuation"></a><a id="ValuationCmpValuation--FldPadExactElt--etc"></a>
 > **ValuationCmpValuation_Lazy** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 > 
 > -> *ExactpAdics_Gettr*
@@ -515,6 +568,7 @@ Respectively <0, 0 or >0 if the valuation of `x` is less than, equal to or great
 **Parameters**
 - `Strategy`
 
+<a id="ValuationGtValuation--FldPadExactElt--FldPadExactElt"></a><a id="ValuationGtValuation_Lazy"></a><a id="ValuationGtValuation_Lazy--FldPadExactElt--etc"></a><a id="ValuationGtValuation--FldPadExactElt--etc"></a><a id="ValuationGtValuation_Lazy--FldPadExactElt--FldPadExactElt"></a><a id="ValuationGtValuation"></a>
 > **ValuationGtValuation_Lazy** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 > 
 > -> *ExactpAdics_Gettr*
@@ -534,7 +588,9 @@ True iff `x` has greater valuation than `y`.
 - `Strategy`
 
 ### Smallest and closest
+{:#smallest-and-closest}
 
+<a id="IndexOfSmallest--seq-FldPadExactElt"></a><a id="IndexOfSmallest"></a>
 > **IndexOfSmallest** (xs :: [*FldPadExactElt*])
 > 
 > -> *RngIntElt*
@@ -547,6 +603,7 @@ The index i maximizing Valuation(`xs`[i]). If `Unique`, raises an error if there
 - `Strategy`
 - `Unique`
 
+<a id="IndexOfClosest--FldPadExactElt--etc"></a><a id="IndexOfClosest--FldPadExactElt--seq-FldPadExactElt"></a><a id="IndexOfClosest"></a>
 > **IndexOfClosest** (x :: *FldPadExactElt*, ys :: [*FldPadExactElt*])
 > 
 > -> *RngIntElt*
@@ -559,6 +616,7 @@ The index i maximizing Valuation(`x`-`ys`[i]). If `Unique`, raises an error if t
 - `Strategy`
 - `Unique`
 
+<a id="Smallest"></a><a id="Smallest--seq-FldPadExactElt"></a>
 > **Smallest** (xs :: [*FldPadExactElt*])
 > 
 > -> *FldPadExactElt*, *RngIntElt*
@@ -571,6 +629,7 @@ The smallest element of `xs`, and its index.
 - `Strategy`
 - `Unique`
 
+<a id="Closest--FldPadExactElt--seq-FldPadExactElt"></a><a id="Closest"></a><a id="Closest--FldPadExactElt--etc"></a>
 > **Closest** (x :: *FldPadExactElt*, ys :: [*FldPadExactElt*])
 > 
 > -> *FldPadExactElt*, *RngIntElt*
@@ -584,7 +643,9 @@ The closest element y of `ys` to `x` and its index.
 - `Unique`
 
 ## Extensions
+{:#extensions-2}
 
+<a id="BaseField"></a><a id="BaseField--FldPadExact"></a>
 > **BaseField** (F :: *FldPadExact*)
 > 
 > -> *FldPadExact*
@@ -594,6 +655,7 @@ The closest element y of `ys` to `x` and its index.
 The base field of `F`.
 
 
+<a id="IsPrimeField--FldPadExact"></a><a id="IsPrimeField"></a>
 > **IsPrimeField** (F :: *FldPadExact*)
 > 
 > -> *BoolElt*
@@ -603,6 +665,7 @@ The base field of `F`.
 True if `F` is a prime p-adic field.
 
 
+<a id="PrimeField--FldPadExact"></a><a id="PrimeField"></a>
 > **PrimeField** (F :: *FldPadExact*)
 > 
 > -> *BoolElt*
@@ -612,6 +675,7 @@ True if `F` is a prime p-adic field.
 The prime field of `F`.
 
 
+<a id="IsExtensionOf--FldPadExact--FldPadExact"></a><a id="IsExtensionOf"></a><a id="IsExtensionOf--FldPadExact--etc"></a>
 > **IsExtensionOf** (E :: *FldPadExact*, F :: *FldPadExact*)
 > 
 > -> *BoolElt*, *ExtDataFldPadExact*
@@ -621,6 +685,7 @@ The prime field of `F`.
 True if `E` is an extension of `F`. If so, also returns an object representing the extension.
 
 
+<a id="ExistsCoveringStructure--RngInt--etc"></a><a id="ExistsCoveringStructure--FldRat--etc"></a><a id="ExistsCoveringStructure--FldRat--FldPadExact"></a><a id="ExistsCoveringStructure--FldPadExact--RngInt"></a><a id="ExistsCoveringStructure--FldPadExact--FldPadExact"></a><a id="ExistsCoveringStructure--FldPadExact--etc"></a><a id="ExistsCoveringStructure--RngInt--FldPadExact"></a><a id="ExistsCoveringStructure"></a><a id="ExistsCoveringStructure--FldPadExact--FldRat"></a>
 > **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *FldPadExact*)
 > 
 > **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *RngInt*)
@@ -647,7 +712,9 @@ True if there is a structure containing `E` and `F`, and the common structure.
 
 
 ### Basic information
+{:#basic-information}
 
+<a id="DefiningPolynomial"></a><a id="DefiningPolynomial--FldPadExact"></a>
 > **DefiningPolynomial** (K :: *FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -657,12 +724,14 @@ True if there is a structure containing `E` and `F`, and the common structure.
 The defining polynomial of `K`.
 
 
+<a id="AssignNames--FldPadExact--seq-MonStgElt"></a><a id="AssignNames"></a><a id="AssignNames--FldPadExact--etc"></a>
 > **AssignNames** (~F :: *FldPadExact*, names :: [*MonStgElt*])
 {:.intrinsic}
 
 Assigns a name to the generator of `F`.
 
 
+<a id="Name--FldPadExact--etc"></a><a id=".--FldPadExact--etc"></a><a id="."></a><a id=".--FldPadExact--RngIntElt"></a><a id="Name"></a><a id="Name--FldPadExact--RngIntElt"></a>
 > **Name** (F :: *FldPadExact*, i :: *RngIntElt*)
 > 
 > **\'.\'** (F :: *FldPadExact*, i :: *RngIntElt*)
@@ -676,6 +745,7 @@ The `i`th generator of `F`.
 
 
 
+<a id="Generator"></a><a id="Generator--FldPadExact"></a>
 > **Generator** (F :: *FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -685,6 +755,7 @@ The `i`th generator of `F`.
 The generating element of `F`.
 
 
+<a id="eq--FldPadExact--FldPadExact"></a><a id="eq--FldPadExact--etc"></a><a id="eq"></a>
 > **\'eq\'** (F :: *FldPadExact*, E :: *FldPadExact*)
 > 
 > -> *BoolElt*
@@ -695,7 +766,9 @@ Equality.
 
 
 ### Invariants
+{:#invariants}
 
+<a id="Prime"></a><a id="Prime--FldPadExact"></a>
 > **Prime** (F :: *FldPadExact*)
 > 
 > -> *RngIntElt*
@@ -705,6 +778,7 @@ Equality.
 The p in p-adic.
 
 
+<a id="Degree--FldPadExact--etc"></a><a id="Degree--FldPadExact"></a><a id="Degree"></a><a id="Degree--FldPadExact--FldPadExact"></a>
 > **Degree** (E :: *FldPadExact*)
 > 
 > **Degree** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -718,6 +792,7 @@ The degree of `E` over its base field or `F`.
 
 
 
+<a id="AbsoluteDegree"></a><a id="AbsoluteDegree--FldPadExact"></a>
 > **AbsoluteDegree** (F :: *FldPadExact*)
 > 
 > -> *RngIntElt*
@@ -727,6 +802,7 @@ The degree of `E` over its base field or `F`.
 The degree of `F` over its prime field.
 
 
+<a id="InertiaDegree"></a><a id="InertiaDegree--FldPadExact"></a><a id="InertiaDegree--FldPadExact--etc"></a><a id="InertiaDegree--FldPadExact--FldPadExact"></a>
 > **InertiaDegree** (E :: *FldPadExact*)
 > 
 > **InertiaDegree** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -740,6 +816,7 @@ The inertia degree of `E` over its base field or `F`.
 
 
 
+<a id="AbsoluteInertiaDegree--FldPadExact"></a><a id="AbsoluteInertiaDegree"></a>
 > **AbsoluteInertiaDegree** (F :: *FldPadExact*)
 > 
 > -> *RngIntElt*
@@ -749,6 +826,7 @@ The inertia degree of `E` over its base field or `F`.
 The inertia degree of `F` over its prime field.
 
 
+<a id="RamificationDegree--FldPadExact"></a><a id="RamificationDegree--FldPadExact--FldPadExact"></a><a id="RamificationDegree--FldPadExact--etc"></a><a id="RamificationDegree"></a>
 > **RamificationDegree** (E :: *FldPadExact*)
 > 
 > **RamificationDegree** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -762,6 +840,7 @@ The ramification degree of `E` over its base field or `F`.
 
 
 
+<a id="AbsoluteRamificationDegree"></a><a id="AbsoluteRamificationDegree--FldPadExact"></a>
 > **AbsoluteRamificationDegree** (F :: *FldPadExact*)
 > 
 > -> *RngIntElt*
@@ -771,6 +850,7 @@ The ramification degree of `E` over its base field or `F`.
 The ramification degree of `F` over its prime field.
 
 
+<a id="DiscriminantValuation--FldPadExact"></a><a id="DiscriminantValuation--FldPadExact--etc"></a><a id="DiscriminantValuation--FldPadExact--FldPadExact"></a><a id="DiscriminantValuation"></a>
 > **DiscriminantValuation** (E :: *FldPadExact*)
 > 
 > **DiscriminantValuation** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -785,7 +865,9 @@ The valuation of the discriminant of `E` over its base field or `F`.
 
 
 ### Ramification predicates
+{:#ramification-predicates}
 
+<a id="IsUnramified--any"></a><a id="IsUnramified"></a><a id="IsUnramified--any--etc"></a><a id="IsUnramified--any--any"></a>
 > **IsUnramified** (E)
 > 
 > **IsUnramified** (E, F)
@@ -799,6 +881,7 @@ True if `E` is unramified over its base field or `F`; that is, if the ramificati
 
 
 
+<a id="IsRamified--any"></a><a id="IsRamified--any--etc"></a><a id="IsRamified"></a><a id="IsRamified--any--any"></a>
 > **IsRamified** (E)
 > 
 > **IsRamified** (E, F)
@@ -812,6 +895,7 @@ True if `E` is ramified over its base field or `F`; that is, if the ramification
 
 
 
+<a id="IsTotallyRamified--any"></a><a id="IsTotallyRamified--any--any"></a><a id="IsTotallyRamified"></a><a id="IsTotallyRamified--any--etc"></a>
 > **IsTotallyRamified** (E)
 > 
 > **IsTotallyRamified** (E, F)
@@ -825,6 +909,7 @@ True if `E` is totally ramified over its base field or `F`; that is, if the iner
 
 
 
+<a id="IsWildlyRamified--any"></a><a id="IsWildlyRamified--any--any"></a><a id="IsWildlyRamified"></a><a id="IsWildlyRamified--any--etc"></a>
 > **IsWildlyRamified** (E)
 > 
 > **IsWildlyRamified** (E, F)
@@ -838,6 +923,7 @@ True if `E` is wildly ramified over its base field or `F`; that is, if the ramif
 
 
 
+<a id="IsTotallyWildlyRamified--any"></a><a id="IsTotallyWildlyRamified--any--any"></a><a id="IsTotallyWildlyRamified"></a><a id="IsTotallyWildlyRamified--any--etc"></a>
 > **IsTotallyWildlyRamified** (E)
 > 
 > **IsTotallyWildlyRamified** (E, F)
@@ -852,7 +938,9 @@ True if `E` is totally wildly ramified over its base field or `F`; that is, if i
 
 
 ### Printing
+{:#printing}
 
+<a id="DescribeExtension--FldPadExact--FldPadExact"></a><a id="DescribeExtension"></a><a id="DescribeExtension--FldPadExact--etc"></a>
 > **DescribeExtension** (E :: *FldPadExact*, F :: *FldPadExact*)
 > 
 > -> *MonStgElt*
@@ -865,7 +953,9 @@ A string describing the extension `E`/`F` with `F` described as FName.
 - `BaseName`
 
 ### Standard form
+{:#standard-form}
 
+<a id="IsInStandardForm--FldPadExact--FldPadExact"></a><a id="IsInStandardForm--FldPadExact--etc"></a><a id="IsInStandardForm"></a>
 > **IsInStandardForm** (E :: *FldPadExact*, F :: *FldPadExact*)
 > 
 > -> *BoolElt*
@@ -876,7 +966,9 @@ True if `E`/`F` is in standard form: `E` is a totally ramified extension of an u
 
 
 ## Residue class field
+{:#residue-class-field}
 
+<a id="ResidueClassField"></a><a id="ResidueClassField--FldPadExact"></a>
 > **ResidueClassField** (F :: *FldPadExact*)
 > 
 > -> *FldFin*, *Map*, *Map*
@@ -886,6 +978,7 @@ True if `E`/`F` is in standard form: `E` is a totally ramified extension of an u
 The residue class field R of `F`, the map `F` to R, and the map from the approximation of `F` to R.
 
 
+<a id="ResidueClass--FldPadExactElt"></a><a id="ResidueClass"></a>
 > **ResidueClass** (x :: *FldPadExactElt*)
 > 
 > -> *FldFinElt*
@@ -896,6 +989,7 @@ The residue class of `x`.
 
 
 ## Ramification polynomials and polygons
+{:#ramification-polynomials-and-polygons}
 
 
 In this package, if $f(x)$ is an Eisenstein polynomial with a root $\pi$, then we define the *ramification polynomial of $f$* to be $f(x+\pi)$ and the *ramification polygon of $f$* to be the Newton polygon of this. Observe that since $f(\pi)=0$ then the ramification polygon has end vertices at 1 and $\deg f$.
@@ -904,6 +998,7 @@ If $L/K$ is totally ramified, then the *ramification polygon of $L/K$* is the ra
 
 The Newton polygon is an invariant of an extension and describes the ramification breaks of the *Galois set* $\Gamma(L/K)$ of embeddings $L \hookrightarrow \bar{K}$. This generalizes ramification theory of Galois extensions, where the Galois set is equal to the Galois group.
 
+<a id="RamificationResidualPolynomials--RngUPolElt_FldPadExact"></a><a id="RamificationResidualPolynomials"></a>
 > **RamificationResidualPolynomials** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> []
@@ -913,6 +1008,7 @@ The Newton polygon is an invariant of an extension and describes the ramificatio
 The residual polynomials of the ramification polygon of `f`.
 
 
+<a id="RamificationResidualPolynomial--RngUPolElt_FldPadExact--etc"></a><a id="RamificationResidualPolynomial--RngUPolElt_FldPadExact--NwtnPgonFace"></a><a id="RamificationResidualPolynomial"></a>
 > **RamificationResidualPolynomial** (f :: *RngUPolElt_FldPadExact*, face :: *NwtnPgonFace*)
 > 
 > -> *RngUPolElt*
@@ -922,6 +1018,7 @@ The residual polynomials of the ramification polygon of `f`.
 The residual polynomial of the given `face` of the ramification polygon of `f`.
 
 
+<a id="RamificationPolynomial"></a><a id="RamificationPolynomial--FldPadExact"></a>
 > **RamificationPolynomial** (L :: *FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -931,6 +1028,7 @@ The residual polynomial of the given `face` of the ramification polygon of `f`.
 The ramification polynomial of `L` with respect to its defining polynomial.
 
 
+<a id="RamificationPolygon--RngUPolElt_FldPadExact"></a><a id="RamificationPolygon"></a>
 > **RamificationPolygon** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *NwtnPgon*
@@ -940,6 +1038,7 @@ The ramification polynomial of `L` with respect to its defining polynomial.
 The ramification polygon of the extension defined by `f`.
 
 
+<a id="RamificationPolygon-2"></a><a id="RamificationPolygon--FldPadExact--etc"></a><a id="RamificationPolygon--FldPadExact--FldPadExact"></a><a id="RamificationPolygon--FldPadExact"></a>
 > **RamificationPolygon** (E :: *FldPadExact*)
 > 
 > **RamificationPolygon** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -954,9 +1053,12 @@ The ramification polygon of `E` over its base field or `F`.
 
 
 ## Hasse-Herbrand transition function
+{:#hasse-herbrand-transition-function}
 
 ### Creation
+{:#creation}
 
+<a id="TransitionFunction--FldPadExact--FldPadExact"></a><a id="TransitionFunction--FldPadExact--etc"></a><a id="TransitionFunction--FldPad"></a><a id="TransitionFunction--FldPad--FldPad"></a><a id="TransitionFunction--FldPadExact"></a><a id="TransitionFunction--FldPad--etc"></a><a id="TransitionFunction"></a>
 > **TransitionFunction** (E :: *FldPadExact*)
 > 
 > **TransitionFunction** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -979,7 +1081,9 @@ The Hasse-Herbrand transition function of `E` over its base field or `F`.
 
 
 ### Operations
+{:#operations}
 
+<a id="Degree--HassHerbTransFunc"></a><a id="Degree-2"></a>
 > **Degree** (h :: *HassHerbTransFunc*)
 > 
 > -> *RngIntElt*
@@ -989,6 +1093,7 @@ The Hasse-Herbrand transition function of `E` over its base field or `F`.
 The degree of the extension this is the transition function of.
 
 
+<a id="Vertices"></a><a id="Vertices--HassHerbTransFunc"></a>
 > **Vertices** (h :: *HassHerbTransFunc*)
 > 
 > -> []
@@ -998,6 +1103,7 @@ The degree of the extension this is the transition function of.
 The vertices of the function.
 
 
+<a id="LowerBreaks--HassHerbTransFunc"></a><a id="LowerBreaks"></a>
 > **LowerBreaks** (h :: *HassHerbTransFunc*)
 > 
 > -> []
@@ -1007,6 +1113,7 @@ The vertices of the function.
 The lower breaks of `h`.
 
 
+<a id="UpperBreaks"></a><a id="UpperBreaks--HassHerbTransFunc"></a>
 > **UpperBreaks** (h :: *HassHerbTransFunc*)
 > 
 > -> []
@@ -1016,6 +1123,7 @@ The lower breaks of `h`.
 The upper breaks of `h`.
 
 
+<a id="eq--HassHerbTransFunc--etc"></a><a id="eq--HassHerbTransFunc--HassHerbTransFunc"></a><a id="eq-2"></a>
 > **\'eq\'** (h1 :: *HassHerbTransFunc*, h2 :: *HassHerbTransFunc*)
 > 
 > -> *BoolElt*
@@ -1025,6 +1133,7 @@ The upper breaks of `h`.
 True if `h1` and `h2` are equal as field invariants, i.e. they define the same function.
 
 
+<a id="@--any--etc"></a><a id="@--any--HassHerbTransFunc"></a><a id="@"></a>
 > **\'@\'** (v, h :: *HassHerbTransFunc*)
 > 
 > -> Any
@@ -1034,6 +1143,7 @@ True if `h1` and `h2` are equal as field invariants, i.e. they define the same f
 Evaluates `h` at `v`.
 
 
+<a id="@@"></a><a id="@@--any--HassHerbTransFunc"></a><a id="@@--any--etc"></a>
 > **\'@@\'** (u, h :: *HassHerbTransFunc*)
 > 
 > -> Any
@@ -1043,6 +1153,7 @@ Evaluates `h` at `v`.
 The inverse of `h` at `u`.
 
 
+<a id="RamificationPolygon-3"></a><a id="RamificationPolygon--HassHerbTransFunc"></a>
 > **RamificationPolygon** (h :: *HassHerbTransFunc*)
 > 
 > -> *NwtnPgon*
@@ -1053,7 +1164,9 @@ The ramification polygon of a totally ramified extension with the given transiti
 
 
 ## Primitivity and minimal polynomials
+{:#primitivity-and-minimal-polynomials}
 
+<a id="IsDefinitelyPrimitive"></a><a id="IsDefinitelyPrimitive--any--FldPadExact--FldPadExact"></a><a id="IsDefinitelyPrimitive--FldPadExactElt--etc"></a><a id="IsDefinitelyPrimitive--FldPadExactElt--FldPadExact"></a><a id="IsDefinitelyPrimitive--any--etc"></a>
 > **IsDefinitelyPrimitive** (x, E :: *FldPadExact*, F :: *FldPadExact*)
 > 
 > **IsDefinitelyPrimitive** (x :: *FldPadExactElt*, F :: *FldPadExact*)
@@ -1069,6 +1182,7 @@ True if `x` is a primitive element for `E` (or `Parent(x)`) over `F`.
 **Parameters**
 - `Strategy`
 
+<a id="MinimalPolynomial--FldPadExactElt--FldPadExact"></a><a id="MinimalPolynomial--FldPadExactElt--etc"></a><a id="MinimalPolynomial"></a>
 > **MinimalPolynomial** (x :: *FldPadExactElt*, F :: *FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -1081,7 +1195,9 @@ The minimal polynomial of `x` over `F`. Requires that `x` is a primitive element
 - `Strategy`
 
 ## Quotient ring
+{:#quotient-ring}
 
+<a id="Quotient--FldPadExact--RngIntElt"></a><a id="Quotient--FldPadExact--etc"></a><a id="Quotient"></a>
 > **Quotient** (F :: *FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *RngPadRes*, *Map*
@@ -1091,6 +1207,7 @@ The minimal polynomial of `x` over `F`. Requires that `x` is a primitive element
 The integers Q of `F` mod pi^`n`, and the map `F` to Q.
 
 
+<a id="QuoConstructor"></a><a id="QuoConstructor--FldPadExact--any"></a><a id="QuoConstructor--FldPadExact--etc"></a>
 > **quo** \<F :: *FldPadExact* \| ...>
 > 
 > -> *RngPadRes*, *Map*
@@ -1101,7 +1218,9 @@ Quotient of the ring of integers of `F` by the elements on the right hand side.
 
 
 ## Homomorphisms (incomplete feature)
+{:#homomorphisms-incomplete-feature}
 
+<a id="BaseField-2"></a><a id="BaseField--HomFldPadExact"></a>
 > **BaseField** (h :: *HomFldPadExact*)
 > 
 > -> *FldPadExact*
@@ -1111,6 +1230,7 @@ Quotient of the ring of integers of `F` by the elements on the right hand side.
 The base field of `h`, which is fixed.
 
 
+<a id="Domain--HomFldPadExact"></a><a id="Domain"></a>
 > **Domain** (h :: *HomFldPadExact*)
 > 
 > -> *FldPadExact*
@@ -1120,6 +1240,7 @@ The base field of `h`, which is fixed.
 The domain of `h`.
 
 
+<a id="Codomain"></a><a id="Codomain--HomFldPadExact"></a>
 > **Codomain** (h :: *HomFldPadExact*)
 > 
 > -> *FldPadExact*
@@ -1129,6 +1250,7 @@ The domain of `h`.
 The codomain of `h`.
 
 
+<a id="@--any--etc-2"></a><a id="@--any--HomFldPadExact"></a><a id="@-2"></a>
 > **\'@\'** (x, h :: *HomFldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -1138,6 +1260,7 @@ The codomain of `h`.
 Applies the map.
 
 
+<a id="IsInvertible--HomFldPadExact"></a><a id="IsInvertible"></a>
 > **IsInvertible** (h :: *HomFldPadExact*)
 > 
 > -> *BoolElt*, *HomFldPadExact*
@@ -1147,6 +1270,7 @@ Applies the map.
 True if `h` has an inverse, and the inverse.
 
 
+<a id="Inverse"></a><a id="Inverse--HomFldPadExact"></a>
 > **Inverse** (h :: *HomFldPadExact*)
 > 
 > -> *HomFldPadExact*
@@ -1156,6 +1280,7 @@ True if `h` has an inverse, and the inverse.
 The inverse of `h`.
 
 
+<a id="@@-2"></a><a id="@@--any--etc-2"></a><a id="@@--any--HomFldPadExact"></a>
 > **\'@@\'** (x, h :: *HomFldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -1165,6 +1290,7 @@ The inverse of `h`.
 Applies the inverse map.
 
 
+<a id="TrivialEmbedding--ExtDataFldPadExact"></a><a id="TrivialEmbedding"></a>
 > **TrivialEmbedding** (X :: *ExtDataFldPadExact*)
 > 
 > -> *HomFldPadExact*
@@ -1174,6 +1300,7 @@ Applies the inverse map.
 The trivial embedding of BaseField(`X`) into TopField(`X`).
 
 
+<a id="TrivialEmbedding-2"></a><a id="TrivialEmbedding--FldPadExactElt--etc"></a><a id="TrivialEmbedding--FldPadExactElt--FldPadExactElt"></a>
 > **TrivialEmbedding** (F :: *FldPadExactElt*, E :: *FldPadExactElt*)
 > 
 > -> *HomFldPadExact*
@@ -1183,6 +1310,7 @@ The trivial embedding of BaseField(`X`) into TopField(`X`).
 The trivial embedding of `F` into `E`.
 
 
+<a id="*--HomFldPadExact--etc"></a><a id="*-2"></a><a id="*--HomFldPadExact--HomFldPadExact"></a>
 > **\'\*\'** (h1 :: *HomFldPadExact*, h2 :: *HomFldPadExact*)
 > 
 > -> *HomFldPadExact*
@@ -1192,6 +1320,7 @@ The trivial embedding of `F` into `E`.
 The composition x @ (`h1` * `h2`) = x @ `h1` @ `h2`.
 
 
+<a id="Embeddings--ExtDataFldPadExact--HomFldPadExact"></a><a id="Embeddings"></a><a id="Embeddings--ExtDataFldPadExact--etc"></a>
 > **Embeddings** (X :: *ExtDataFldPadExact*, h :: *HomFldPadExact*)
 > 
 > -> []
@@ -1201,6 +1330,7 @@ The composition x @ (`h1` * `h2`) = x @ `h1` @ `h2`.
 The embeddings of TopField(`X`) into Codomain(`h`) extending `h`:BaseField(`X`)->Codomain(`h`).
 
 
+<a id="Embeddings--ExtDataFldPadExact--ExtDataFldPadExact--HomFldPadExact"></a><a id="Embeddings-2"></a><a id="Embeddings--ExtDataFldPadExact--etc-2"></a>
 > **Embeddings** (X1 :: *ExtDataFldPadExact*, X2 :: *ExtDataFldPadExact*, h0 :: *HomFldPadExact*)
 > 
 > -> []
@@ -1210,6 +1340,7 @@ The embeddings of TopField(`X`) into Codomain(`h`) extending `h`:BaseField(`X`)-
 The embeddings of TopField(`X1`) into TopField(`X2`) extending `h0`:BaseField(`X1`)->BaseField(`X2`).
 
 
+<a id="Embeddings--ExtDataFldPadExact--ExtDataFldPadExact"></a><a id="Embeddings-3"></a><a id="Embeddings--ExtDataFldPadExact--etc-3"></a>
 > **Embeddings** (X1 :: *ExtDataFldPadExact*, X2 :: *ExtDataFldPadExact*)
 > 
 > -> []
@@ -1220,7 +1351,9 @@ The embeddings of TopField(`X1`) into TopField(`X2`) fixing BaseField(`X1`)=Base
 
 
 ## Temporary field (incomplete feature)
+{:#temporary-field-incomplete-feature}
 
+<a id="Temporary"></a><a id="Temporary--FldPadExact"></a>
 > **Temporary** (F :: *FldPadExact*)
 > 
 > -> *TmpFldPadExact*
@@ -1230,6 +1363,7 @@ The embeddings of TopField(`X1`) into TopField(`X2`) fixing BaseField(`X1`)=Base
 The temporary elements of `F`.
 
 
+<a id="Temporary-2"></a><a id="Temporary--FldPadExactElt"></a>
 > **Temporary** (x :: *FldPadExactElt*)
 > 
 > -> *TmpFldPadExactElt*
@@ -1239,6 +1373,7 @@ The temporary elements of `F`.
 A temporary representation of `x`.
 
 
+<a id="Parent--TmpFldPadExactElt"></a><a id="Parent"></a>
 > **Parent** (t :: *TmpFldPadExactElt*)
 > 
 > -> *TmpFldPadExact*
@@ -1248,18 +1383,21 @@ A temporary representation of `x`.
 The parent of `t`.
 
 
+<a id="Print"></a><a id="Print--TmpFldPadExact--MonStgElt"></a><a id="Print--TmpFldPadExact--etc"></a>
 > **Print** (T :: *TmpFldPadExact*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
 Print `T`.
 
 
+<a id="Print-2"></a><a id="Print--TmpFldPadExactElt--etc"></a><a id="Print--TmpFldPadExactElt--MonStgElt"></a>
 > **Print** (t :: *TmpFldPadExactElt*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
 Print `t`.
 
 
+<a id="Evaluate"></a><a id="Evaluate--TmpFldPadExactElt"></a>
 > **Evaluate** (t :: *TmpFldPadExactElt*)
 > 
 > -> *FldPadExactElt*
@@ -1269,6 +1407,7 @@ Print `t`.
 Returns a permanent version of `t`.
 
 
+<a id="WeakValuation--TmpFldPadExactElt"></a><a id="WeakValuation"></a>
 > **WeakValuation** (t :: *TmpFldPadExactElt*)
 > 
 > -> *RngIntElt*
@@ -1278,6 +1417,7 @@ Returns a permanent version of `t`.
 A lower bound on the valuation of `t`.
 
 
+<a id="AbsolutePrecision"></a><a id="AbsolutePrecision--TmpFldPadExactElt"></a>
 > **AbsolutePrecision** (t :: *TmpFldPadExactElt*)
 > 
 > -> *RngIntElt*
@@ -1287,6 +1427,7 @@ A lower bound on the valuation of `t`.
 The absolute precision to which a permanent version of `t` will be made.
 
 
+<a id="&+--seq-TmpFldPadExactElt"></a><a id="+-2"></a><a id="+--TmpFldPadExactElt--etc"></a><a id="&+-2"></a><a id="+--TmpFldPadExactElt--TmpFldPadExactElt"></a>
 > **\'&+\'** (ts :: [*TmpFldPadExactElt*])
 > 
 > **\'+\'** (s :: *TmpFldPadExactElt*, t :: *TmpFldPadExactElt*)
@@ -1300,6 +1441,7 @@ Addition.
 
 
 
+<a id="BaseField-3"></a><a id="BaseField--TmpFldPadExactElt"></a>
 > **BaseField** (T :: *TmpFldPadExactElt*)
 > 
 > -> *TmpFldPadExactElt*
@@ -1309,6 +1451,7 @@ Addition.
 The base field of `T`.
 
 
+<a id="ExistsCoveringStructure--Str--TmpFldPadExact"></a><a id="ExistsCoveringStructure--TmpFldPadExact--etc"></a><a id="ExistsCoveringStructure--TmpFldPadExact--TmpFldPadExact"></a><a id="ExistsCoveringStructure--Str--etc"></a><a id="ExistsCoveringStructure--TmpFldPadExact--Str"></a><a id="ExistsCoveringStructure-2"></a>
 > **ExistsCoveringStructure** (S :: *TmpFldPadExact*, T :: *TmpFldPadExact*)
 > 
 > **ExistsCoveringStructure** (S :: *TmpFldPadExact*, T :: *Str*)
@@ -1326,6 +1469,7 @@ True if there is a structure containing both `S` and `T`.
 
 
 
+<a id="eq--TmpFldPadExact--TmpFldPadExact"></a><a id="eq-3"></a><a id="eq--TmpFldPadExact--etc"></a>
 > **\'eq\'** (S :: *TmpFldPadExact*, T :: *TmpFldPadExact*)
 > 
 > -> *BoolElt*
@@ -1335,6 +1479,7 @@ True if there is a structure containing both `S` and `T`.
 Equality.
 
 
+<a id="IsCoercible--TmpFldPadExact--RngIntElt"></a><a id="IsCoercible--TmpFldPadExact--etc"></a><a id="IsCoercible--TmpFldPadExact--any"></a><a id="IsCoercible-2"></a><a id="IsCoercible--TmpFldPadExact--FldRatElt"></a><a id="IsCoercible--TmpFldPadExact--TmpFldPadExactElt"></a>
 > **IsCoercible** (T :: *TmpFldPadExact*, X)
 > 
 > **IsCoercible** (T :: *TmpFldPadExact*, X :: *TmpFldPadExactElt*)
@@ -1356,6 +1501,7 @@ True if `X` is coercible to `T`, and the coerced element.
 
 
 
+<a id="Eltseq-2"></a><a id="Eltseq--TmpFldPadExactElt"></a>
 > **Eltseq** (x :: *TmpFldPadExactElt*)
 > 
 > -> []
@@ -1365,6 +1511,7 @@ True if `X` is coercible to `T`, and the coerced element.
 Eltseq.
 
 
+<a id="Coefficient--TmpFldPadExactElt--etc"></a><a id="Coefficient-2"></a><a id="Coefficient--TmpFldPadExactElt--RngIntElt"></a>
 > **Coefficient** (x :: *TmpFldPadExactElt*, i :: *RngIntElt*)
 > 
 > -> *TmpFldPadExactElt*
@@ -1375,7 +1522,9 @@ Eltseq[`i`].
 
 
 ## Integer ring (incomplete feature)
+{:#integer-ring-incomplete-feature}
 
+<a id="Integers--FldPadExact--RngIntElt"></a><a id="Integers"></a><a id="Integers--FldPadExact--etc"></a>
 > **Integers** (F :: *FldPadExact*, v :: *RngIntElt*)
 > 
 > -> *RngPadExact*
@@ -1385,6 +1534,7 @@ Eltseq[`i`].
 The ring of elements of `F` of valuation at least `v`.
 
 
+<a id="Integers--FldPadExact"></a><a id="Integers-2"></a>
 > **Integers** (F :: *FldPadExact*)
 > 
 > -> *RngPadExact*
@@ -1394,6 +1544,7 @@ The ring of elements of `F` of valuation at least `v`.
 The ring of integers of `F`.
 
 
+<a id="FieldOfFractions--RngPadExact"></a><a id="FieldOfFractions--FldPadExact"></a><a id="FieldOfFractions"></a>
 > **FieldOfFractions** (F :: *FldPadExact*)
 > 
 > **FieldOfFractions** (R :: *RngPadExact*)
@@ -1407,6 +1558,7 @@ The field of fractions.
 
 
 
+<a id="eq--RngPadExact--etc"></a><a id="eq--RngPadExact--RngPadExact"></a><a id="eq-4"></a>
 > **\'eq\'** (R :: *RngPadExact*, S :: *RngPadExact*)
 > 
 > -> *BoolElt*
@@ -1416,6 +1568,7 @@ The field of fractions.
 Equality.
 
 
+<a id="IsCoercible-3"></a><a id="IsCoercible--RngPadExact--etc"></a><a id="IsCoercible--RngPadExact--any"></a><a id="IsCoercible--RngPadExact--FldPadExactElt"></a><a id="IsCoercible--RngPadExact--RngPadExactElt"></a>
 > **IsCoercible** (R :: *RngPadExact*, X)
 > 
 > **IsCoercible** (R :: *RngPadExact*, X :: *FldPadExactElt*)
@@ -1433,6 +1586,7 @@ True if `X` is coercible into `R` and the coerced element.
 
 
 
+<a id="Parent--RngPadExactElt"></a><a id="Parent-2"></a>
 > **Parent** (x :: *RngPadExactElt*)
 > 
 > -> *RngPadExact*
@@ -1442,12 +1596,14 @@ True if `X` is coercible into `R` and the coerced element.
 Parent of `x`.
 
 
+<a id="Print-3"></a><a id="Print--RngPadExactElt--MonStgElt"></a><a id="Print--RngPadExactElt--etc"></a>
 > **Print** (x :: *RngPadExactElt*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
 Print.
 
 
+<a id="Random-2"></a><a id="Random--RngPadExact"></a>
 > **Random** (R :: *RngPadExact*)
 > 
 > -> *RngPadExactElt*
@@ -1457,6 +1613,7 @@ Print.
 A random element of `R`.
 
 
+<a id="Format--FldPadExactElt"></a><a id="Format"></a>
 > **Format** (x :: *FldPadExactElt*)
 > 
 > -> *MonStgElt*
@@ -1468,6 +1625,7 @@ Returns a string representation of `x`.
 **Parameters**
 - `APr`
 
+<a id="Format--RngUPolElt_FldPadExact"></a><a id="Format-2"></a>
 > **Format** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *MonStgElt*
@@ -1479,6 +1637,7 @@ Returns a string representation of `f`.
 **Parameters**
 - `APr`
 
+<a id="Random--RngUPol_FldPadExact--RngIntElt"></a><a id="Random--RngUPol_FldPadExact--etc"></a><a id="Random-3"></a>
 > **Random** (R :: *RngUPol_FldPadExact*, d :: *RngIntElt*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -1494,21 +1653,25 @@ A random element of `R` of the given degree.
 - `Irreducible`
 
 ## Approximation
+{:#approximation}
 
 Intrinsics to do with the current approximation of a p-adic number.
 
+<a id="SetBaselineValuation--FldPadExactElt--any"></a><a id="SetBaselineValuation"></a><a id="SetBaselineValuation--FldPadExactElt--etc"></a>
 > **SetBaselineValuation** (x :: *FldPadExactElt*, n)
 {:.intrinsic}
 
 Sets the baseline valuation.
 
 
+<a id="IncreaseBaselinePrecision--FldPadExactElt--any"></a><a id="IncreaseBaselinePrecision--FldPadExactElt--etc"></a><a id="IncreaseBaselinePrecision"></a>
 > **IncreaseBaselinePrecision** (x :: *FldPadExactElt*, n)
 {:.intrinsic}
 
 Increases the baseline precision.
 
 
+<a id="WeakApproximation"></a><a id="WeakApproximation--FldPadExactElt"></a>
 > **WeakApproximation** (x :: *FldPadExactElt*)
 > 
 > -> *FldPadExactElt*
@@ -1518,6 +1681,7 @@ Increases the baseline precision.
 An element weakly equal to `x`.
 
 
+<a id="_ExactpAdics_PrecisionRequired--FldPadExact--etc"></a><a id="_ExactpAdics_PrecisionRequired--FldPadExact--FldPadElt--any"></a><a id="_ExactpAdics_PrecisionRequired"></a>
 > **_ExactpAdics_PrecisionRequired** (F :: *FldPadExact*, xx :: *FldPadElt*, apr)
 > 
 > -> *RngIntElt*
@@ -1527,6 +1691,7 @@ An element weakly equal to `x`.
 (A bound on) the precision required in the parent field of x to approximate x to the given absolute precision.
 
 
+<a id="_ExactpAdics_PrecisionRequired--RngUPol_FldPadExact--etc"></a><a id="_ExactpAdics_PrecisionRequired--RngUPol_FldPadExact--RngUPolElt-FldPad--any"></a><a id="_ExactpAdics_PrecisionRequired-2"></a>
 > **_ExactpAdics_PrecisionRequired** (R :: *RngUPol_FldPadExact*, xf :: *RngUPolElt*[*FldPad*], apr)
 > 
 > -> *RngIntElt*
@@ -1536,6 +1701,7 @@ An element weakly equal to `x`.
 The precision required to approximate f with the given parameters.
 
 
+<a id="IncreaseAbsolutePrecision_Lazy"></a><a id="IncreaseAbsolutePrecision_Lazy--FldPadExact--etc"></a><a id="IncreaseAbsolutePrecision_Lazy--FldPadExact--RngIntElt"></a>
 > **IncreaseAbsolutePrecision_Lazy** (F :: *FldPadExact*, pr :: *RngIntElt*)
 > 
 > -> *ExactpAdics_Gettr*
@@ -1545,6 +1711,7 @@ The precision required to approximate f with the given parameters.
 Getter which, when evaluated, the approximation field of `F` has at least precision `pr`.
 
 
+<a id="Approximation_Lazy--FldPadExact--any"></a><a id="Approximation_Lazy"></a><a id="Approximation_Lazy--FldPadExact--etc"></a>
 > **Approximation_Lazy** (F :: *FldPadExact*, pr)
 > 
 > -> *ExactpAdics_Gettr*
@@ -1554,12 +1721,14 @@ Getter which, when evaluated, the approximation field of `F` has at least precis
 The approximating field of `F` with default precision `pr`.
 
 
+<a id="UpdateZero--FldPadExactElt--RngIntElt"></a><a id="UpdateZero--FldPadExactElt--etc"></a><a id="UpdateZero"></a>
 > **UpdateZero** (x :: *FldPadExactElt*, apr :: *RngIntElt*)
 {:.intrinsic}
 
 Updates `x` to O(pi^`apr`).
 
 
+<a id="IsDefinitelyZero"></a><a id="IsDefinitelyZero--FldPadExactElt"></a>
 > **IsDefinitelyZero** (x :: *FldPadExactElt*)
 > 
 > -> *BoolElt*
@@ -1569,6 +1738,7 @@ Updates `x` to O(pi^`apr`).
 True if `x` is precisely zero.
 
 
+<a id="IsWeaklyZero--FldPadExactElt"></a><a id="IsWeaklyZero"></a>
 > **IsWeaklyZero** (x :: *FldPadExactElt*)
 > 
 > -> *BoolElt*
@@ -1581,6 +1751,7 @@ True if `x` is zero up to precision.
 **Parameters**
 - `Strategy := false`: When not `false`, this is a strategy used to increase the precision of `x` until it is non-zero.
 
+<a id="AreAllWeaklyZero"></a><a id="AreAllWeaklyZero--seq-FldPadExactElt"></a>
 > **AreAllWeaklyZero** (xs :: [*FldPadExactElt*])
 > 
 > -> *BoolElt*, *RngIntElt*
@@ -1592,6 +1763,7 @@ True if each `x` in `xs` is weakly zero. If not, returns the index of a nonzero 
 **Parameters**
 - `Strategy`
 
+<a id="IsWeaklyEqual--FldPadExactElt--FldPadExactElt"></a><a id="IsWeaklyEqual--FldPadExactElt--etc"></a><a id="IsWeaklyEqual"></a>
 > **IsWeaklyEqual** (x :: *FldPadExactElt*, y :: *FldPadExactElt*)
 > 
 > -> *BoolElt*

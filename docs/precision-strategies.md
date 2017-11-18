@@ -1,4 +1,5 @@
 # Precision strategies
+{:#precision-strategies}
 
 
 All intrinsics in `ExactpAdics` either return the correct value or raise an error if this is not possible. In particular, some p-adic computations are not possible unless the inputs are known to sufficient precision, and if this occurs then we raise a *precision error*. Precision strategies are how we tell these computation how much we are willing to increase certain precisions before giving up.
@@ -13,6 +14,7 @@ All intrinsics in `ExactpAdics` either return the correct value or raise an erro
 
 
 ## Motivation
+{:#motivation}
 
 
 Consider we have a value `x` which is known to be 0 modulo 2:
@@ -65,6 +67,7 @@ This example shows that asking for the valuation of something with a strategy wh
 
 
 ## Conventions
+{:#conventions}
 
 
 In this package we obey the convention that any intrinsic which accepts precision strategies will:
@@ -82,6 +85,7 @@ Functions which accept strategies should be careful to propagate these out to an
 
 
 ## Format of a strategy
+{:#format-of-a-strategy}
 
 
 A strategy is a strictly increasing sequence of integers, and is represented by one of the following:
@@ -97,7 +101,9 @@ A strategy is a strictly increasing sequence of integers, and is represented by 
   - `<"double">` which is shorthand for `<"exp", 2>`.
 
 ## Execution
+{:#execution}
 
+<a id="ExactpAdics_StartPrecisionStrategy"></a><a id="ExactpAdics_StartPrecisionStrategy--any"></a>
 > **ExactpAdics_StartPrecisionStrategy** (strategy)
 > 
 > -> Any
@@ -109,12 +115,14 @@ An object representing the initial state of the `strategy`.
 **Parameters**
 - `InitialPrecision`
 
+<a id="ExactpAdics_StepPrecisionStrategy"></a><a id="ExactpAdics_StepPrecisionStrategy--any--etc"></a><a id="ExactpAdics_StepPrecisionStrategy--any--any--any"></a>
 > **ExactpAdics_StepPrecisionStrategy** (~ok, ~pr, ~state)
 {:.intrinsic}
 
 If the strategy can be stepped further, sets `ok` to true, sets `pr` to the next precision and sets `state` to the next `state`. Otherwise sets `ok` to false, `pr` is unchanged and `state` may change but can still not be stepped further.
 
 
+<a id="ExactpAdics_ExecutePrecisionStrategy"></a><a id="ExactpAdics_ExecutePrecisionStrategy--UserProgram--etc"></a><a id="ExactpAdics_ExecutePrecisionStrategy--UserProgram--any"></a>
 > **ExactpAdics_ExecutePrecisionStrategy** (cb :: *UserProgram*, strategy)
 > 
 > -> *BoolElt*, *RngIntElt*, Any
@@ -126,6 +134,7 @@ Executes the given precision `strategy`: calls `cb`(pr) for each pr in the `stra
 **Parameters**
 - `InitialPrecision`
 
+<a id="ExactpAdics_ExecutePrecisionStrategy_Lazy--any--etc"></a><a id="ExactpAdics_ExecutePrecisionStrategy_Lazy"></a><a id="ExactpAdics_ExecutePrecisionStrategy_Lazy--any--UserProgram--UserProgram"></a>
 > **ExactpAdics_ExecutePrecisionStrategy_Lazy** (strategy, getDeps :: *UserProgram*, getValue :: *UserProgram*)
 > 
 > -> *ExactpAdics_Gettr*
@@ -136,6 +145,7 @@ The (general) getter which, for each pr in the `strategy` calls `getDeps`(pr, ~g
 
 
 ## Global strategies
+{:#global-strategies}
 
 
 For user convenience, there is a table of globally defined strategies which may be referred to by name. There are 3 strategies provided by default, which may all be overridden:
@@ -145,6 +155,7 @@ For user convenience, there is a table of globally defined strategies which may 
 
 The string `"default"` is used as the default `Strategy` parameter by most instrinsics in this package, so for most users it suffices to simply set this global strategy to their preferred one and then use the intrinsics without any explicit `Strategy` parameters.
 
+<a id="ExactpAdics_IsGlobalPrecisionStrategyDefined"></a><a id="ExactpAdics_IsGlobalPrecisionStrategyDefined--MonStgElt"></a>
 > **ExactpAdics_IsGlobalPrecisionStrategyDefined** (name :: *MonStgElt*)
 > 
 > -> *BoolElt*, Any
@@ -154,12 +165,14 @@ The string `"default"` is used as the default `Strategy` parameter by most instr
 Returns true if there is a global strategy with the given `name`, and if so, returns the strategy itself.
 
 
+<a id="ExactpAdics_SetGlobalPrecisionStrategy"></a><a id="ExactpAdics_SetGlobalPrecisionStrategy--MonStgElt--etc"></a><a id="ExactpAdics_SetGlobalPrecisionStrategy--MonStgElt--any"></a>
 > **ExactpAdics_SetGlobalPrecisionStrategy** (name :: *MonStgElt*, strat)
 {:.intrinsic}
 
 Defines the global strategy with the given `name` to the given strategy.
 
 
+<a id="ExactpAdics_GetGlobalPrecisionStrategy--MonStgElt"></a><a id="ExactpAdics_GetGlobalPrecisionStrategy"></a>
 > **ExactpAdics_GetGlobalPrecisionStrategy** (name :: *MonStgElt*)
 > 
 > -> Any

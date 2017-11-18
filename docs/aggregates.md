@@ -40,7 +40,7 @@ The `n`th cartesian power `X`, which must be a p-adic set.
 ### Creation of tuples
 {:#creation-of-tuples}
 
-<a id="IsCoercible--SetCart_PadExact--any"></a><a id="IsCoercible"></a><a id="IsCoercible--SetCart_PadExact--etc"></a>
+<a id="IsCoercible"></a><a id="IsCoercible--SetCart_PadExact--any"></a><a id="IsCoercible--SetCart_PadExact--etc"></a>
 > **IsCoercible** (C :: *SetCart_PadExact*, X)
 > 
 > -> *BoolElt*, Any
@@ -58,7 +58,7 @@ Succeeds if `X` is:
 ### Basic operations
 {:#basic-operations}
 
-<a id="Parent"></a><a id="Parent--Tup_PadExact"></a>
+<a id="Parent--Tup_PadExact"></a><a id="Parent"></a>
 > **Parent** (T :: *Tup_PadExact*)
 > 
 > -> *SetCart_PadExact*
@@ -68,7 +68,7 @@ Succeeds if `X` is:
 The cartesian product containing `T`.
 
 
-<a id="ToTuple--Tup_PadExact"></a><a id="ToTuple"></a>
+<a id="ToTuple"></a><a id="ToTuple--Tup_PadExact"></a>
 > **ToTuple** (T :: *Tup_PadExact*)
 > 
 > -> *Tup*
@@ -78,7 +78,7 @@ The cartesian product containing `T`.
 Converts `T` to an ordinary tuple.
 
 
-<a id="ToSequence"></a><a id="ToSequence--Tup_PadExact"></a>
+<a id="ToSequence--Tup_PadExact"></a><a id="ToSequence"></a>
 > **ToSequence** (T :: *Tup_PadExact*)
 > 
 > -> []
@@ -108,7 +108,7 @@ The number of components of `C`.
 The `i`th component of `C`.
 
 
-<a id="#--Tup_PadExact"></a><a id="#"></a>
+<a id="#"></a><a id="#--Tup_PadExact"></a>
 > **\'#\'** (T :: *Tup_PadExact*)
 > 
 > -> *RngIntElt*
@@ -118,7 +118,7 @@ The `i`th component of `C`.
 The number of elements of `T`.
 
 
-<a id="@--RngIntElt--etc-2"></a><a id="@--RngIntElt--Tup_PadExact"></a><a id="@-2"></a>
+<a id="@--RngIntElt--etc-2"></a><a id="@-2"></a><a id="@--RngIntElt--Tup_PadExact"></a>
 > **\'@\'** (i :: *RngIntElt*, T :: *Tup_PadExact*)
 > 
 > -> *PadExactElt*
@@ -140,7 +140,7 @@ Returns a string representation of `T`.
 **Parameters**
 - `APr`
 
-<a id="IncreaseAbsolutePrecision_Lazy--SetCart_PadExact--etc"></a><a id="IncreaseAbsolutePrecision_Lazy--SetCart_PadExact--Tup"></a><a id="IncreaseAbsolutePrecision_Lazy"></a>
+<a id="IncreaseAbsolutePrecision_Lazy"></a><a id="IncreaseAbsolutePrecision_Lazy--SetCart_PadExact--etc"></a><a id="IncreaseAbsolutePrecision_Lazy--SetCart_PadExact--Tup"></a>
 > **IncreaseAbsolutePrecision_Lazy** (C :: *SetCart_PadExact*, pr :: *Tup*)
 > 
 > -> *ExactpAdics_Gettr*

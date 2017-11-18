@@ -1,4 +1,5 @@
 # Univariate polynomials
+{:#univariate-polynomials}
 
 
 **Contents**
@@ -22,7 +23,9 @@
 * [Root-finding and factorization](#root-finding-and-factorization)
 
 ## Creation of rings
+{:#creation-of-rings}
 
+<a id="PolynomialRing--FldPadExact"></a><a id="PolynomialRing"></a>
 > **PolynomialRing** (F :: *FldPadExact*)
 > 
 > -> *RngUPol_FldPadExact*
@@ -33,7 +36,9 @@ The univariate polynomial ring over `F`.
 
 
 ## Ring basics
+{:#ring-basics}
 
+<a id="BaseRing"></a><a id="BaseRing--RngUPol_FldPadExact"></a>
 > **BaseRing** (R :: *RngUPol_FldPadExact*)
 > 
 > -> *FldPadExact*
@@ -43,12 +48,14 @@ The univariate polynomial ring over `F`.
 The base ring of `R`.
 
 
+<a id="AssignNames--RngUPol_FldPadExact--seq-MonStgElt"></a><a id="AssignNames"></a><a id="AssignNames--RngUPol_FldPadExact--etc"></a>
 > **AssignNames** (~R :: *RngUPol_FldPadExact*, names :: [*MonStgElt*])
 {:.intrinsic}
 
 Assigns the name of the variable of `R`.
 
 
+<a id="Names--RngUPol_FldPadExact"></a><a id="Names"></a>
 > **Names** (R :: *RngUPol_FldPadExact*)
 > 
 > -> []
@@ -58,6 +65,7 @@ Assigns the name of the variable of `R`.
 The names of `R`.
 
 
+<a id="."></a><a id=".--RngUPol_FldPadExact--RngIntElt"></a><a id="Name--RngUPol_FldPadExact--etc"></a><a id="Name"></a><a id=".--RngUPol_FldPadExact--etc"></a><a id="Name--RngUPol_FldPadExact--RngIntElt"></a>
 > **Name** (R :: *RngUPol_FldPadExact*, i :: *RngIntElt*)
 > 
 > **\'.\'** (R :: *RngUPol_FldPadExact*, i :: *RngIntElt*)
@@ -71,6 +79,7 @@ Gets the `i`th generator of `R`.
 
 
 
+<a id="Generator"></a><a id="Generator--RngUPol_FldPadExact"></a>
 > **Generator** (R :: *RngUPol_FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -80,6 +89,7 @@ Gets the `i`th generator of `R`.
 The generator of `R`.
 
 
+<a id="eq--RngUPol_FldPadExact--etc"></a><a id="eq"></a><a id="eq--RngUPol_FldPadExact--RngUPol_FldPadExact"></a>
 > **\'eq\'** (R :: *RngUPol_FldPadExact*, S :: *RngUPol_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -89,6 +99,7 @@ The generator of `R`.
 Equality.
 
 
+<a id="ExistsCoveringStructure--Str--RngUPol_FldPadExact"></a><a id="ExistsCoveringStructure--RngUPol--FldPadExact"></a><a id="ExistsCoveringStructure--RngUPol_FldPadExact--RngUPol"></a><a id="ExistsCoveringStructure--RngUPol--etc"></a><a id="ExistsCoveringStructure--FldPadExact--RngUPol"></a><a id="ExistsCoveringStructure--RngUPol_FldPadExact--RngUPol_FldPadExact"></a><a id="ExistsCoveringStructure--RngUPol_FldPadExact--Str"></a><a id="ExistsCoveringStructure--RngUPol--RngUPol_FldPadExact"></a><a id="ExistsCoveringStructure--Str--etc"></a><a id="ExistsCoveringStructure--RngUPol_FldPadExact--etc"></a><a id="ExistsCoveringStructure--FldPadExact--etc"></a><a id="ExistsCoveringStructure"></a>
 > **ExistsCoveringStructure** (R :: *RngUPol_FldPadExact*, S :: *RngUPol_FldPadExact*)
 > 
 > **ExistsCoveringStructure** (R :: *RngUPol_FldPadExact*, S :: *RngUPol*)
@@ -123,9 +134,12 @@ True if there is a polynomial ring containing both `R` and `S`.
 
 
 ## Creation of polynomials
+{:#creation-of-polynomials}
 
 ### From coefficients
+{:#from-coefficients}
 
+<a id="Polynomial"></a><a id="Polynomial--seq-FldPadExactElt"></a>
 > **Polynomial** (coeffs :: [*FldPadExactElt*])
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -135,6 +149,7 @@ True if there is a polynomial ring containing both `R` and `S`.
 The polynomial with the given coefficients.
 
 
+<a id="Polynomial-2"></a><a id="Polynomial--FldPadExact--etc"></a><a id="Polynomial--FldPadExact--seq"></a>
 > **Polynomial** (K :: *FldPadExact*, coeffs :: [])
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -145,7 +160,9 @@ The polynomial over `K` with the given coefficients.
 
 
 ### Coercion
+{:#coercion}
 
+<a id="IsCoercible"></a><a id="IsCoercible--RngUPol_FldPadExact--etc"></a><a id="IsCoercible--RngUPol_FldPadExact--any"></a>
 > **IsCoercible** (R :: *RngUPol_FldPadExact*, X)
 > 
 > -> *BoolElt*, Any
@@ -162,6 +179,7 @@ Succeeds if either:
 - `X` is a sequence of coefficients coercible to the base ring of `R`
 
 
+<a id="CanChangeRing--RngUPolElt--FldPadExact"></a><a id="CanChangeRing--RngUPolElt--etc"></a><a id="CanChangeRing"></a><a id="CanChangeRing--RngUPolElt_FldPadExact--etc"></a><a id="CanChangeRing--RngUPolElt_FldPadExact--FldPadExact"></a>
 > **CanChangeRing** (f :: *RngUPolElt_FldPadExact*, K :: *FldPadExact*)
 > 
 > **CanChangeRing** (f :: *RngUPolElt*, K :: *FldPadExact*)
@@ -175,6 +193,7 @@ True if `f` can be coerced to a polynomial over `K`. If so, also returns the coe
 
 
 
+<a id="ChangeRing--any--any"></a><a id="ChangeRing"></a><a id="ChangeRing--any--etc"></a>
 > **ChangeRing** (f, K)
 > 
 > -> Any
@@ -185,7 +204,9 @@ Change the ring of `f` to `K`.
 
 
 ## Polynomial basics
+{:#polynomial-basics}
 
+<a id="BaseRing--RngUPolElt_FldPadExact"></a><a id="BaseRing-2"></a>
 > **BaseRing** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *FldPadExact*
@@ -196,7 +217,9 @@ The base ring of `f`.
 
 
 ### Degree
+{:#degree}
 
+<a id="Degree"></a><a id="Degree--RngUPolElt_FldPadExact"></a>
 > **Degree** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -208,6 +231,7 @@ The degree of `f`.
 **Parameters**
 - `Strategy`
 
+<a id="WeakDegree"></a><a id="WeakDegree--RngUPolElt_FldPadExact"></a>
 > **WeakDegree** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngIntElt*
@@ -218,7 +242,9 @@ The weak degree of `f`, the degree of its approximation.
 
 
 ### Coefficients
+{:#coefficients}
 
+<a id="Coefficients--RngUPolElt_FldPadExact"></a><a id="Coefficients"></a>
 > **Coefficients** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -230,6 +256,7 @@ The coefficients of `f`.
 **Parameters**
 - `Strategy`
 
+<a id="WeakCoefficients"></a><a id="WeakCoefficients--RngUPolElt_FldPadExact"></a>
 > **WeakCoefficients** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> []
@@ -239,6 +266,7 @@ The coefficients of `f`.
 The coefficients of `f`, possibly including some leading zeros.
 
 
+<a id="LeadingCoefficient--RngUPolElt_FldPadExact"></a><a id="LeadingCoefficient"></a>
 > **LeadingCoefficient** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -250,6 +278,7 @@ The leading coefficient of `f`.
 **Parameters**
 - `Strategy`
 
+<a id="WeakLeadingCoefficient"></a><a id="WeakLeadingCoefficient--RngUPolElt_FldPadExact"></a>
 > **WeakLeadingCoefficient** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -259,6 +288,7 @@ The leading coefficient of `f`.
 The leading weak coefficient of `f`.
 
 
+<a id="Coefficient"></a><a id="Coefficient--RngUPolElt_FldPadExact--RngIntElt"></a><a id="Coefficient--RngUPolElt_FldPadExact--etc"></a>
 > **Coefficient** (f :: *RngUPolElt_FldPadExact*, i :: *RngIntElt*)
 > 
 > -> []
@@ -269,7 +299,9 @@ The `i`th coefficient of `f`.
 
 
 ### Valuation
+{:#valuation}
 
+<a id="IsIntegral--RngUPolElt_FldPadExact"></a><a id="IsIntegral"></a>
 > **IsIntegral** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngUPolElt*
@@ -279,6 +311,7 @@ The `i`th coefficient of `f`.
 True if each coefficient of `f` is integral.
 
 
+<a id="MinValuation--RngUPolElt_FldPadExact"></a><a id="MinValuation"></a>
 > **MinValuation** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngIntElt*
@@ -290,6 +323,7 @@ The smallest valuation of the coefficients of `f`.
 **Parameters**
 - `Strategy`
 
+<a id="ValuationEq"></a><a id="ValuationEq--RngUPolElt_FldPadExact--etc"></a><a id="ValuationEq--RngUPolElt_FldPadExact--RngIntElt"></a>
 > **ValuationEq** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *BoolElt*
@@ -299,6 +333,7 @@ The smallest valuation of the coefficients of `f`.
 True if the valuation of `f` is `n`.
 
 
+<a id="ValuationNe--RngUPolElt_FldPadExact--RngIntElt"></a><a id="ValuationNe--RngUPolElt_FldPadExact--etc"></a><a id="ValuationNe"></a>
 > **ValuationNe** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *BoolElt*
@@ -308,6 +343,7 @@ True if the valuation of `f` is `n`.
 True if the valuation of `f` is not `n`.
 
 
+<a id="ValuationLe--RngUPolElt_FldPadExact--RngIntElt"></a><a id="ValuationLe--RngUPolElt_FldPadExact--etc"></a><a id="ValuationLe"></a>
 > **ValuationLe** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *BoolElt*
@@ -317,6 +353,7 @@ True if the valuation of `f` is not `n`.
 True if the valuation of `f` is at most `n`.
 
 
+<a id="ValuationLt"></a><a id="ValuationLt--RngUPolElt_FldPadExact--etc"></a><a id="ValuationLt--RngUPolElt_FldPadExact--RngIntElt"></a>
 > **ValuationLt** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *BoolElt*
@@ -326,6 +363,7 @@ True if the valuation of `f` is at most `n`.
 True if the valuation of `f` is less than `n`.
 
 
+<a id="ValuationGe--RngUPolElt_FldPadExact--etc"></a><a id="ValuationGe--RngUPolElt_FldPadExact--RngIntElt"></a><a id="ValuationGe"></a>
 > **ValuationGe** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *BoolElt*
@@ -335,6 +373,7 @@ True if the valuation of `f` is less than `n`.
 True if the valuation of `f` is at least `n`.
 
 
+<a id="ValuationGt"></a><a id="ValuationGt--RngUPolElt_FldPadExact--RngIntElt"></a><a id="ValuationGt--RngUPolElt_FldPadExact--etc"></a>
 > **ValuationGt** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *BoolElt*
@@ -345,7 +384,9 @@ True if the valuation of `f` is greater than `n`.
 
 
 ### Arithmetic
+{:#arithmetic}
 
+<a id="+--RngUPolElt_FldPadExact--etc"></a><a id="*--RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a><a id="&+--seq-RngUPolElt_FldPadExact"></a><a id="*--RngUPolElt_FldPadExact--etc"></a><a id="---RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a><a id="*"></a><a id="^"></a><a id="+--RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a><a id="^--RngUPolElt_FldPadExact--RngIntElt"></a><a id="^--RngUPolElt_FldPadExact--etc"></a><a id="-"></a><a id="---RngUPolElt_FldPadExact"></a><a id="+"></a><a id="---RngUPolElt_FldPadExact--etc"></a><a id="&+"></a><a id="&*"></a><a id="&*--seq-RngUPolElt_FldPadExact"></a>
 > **\'-\'** (f :: *RngUPolElt_FldPadExact*)
 > 
 > **\'+\'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
@@ -379,6 +420,7 @@ Negate, add, subtract, sum, multiply, product, power.
 
 
 
+<a id="div--RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a><a id="div"></a><a id="div--RngUPolElt_FldPadExact--etc"></a>
 > **\'div\'** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -390,6 +432,7 @@ Exact division.
 **Parameters**
 - `Strategy`: Used to check that `g` is nonzero.
 
+<a id="/--RngUPolElt_FldPadExact--FldPadExactElt"></a><a id="/"></a><a id="/--RngUPolElt_FldPadExact--etc"></a>
 > **\'/\'** (f :: *RngUPolElt_FldPadExact*, x :: *FldPadExactElt*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -401,6 +444,7 @@ Scalar division.
 **Parameters**
 - `Strategy`: Used to check that `x` is nonzero.
 
+<a id="ShiftValuation--RngUPolElt_FldPadExact--etc"></a><a id="ShiftValuation--RngUPolElt_FldPadExact--any"></a><a id="ShiftValuation"></a>
 > **ShiftValuation** (f :: *RngUPolElt_FldPadExact*, ns)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -410,6 +454,7 @@ Scalar division.
 Shifts the valuation of the `i`th coefficient of `f` by `ns(i)`.
 
 
+<a id="ShiftSlope"></a><a id="ShiftSlope--RngUPolElt_FldPadExact--any"></a><a id="ShiftSlope--RngUPolElt_FldPadExact--etc"></a>
 > **ShiftSlope** (f :: *RngUPolElt_FldPadExact*, n)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -422,6 +467,7 @@ Shifts the valuation of the `i`th coefficient of `f` by `i*n`.
 - `Pivot`: Shifts the valuation a further `-n*Pivot` so that the `Pivot`th coefficient is unchanged.
 - `Offset`: Shifts the valuation a further `Offset`.
 
+<a id="ShiftArgument--RngUPolElt_FldPadExact--etc"></a><a id="ShiftArgument--RngUPolElt_FldPadExact--FldPadExactElt"></a><a id="ShiftArgument"></a>
 > **ShiftArgument** (f :: *RngUPolElt_FldPadExact*, x :: *FldPadExactElt*)
 > 
 > -> *RngUPol_FldPadExact*
@@ -431,6 +477,7 @@ Shifts the valuation of the `i`th coefficient of `f` by `i*n`.
 `f(x+X)` as a polnomial in `X`
 
 
+<a id="Slice--RngUPolElt_FldPadExact--etc"></a><a id="Slice"></a><a id="Slice--RngUPolElt_FldPadExact--seq-RngIntElt"></a>
 > **Slice** (f :: *RngUPolElt_FldPadExact*, idxs :: [*RngIntElt*])
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -440,6 +487,7 @@ Shifts the valuation of the `i`th coefficient of `f` by `i*n`.
 The polynomial with the given coefficients of `f`.
 
 
+<a id="Reverse--RngUPolElt_FldPadExact"></a><a id="Reverse"></a>
 > **Reverse** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -451,6 +499,7 @@ The polynomial with the reversed coefficients of `f`: `f`(1/x)*x^deg(`f`).
 **Parameters**
 - `Strategy`
 
+<a id="WeakReverse"></a><a id="WeakReverse--RngUPolElt_FldPadExact"></a>
 > **WeakReverse** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -460,6 +509,7 @@ The polynomial with the reversed coefficients of `f`: `f`(1/x)*x^deg(`f`).
 The polynomial with the reversed weak coefficient of `f`: `f`(1/x)*x^weakdeg(`f`).
 
 
+<a id="Decimate--RngUPolElt_FldPadExact--RngIntElt"></a><a id="Decimate"></a><a id="Decimate--RngUPolElt_FldPadExact--etc"></a>
 > **Decimate** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -472,7 +522,9 @@ The polynomial of the ith coefficients of `f` where i=`Phase` mod `n`.
 - `Phase`
 
 ### Derivative
+{:#derivative}
 
+<a id="Derivative--RngUPolElt_FldPadExact"></a><a id="Derivative"></a>
 > **Derivative** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -482,6 +534,7 @@ The polynomial of the ith coefficients of `f` where i=`Phase` mod `n`.
 The first derivative of `f`.
 
 
+<a id="Derivative--RngUPolElt_FldPadExact--etc"></a><a id="Derivative-2"></a><a id="Derivative--RngUPolElt_FldPadExact--RngIntElt"></a>
 > **Derivative** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -492,7 +545,9 @@ The `n`th derivative of `f`.
 
 
 ### Evaluate
+{:#evaluate}
 
+<a id="Evaluate--RngUPolElt_FldPadExact--FldPadExactElt"></a><a id="Evaluate--RngUPolElt_FldPadExact--etc"></a><a id="Evaluate"></a><a id="Evaluate--RngUPolElt_FldPadExact--any"></a><a id="Evaluate--RngUPolElt--FldPadExactElt"></a><a id="Evaluate--RngUPolElt--etc"></a>
 > **Evaluate** (f :: *RngUPolElt_FldPadExact*, x :: *FldPadExactElt*)
 > 
 > **Evaluate** (f :: *RngUPolElt_FldPadExact*, x)
@@ -510,6 +565,7 @@ Evaluates `f` at `x`.
 
 
 
+<a id="Evaluate-2"></a><a id="Evaluate--RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a><a id="Evaluate--RngUPolElt_FldPadExact--etc-2"></a>
 > **Evaluate** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -520,7 +576,9 @@ Evaluates `f` at `g`.
 
 
 ### Special forms
+{:#special-forms}
 
+<a id="IsInertial"></a><a id="IsInertial--RngUPolElt_FldPadExact"></a>
 > **IsInertial** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -532,6 +590,7 @@ True if `f` is inertial (i.e. it is irreducible as a polynomial over the residue
 **Parameters**
 - `Strategy`
 
+<a id="IsEisenstein--RngUPolElt_FldPadExact"></a><a id="IsEisenstein"></a>
 > **IsEisenstein** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -542,7 +601,9 @@ True if `f` is Eisenstein.
 
 
 ## Discriminant and Resultant
+{:#discriminant-and-resultant}
 
+<a id="Discriminant--RngUPolElt_FldPadExact"></a><a id="Discriminant"></a>
 > **Discriminant** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -554,6 +615,7 @@ The discriminant of `f`.
 **Parameters**
 - `Strategy`
 
+<a id="Resultant--RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a><a id="Resultant"></a><a id="Resultant--RngUPolElt_FldPadExact--etc"></a>
 > **Resultant** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -567,6 +629,7 @@ The resultant of `f` and `g`.
 - `fStrategy`
 - `gStrategy`
 
+<a id="WeakResultant--RngUPolElt_FldPadExact--etc"></a><a id="WeakResultant"></a><a id="WeakResultant--RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a>
 > **WeakResultant** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 > 
 > -> *FldPadExactElt*
@@ -576,6 +639,7 @@ The resultant of `f` and `g`.
 The weak resultant of `f` and `g`.
 
 
+<a id="Resultant-2"></a><a id="Resultant--seq-RngUPolElt_FldPadExact"></a>
 > **Resultant** (fs :: [*RngUPolElt_FldPadExact*])
 > 
 > -> *FldPadExactElt*
@@ -588,6 +652,7 @@ The generalized resultant of `fs`.
 - `Strategy`
 - `Strategies`
 
+<a id="WeakResultant--seq-RngUPolElt_FldPadExact"></a><a id="WeakResultant-2"></a>
 > **WeakResultant** (fs :: [*RngUPolElt_FldPadExact*])
 > 
 > -> *FldPadExactElt*
@@ -598,7 +663,9 @@ The weak resultant of `fs`, i.e. the resultant assuming the weak degree of each 
 
 
 ## Newton polygon
+{:#newton-polygon}
 
+<a id="NewtonPolygon--RngUPolElt_FldPadExact"></a><a id="NewtonPolygon"></a>
 > **NewtonPolygon** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *NwtnPgon*
@@ -612,6 +679,7 @@ The Newton polygon of `f`.
 - `Strategy`
 - `Support := <0,WeakDegree(f)>`: When given, must be a tuple `<a,b>` of two integers representing an interval; the support of the returned Newton polygon contains this. By default, returns the whole Newton polygon. If you are ok with f having one root very close to 0, then `Support:=<1,WeakDegree(f)>` may be appropriate.
 
+<a id="WeakPartialNewtonPolygon"></a><a id="WeakPartialNewtonPolygon--RngUPolElt_FldPadExact"></a>
 > **WeakPartialNewtonPolygon** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *NwtnPgon*
@@ -622,7 +690,9 @@ A fragment of the Newton polygon of `f`, based on its non weakly zero coefficien
 
 
 ## Hensel lifting
+{:#hensel-lifting}
 
+<a id="IsHenselLiftable--RngUPolElt_FldPadExact--FldPadExactElt"></a><a id="IsHenselLiftable--RngUPolElt--etc"></a><a id="IsHenselLiftable--RngUPolElt--FldPadExactElt"></a><a id="IsHenselLiftable--RngUPolElt_FldPadExact--etc"></a><a id="IsHenselLiftable"></a><a id="IsHenselLiftable--RngUPolElt_FldPadExact--any"></a>
 > **IsHenselLiftable** (f :: *RngUPolElt_FldPadExact*, x :: *FldPadExactElt*)
 > 
 > **IsHenselLiftable** (f :: *RngUPolElt_FldPadExact*, x)
@@ -646,6 +716,7 @@ This uses a generalized statement of Hensel's lemma which does not require the i
 **Parameters**
 - `Strategy`
 
+<a id="HenselLift--RngUPolElt_FldPadExact--etc"></a><a id="HenselLift--RngUPolElt_FldPadExact--any"></a><a id="HenselLift"></a><a id="HenselLift--RngUPolElt--any"></a><a id="HenselLift--RngUPolElt--etc"></a>
 > **HenselLift** (f :: *RngUPolElt_FldPadExact*, x)
 > 
 > **HenselLift** (f :: *RngUPolElt*, x)
@@ -661,6 +732,7 @@ The root of `f` uniquely closest to `x` (see `IsHenselLiftable`).
 **Parameters**
 - `Strategy`
 
+<a id="IsHenselLiftable--RngUPolElt_FldPadExact--etc-2"></a><a id="IsHenselLiftable-2"></a><a id="IsHenselLiftable--RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a>
 > **IsHenselLiftable** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*, *RngUPolElt_FldPadExact*, *RngUPolElt_FldPadExact*
@@ -679,19 +751,23 @@ True if `g` is Hensel-liftable to a factor of `f`. If so, also returns the facto
 - `gShift := 0`: A rational number, subtract this from the valuation of `g` after applying `Slope`.
 
 ## Approximation
+{:#approximation}
 
+<a id="SetBaselineValuation"></a><a id="SetBaselineValuation--RngUPolElt_FldPadExact--any"></a><a id="SetBaselineValuation--RngUPolElt_FldPadExact--etc"></a>
 > **SetBaselineValuation** (f :: *RngUPolElt_FldPadExact*, n)
 {:.intrinsic}
 
 Sets the baseline valuation of `f` to `n`.
 
 
+<a id="IncreaseBaselinePrecision--RngUPolElt_FldPadExact--etc"></a><a id="IncreaseBaselinePrecision--RngUPolElt_FldPadExact--any"></a><a id="IncreaseBaselinePrecision"></a>
 > **IncreaseBaselinePrecision** (f :: *RngUPolElt_FldPadExact*, n)
 {:.intrinsic}
 
 Increases the baseline precision of `f` to `n`.
 
 
+<a id="WeakApproximation"></a><a id="WeakApproximation--RngUPolElt_FldPadExact"></a>
 > **WeakApproximation** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *RngUPolElt_FldPadExact*
@@ -701,6 +777,7 @@ Increases the baseline precision of `f` to `n`.
 An element weakly equal to x.
 
 
+<a id="WeakMinValuation--RngUPolElt_FldPadExact"></a><a id="WeakMinValuation"></a>
 > **WeakMinValuation** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *Val_FldPadElt*
@@ -710,6 +787,7 @@ An element weakly equal to x.
 The minimum valuation of the coefficients of the approximation of `f`.
 
 
+<a id="IncreaseAbsolutePrecision_Lazy"></a><a id="IncreaseAbsolutePrecision_Lazy--RngUPol_FldPadExact--RngIntElt"></a><a id="IncreaseAbsolutePrecision_Lazy--RngUPol_FldPadExact--etc"></a>
 > **IncreaseAbsolutePrecision_Lazy** (R :: *RngUPol_FldPadExact*, pr :: *RngIntElt*)
 > 
 > -> *ExactpAdics_Gettr*
@@ -719,6 +797,7 @@ The minimum valuation of the coefficients of the approximation of `f`.
 Increases the precision of the approximation to `R` to at least `pr`.
 
 
+<a id="Approximation_Lazy--RngUPol_FldPadExact--RngIntElt"></a><a id="Approximation_Lazy"></a><a id="Approximation_Lazy--RngUPol_FldPadExact--etc"></a>
 > **Approximation_Lazy** (R :: *RngUPol_FldPadExact*, pr :: *RngIntElt*)
 > 
 > -> *ExactpAdics_Gettr*
@@ -728,6 +807,7 @@ Increases the precision of the approximation to `R` to at least `pr`.
 An approximation to `R` whose base field has default precision `pr`.
 
 
+<a id="IsDefinitelyZero"></a><a id="IsDefinitelyZero--RngUPolElt_FldPadExact"></a>
 > **IsDefinitelyZero** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -737,12 +817,14 @@ An approximation to `R` whose base field has default precision `pr`.
 True if `f` is precisely zero.
 
 
+<a id="UpdateZero--RngUPolElt_FldPadExact--seq-RngIntElt"></a><a id="UpdateZero--RngUPolElt_FldPadExact--etc"></a><a id="UpdateZero"></a>
 > **UpdateZero** (f :: *RngUPolElt_FldPadExact*, aprs :: [*RngIntElt*])
 {:.intrinsic}
 
 Updates `f` to sum_i(O(pi^`aprs`[i+1])*x^i).
 
 
+<a id="IsWeaklyZero"></a><a id="IsWeaklyZero--RngUPolElt_FldPadExact"></a>
 > **IsWeaklyZero** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -754,6 +836,7 @@ True if `f` is weakly zero.
 **Parameters**
 - `Strategy`
 
+<a id="IsWeaklyEqual--RngUPolElt_FldPadExact--RngUPolElt_FldPadExact"></a><a id="IsWeaklyEqual--RngUPolElt_FldPadExact--etc"></a><a id="IsWeaklyEqual"></a>
 > **IsWeaklyEqual** (f :: *RngUPolElt_FldPadExact*, g :: *RngUPolElt_FldPadExact*)
 > 
 > -> *BoolElt*
@@ -764,7 +847,9 @@ True if `f` and `g` are weakly equal.
 
 
 ## Root-finding and factorization
+{:#root-finding-and-factorization}
 
+<a id="Factorization--RngUPolElt_FldPadExact"></a><a id="Factorization"></a>
 > **Factorization** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> [], *FldPadElt*, []
@@ -783,6 +868,7 @@ It is only possible to factorize squarefree polynomials, so `multiplicity` is al
 - `Ideals`: When `true` implies `Certificates` and also includes `IdealGen1` and `IdealGen2` in each certificate.
 - `UseNP := false`: When `true`, factorizes `f` first by its Newton polygon. This can be a significant performance improvement for large degree polynomials with several faces.
 
+<a id="Roots--RngUPolElt_FldPadExact"></a><a id="Roots"></a>
 > **Roots** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> []
@@ -798,6 +884,7 @@ The roots of `f` as a sequence of `<root, multiplicity>` pairs.
 - `Strategy`: The precision strategy.
 - `UseNP`
 
+<a id="NewtonPolygonFactorization"></a><a id="NewtonPolygonFactorization--RngUPolElt_FldPadExact"></a>
 > **NewtonPolygonFactorization** (f :: *RngUPolElt_FldPadExact*)
 > 
 > -> []
