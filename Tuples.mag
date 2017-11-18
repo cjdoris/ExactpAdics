@@ -266,14 +266,14 @@ intrinsic _ExactpAdics_PrecisionRequired(C :: SetCart_PadExact, xt :: Tup, apr) 
 end intrinsic;
 
 intrinsic IncreaseAbsolutePrecision_Lazy(C :: SetCart_PadExact, pr :: Tup) -> ExactpAdics_Gettr
-  {Increases the absolute precision of `C` to `pr`, which must be a tuple of precisions for each component.}
+  {Increases the precision of `C` to `pr`, which must be a tuple of precisions for each component.}
   n := NumberOfComponents(C);
   require #pr eq n: "pr has wrong size";
   return Flatten([IncreaseAbsolutePrecision_Lazy(C`components[i], pr[i]) : i in [1..n]]);
 end intrinsic;
 
 intrinsic Approximation_Lazy(C :: SetCart_PadExact, pr :: Tup) -> ExactpAdics_Gettr
-  {"}
+  {The approximation of `C` to precision `pr`, which must be a tuple of precisions for each component.}
   n := NumberOfComponents(C);
   require #pr eq n: "pr has wrong size";
   return Flatten([Approximation_Lazy(C`components[i], pr[i]) : i in [1..n]]) mod function (ig)
