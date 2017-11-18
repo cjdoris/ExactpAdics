@@ -14,6 +14,7 @@ Sometimes a collection of p-adic objects are highly related and should share a s
 
 ### Cartesian products
 
+><a id="ExactpAdics_CartesianProduct"></a><a id="ExactpAdics_CartesianProduct--Tup"></a>
 > **ExactpAdics_CartesianProduct** (components :: *Tup*)
 > 
 > -> *SetCart_PadExact*
@@ -23,6 +24,7 @@ Sometimes a collection of p-adic objects are highly related and should share a s
 The cartesian product of the given `components`, which must all be p-adic sets.
 
 
+><a id="ExactpAdics_CartesianPower--StrPadExact--etc"></a><a id="ExactpAdics_CartesianPower"></a><a id="ExactpAdics_CartesianPower--StrPadExact--RngIntElt"></a>
 > **ExactpAdics_CartesianPower** (X :: *StrPadExact*, n :: *RngIntElt*)
 > 
 > -> *SetCart_PadExact*
@@ -34,6 +36,7 @@ The `n`th cartesian power `X`, which must be a p-adic set.
 
 ### Creation of tuples
 
+><a id="IsCoercible--SetCart_PadExact--any"></a><a id="IsCoercible--SetCart_PadExact--etc"></a><a id="IsCoercible"></a>
 > **IsCoercible** (C :: *SetCart_PadExact*, X)
 > 
 > -> *BoolElt*, Any
@@ -50,6 +53,7 @@ Succeeds if `X` is:
 
 ### Basic operations
 
+><a id="Parent--Tup_PadExact"></a><a id="Parent"></a>
 > **Parent** (T :: *Tup_PadExact*)
 > 
 > -> *SetCart_PadExact*
@@ -59,6 +63,7 @@ Succeeds if `X` is:
 The cartesian product containing `T`.
 
 
+><a id="ToTuple"></a><a id="ToTuple--Tup_PadExact"></a>
 > **ToTuple** (T :: *Tup_PadExact*)
 > 
 > -> *Tup*
@@ -68,6 +73,7 @@ The cartesian product containing `T`.
 Converts `T` to an ordinary tuple.
 
 
+><a id="ToSequence"></a><a id="ToSequence--Tup_PadExact"></a>
 > **ToSequence** (T :: *Tup_PadExact*)
 > 
 > -> []
@@ -77,6 +83,7 @@ Converts `T` to an ordinary tuple.
 Converts `T` to a sequence.
 
 
+><a id="NumberOfComponents"></a><a id="NumberOfComponents--SetCart_PadExact"></a>
 > **NumberOfComponents** (C :: *SetCart_PadExact*)
 > 
 > -> *RngIntElt*
@@ -86,6 +93,7 @@ Converts `T` to a sequence.
 The number of components of `C`.
 
 
+><a id="@--RngIntElt--etc"></a><a id="@--RngIntElt--SetCart_PadExact"></a><a id="@"></a>
 > **\'@\'** (i :: *RngIntElt*, C :: *SetCart_PadExact*)
 > 
 > -> *StrPadExact*
@@ -95,6 +103,7 @@ The number of components of `C`.
 The `i`th component of `C`.
 
 
+><a id="#--Tup_PadExact"></a><a id="#"></a>
 > **\'#\'** (T :: *Tup_PadExact*)
 > 
 > -> *RngIntElt*
@@ -104,6 +113,7 @@ The `i`th component of `C`.
 The number of elements of `T`.
 
 
+><a id="@--RngIntElt--etc-2"></a><a id="@--RngIntElt--Tup_PadExact"></a><a id="@-2"></a>
 > **\'@\'** (i :: *RngIntElt*, T :: *Tup_PadExact*)
 > 
 > -> *PadExactElt*
@@ -113,6 +123,7 @@ The number of elements of `T`.
 The `i`th element of `T`.
 
 
+><a id="Format--Tup_PadExact"></a><a id="Format"></a>
 > **Format** (T :: *Tup_PadExact*)
 > 
 > -> *MonStgElt*
@@ -124,6 +135,7 @@ Returns a string representation of `T`.
 **Parameters**
 - `APr`
 
+><a id="IncreaseAbsolutePrecision_Lazy--SetCart_PadExact--etc"></a><a id="IncreaseAbsolutePrecision_Lazy"></a><a id="IncreaseAbsolutePrecision_Lazy--SetCart_PadExact--Tup"></a><a id="Approximation_Lazy--SetCart_PadExact--Tup"></a><a id="Approximation_Lazy"></a><a id="Approximation_Lazy--SetCart_PadExact--etc"></a>
 > **IncreaseAbsolutePrecision_Lazy** (C :: *SetCart_PadExact*, pr :: *Tup*)
 > 
 > **Approximation_Lazy** (C :: *SetCart_PadExact*, pr :: *Tup*)
