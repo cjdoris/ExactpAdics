@@ -390,7 +390,7 @@ Extension `X1`/`X2`.
 > {:.ret}
 {:.intrinsic}
 
-Returns a version of `x` with type COMPOUND and all elements of x`list have type not COMPOUND.
+Returns a version of `x` with type COMPOUND and all elements of `x``list have type not COMPOUND.
 
 
 > **TopField** (x :: *ExtDataFldPadExact*)

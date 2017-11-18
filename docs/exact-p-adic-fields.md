@@ -118,7 +118,7 @@ The totally ramified extension defined by `f` over its base field or `F`.
 > {:.ret}
 {:.intrinsic}
 
-The totally ramified extension of `F` of degree `n` got by adjoining the `n` root of `pi` (or the default uniformizer of `F`).
+The totally ramified extension of `F` of degree `n` got by adjoining the `n`th root of `pi` (or the default uniformizer of `F`).
 
 
 
@@ -399,7 +399,7 @@ Powering.
 > {:.ret}
 {:.intrinsic}
 
-Multiplies `x` by the `n` power of the uniformizing element.
+Multiplies `x` by the `n`th power of the uniformizing element.
 
 
 > **IsSquare** (x :: *FldPadExactElt*)
@@ -419,7 +419,7 @@ True iff `x` is a square. (`Strategy` is used to determine if `x` is nonzero.)
 > {:.ret}
 {:.intrinsic}
 
-True iff `x` is an `n` power. (`Strategy` is used to determine if `x` is nonzero.)
+True iff `x` is an `n`th power. (`Strategy` is used to determine if `x` is nonzero.)
 
 **Parameters**
 - `Strategy`
@@ -671,7 +671,7 @@ Assigns a name to the generator of `F`.
 > {:.ret}
 {:.intrinsic}
 
-The `i` generator of `F`.
+The `i`th generator of `F`.
 
 
 

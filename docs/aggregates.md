@@ -29,7 +29,7 @@ The cartesian product of the given `components`, which must all be p-adic sets.
 > {:.ret}
 {:.intrinsic}
 
-The `n` cartesian power `X`, which must be a p-adic set.
+The `n`th cartesian power `X`, which must be a p-adic set.
 
 
 ### Creation of tuples
@@ -92,7 +92,7 @@ The number of components of `C`.
 > {:.ret}
 {:.intrinsic}
 
-The `i` component of `C`.
+The `i`th component of `C`.
 
 
 > **\'#\'** (T :: *Tup_PadExact*)
@@ -110,25 +110,7 @@ The number of elements of `T`.
 > {:.ret}
 {:.intrinsic}
 
-The `i` element of `T`.
-
-
-> **_ExactpAdics_WeakValuationOfApproximation** (C :: *SetCart_PadExact*, x)
-> 
-> -> *Val_Tup_PadExact*
-> {:.ret}
-{:.intrinsic}
-
-The weak valuation of an element of `C` with approximation `x`.
-
-
-> **_ExactpAdics_AbsolutePrecisionOfApproximation** (C :: *SetCart_PadExact*, x)
-> 
-> -> *Val_Tup_PadExact*
-> {:.ret}
-{:.intrinsic}
-
-The weak valuation of an element of `C` with approximation `x`.
+The `i`th element of `T`.
 
 
 > **Format** (T :: *Tup_PadExact*)
@@ -142,16 +124,9 @@ Returns a string representation of `T`.
 **Parameters**
 - `APr`
 
-> **_ExactpAdics_PrecisionRequired** (C :: *SetCart_PadExact*, xt :: *Tup*, apr)
-> 
-> -> *Tup*
-> {:.ret}
-{:.intrinsic}
-
-The precision required in `C` to update an element with approximation `xt` to `apr`.
-
-
 > **IncreaseAbsolutePrecision_Lazy** (C :: *SetCart_PadExact*, pr :: *Tup*)
+> 
+> **Approximation_Lazy** (C :: *SetCart_PadExact*, pr :: *Tup*)
 > 
 > -> *ExactpAdics_Gettr*
 > {:.ret}
@@ -160,12 +135,5 @@ The precision required in `C` to update an element with approximation `xt` to `a
 Increases the absolute precision of `C` to `pr`, which must be a tuple of precisions for each component.
 
 
-> **Approximation_Lazy** (C :: *SetCart_PadExact*, pr :: *Tup*)
-> 
-> -> *ExactpAdics_Gettr*
-> {:.ret}
-{:.intrinsic}
-
-The approximation of `C` to precision `pr`.
 
 

@@ -720,7 +720,7 @@ Coerces `v` to a Val_Tup_PadExact.
 > {:.ret}
 {:.intrinsic}
 
-The valuation in the `i` component of `v`.
+The valuation in the `i`th component of `v`.
 
 
 > **\'#\'** (v :: *Val_Tup_PadExact*)

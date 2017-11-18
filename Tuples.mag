@@ -238,12 +238,14 @@ intrinsic '@'(i :: RngIntElt, T :: Tup_PadExact) -> PadExactElt
   return ToTuple(T)[i];
 end intrinsic;
 
+///hide
 intrinsic _ExactpAdics_WeakValuationOfApproximation(C :: SetCart_PadExact, x) -> Val_Tup_PadExact
   {The weak valuation of an element of `C` with approximation `x`.}
   n := NumberOfComponents(C);
   return Val_Tup_PadExact_Make(<_ExactpAdics_WeakValuationOfApproximation(C`components[i], x[i]) : i in [1..n]>);
 end intrinsic;
 
+///hide
 intrinsic _ExactpAdics_AbsolutePrecisionOfApproximation(C :: SetCart_PadExact, x) -> Val_Tup_PadExact
   {The weak valuation of an element of `C` with approximation `x`.}
   n := NumberOfComponents(C);
@@ -257,6 +259,7 @@ intrinsic Format(T :: Tup_PadExact : APr:=AbsolutePrecision(T)) -> MonStgElt
   return Sprintf("<%o>", Join([Format(T(i) : APr:=apr(i)) : i in [1..#T]], ", "));
 end intrinsic;
 
+///hide
 intrinsic _ExactpAdics_PrecisionRequired(C :: SetCart_PadExact, xt :: Tup, apr) -> Tup
   {The precision required in `C` to update an element with approximation `xt` to `apr`.}
   return <_ExactpAdics_PrecisionRequired(C`components[i], xt[i], apr(i)) : i in [1..NumberOfComponents(C)]>;
@@ -270,7 +273,7 @@ intrinsic IncreaseAbsolutePrecision_Lazy(C :: SetCart_PadExact, pr :: Tup) -> Ex
 end intrinsic;
 
 intrinsic Approximation_Lazy(C :: SetCart_PadExact, pr :: Tup) -> ExactpAdics_Gettr
-  {The approximation of `C` to precision `pr`.}
+  {"}
   n := NumberOfComponents(C);
   require #pr eq n: "pr has wrong size";
   return Flatten([Approximation_Lazy(C`components[i], pr[i]) : i in [1..n]]) mod function (ig)

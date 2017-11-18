@@ -66,7 +66,7 @@ The names of `R`.
 > {:.ret}
 {:.intrinsic}
 
-Gets the `i` generator of `R`.
+Gets the `i`th generator of `R`.
 
 
 
@@ -265,7 +265,7 @@ The leading weak coefficient of `f`.
 > {:.ret}
 {:.intrinsic}
 
-The `i` coefficient of `f`.
+The `i`th coefficient of `f`.
 
 
 ### Valuation
@@ -407,7 +407,7 @@ Scalar division.
 > {:.ret}
 {:.intrinsic}
 
-Shifts the valuation of the `i` coefficient of `f` by `ns(i)`.
+Shifts the valuation of the `i`th coefficient of `f` by `ns(i)`.
 
 
 > **ShiftSlope** (f :: *RngUPolElt_FldPadExact*, n)
@@ -488,7 +488,7 @@ The first derivative of `f`.
 > {:.ret}
 {:.intrinsic}
 
-The `n` derivative of `f`.
+The `n`th derivative of `f`.
 
 
 ### Evaluate
