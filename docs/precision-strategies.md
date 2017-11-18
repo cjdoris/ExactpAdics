@@ -104,7 +104,7 @@ A strategy is a strictly increasing sequence of integers, and is represented by 
 > {:.ret}
 {:.intrinsic}
 
-An object representing the initial state of the strategy.
+An object representing the initial state of the `strategy`.
 
 **Parameters**
 - `InitialPrecision`
@@ -112,7 +112,7 @@ An object representing the initial state of the strategy.
 > **ExactpAdics_StepPrecisionStrategy** (~ok, ~pr, ~state)
 {:.intrinsic}
 
-If the strategy can be stepped further, sets ok to true, sets pr to the next precision and sets state to the next state. Otherwise sets ok to false, pr is unchanged and state may change but can still not be stepped further.
+If the strategy can be stepped further, sets `ok` to true, sets `pr` to the next precision and sets `state` to the next `state`. Otherwise sets `ok` to false, `pr` is unchanged and `state` may change but can still not be stepped further.
 
 
 > **ExactpAdics_ExecutePrecisionStrategy** (cb :: *UserProgram*, strategy)
@@ -121,7 +121,7 @@ If the strategy can be stepped further, sets ok to true, sets pr to the next pre
 > {:.ret}
 {:.intrinsic}
 
-Executes the given precision strategy: calls cb(pr) for each pr in the strategy; if it ever returns (true,value) then this returns (true,pr,value), otherwise it returns (false,pr,_) where pr is the last precision used in the strategy.
+Executes the given precision `strategy`: calls `cb`(pr) for each pr in the `strategy`; if it ever returns (true,value) then this returns (true,pr,value), otherwise it returns (false,pr,_) where pr is the last precision used in the `strategy`.
 
 **Parameters**
 - `InitialPrecision`
@@ -132,7 +132,7 @@ Executes the given precision strategy: calls cb(pr) for each pr in the strategy;
 > {:.ret}
 {:.intrinsic}
 
-The (general) getter which, for each pr in the strategy calls getDeps(pr, ~getter) to get a dependent getter, which evaluates to gval, then calls getValue(gval, ~val) to get the value.
+The (general) getter which, for each pr in the `strategy` calls `getDeps`(pr, ~getter) to get a dependent getter, which evaluates to gval, then calls `getValue`(gval, ~val) to get the value.
 
 
 ## Global strategies
@@ -151,13 +151,13 @@ The string `"default"` is used as the default `Strategy` parameter by most instr
 > {:.ret}
 {:.intrinsic}
 
-Returns true if there is a global strategy with the given name, and if so, returns the strategy itself.
+Returns true if there is a global strategy with the given `name`, and if so, returns the strategy itself.
 
 
 > **ExactpAdics_SetGlobalPrecisionStrategy** (name :: *MonStgElt*, strat)
 {:.intrinsic}
 
-Defines the global strategy with the given name to the given strategy.
+Defines the global strategy with the given `name` to the given strategy.
 
 
 > **ExactpAdics_GetGlobalPrecisionStrategy** (name :: *MonStgElt*)
@@ -166,6 +166,6 @@ Defines the global strategy with the given name to the given strategy.
 > {:.ret}
 {:.intrinsic}
 
-Returns the global strategy with the given name.
+Returns the global strategy with the given `name`.
 
 

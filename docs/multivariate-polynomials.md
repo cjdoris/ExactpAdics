@@ -44,7 +44,7 @@ The rank of `R`.
 > **AssignNames** (~R :: *RngMPol_FldPadExact*, names :: [*MonStgElt*])
 {:.intrinsic}
 
-Assigns names to the generators of `R`.
+Assigns `names` to the generators of `R`.
 
 
 > **Name** (R :: *RngMPol_FldPadExact*, i :: *RngIntElt*)
@@ -55,7 +55,7 @@ Assigns names to the generators of `R`.
 > {:.ret}
 {:.intrinsic}
 
-The `i`th generator of `R`.
+The `i` generator of `R`.
 
 
 
@@ -161,7 +161,7 @@ Multiplication of `f` by a scalar `x`.
 > {:.ret}
 {:.intrinsic}
 
-Shifts the valuation of the `e`th coefficient of `f` by `n(e)` where `n` is a valuation for `f`.
+Shifts the valuation of the `e` coefficient of `f` by `n(e)` where `n` is a valuation for `f`.
 
 
 > **ShiftSlope** (f :: *RngMPolElt_FldPadExact*, ns :: [])
@@ -170,7 +170,7 @@ Shifts the valuation of the `e`th coefficient of `f` by `n(e)` where `n` is a va
 > {:.ret}
 {:.intrinsic}
 
-Shifts the valuation of the `e`th coefficient of `f` by `ns.e`.
+Shifts the valuation of the `e` coefficient of `f` by `ns.e`.
 
 
 > **\'&+\'** (fs :: [*RngMPolElt_FldPadExact*])

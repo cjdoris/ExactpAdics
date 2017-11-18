@@ -189,7 +189,7 @@ As an optimization, if two dependencies `<x,apr1>`, `<x,apr2>` in the tree are f
 > {:.ret}
 {:.intrinsic}
 
-Creates a new getter with initial state `state`. `getDeps` must be a `procedure(~state, ~deps)` assigning to `deps` a list of `<x,apr>` pairs such that the computation depends on the absolute precision of `x` being at least `apr`. `getValue` must be a `procedure(~state, ~value)` which either assigns to `value`, giving the value of the getter, or does not assign to `value` meaning that the computation has more dependencies, and hence `getDeps` needs to be called again.
+Creates a new getter with initial `state` `state`. `getDeps` must be a `procedure(~state, ~deps)` assigning to `deps` a list of `<x,apr>` pairs such that the computation depends on the absolute precision of `x` being at least `apr`. `getValue` must be a `procedure(~state, ~value)` which either assigns to `value`, giving the value of the getter, or does not assign to `value` meaning that the computation has more dependencies, and hence `getDeps` needs to be called again.
 
 
 > **ExactpAdics_ConstGetter** (X)
@@ -198,7 +198,7 @@ Creates a new getter with initial state `state`. `getDeps` must be a `procedure(
 > {:.ret}
 {:.intrinsic}
 
-The getter returning X.
+The getter returning `X`.
 
 
 > **ExactpAdics_NullGetter** ()
@@ -240,7 +240,7 @@ Evaluates the getter and retuns its value.
 > {:.ret}
 {:.intrinsic}
 
-Applies f to the output of g.
+Applies `f` to the output of `g`.
 
 
 
@@ -253,7 +253,7 @@ Applies f to the output of g.
 > {:.ret}
 {:.intrinsic}
 
-Applies the procedure f to the output of g, and sets the output Value.
+Applies the procedure `f` to the output of `g`, and sets the output `Value`.
 
 
 
@@ -268,7 +268,7 @@ Applies the procedure f to the output of g, and sets the output Value.
 > {:.ret}
 {:.intrinsic}
 
-The getter which returns the return value of f(return value of g). If AllowConst is false then f must return a getter; if true then f may return a non-getter, in which case this is the value of the returned getter.
+The getter which returns the return value of `f`(return value of `g`). If `AllowConst` is false then `f` must return a getter; if true then `f` may return a non-getter, in which case this is the value of the returned getter.
 
 
 
@@ -285,7 +285,7 @@ The getter which returns the return value of f(return value of g). If AllowConst
 > {:.ret}
 {:.intrinsic}
 
-The getter which returns the return value of f(return value of gs[1], ...).
+The getter which returns the return value of `f`(return value of `gs`[1], ...).
 
 
 
@@ -302,7 +302,7 @@ The getter which returns the return value of f(return value of gs[1], ...).
 > {:.ret}
 {:.intrinsic}
 
-The getter whose value is the list of values of the given gettrs. If Sequence is true, the value is coerced to a sequence. If Universe is given, the value is coerced to a sequence with this universe.
+The getter whose value is the list of values of the given gettrs. If `Sequence` is true, the value is coerced to a sequence. If `Universe` is given, the value is coerced to a sequence with this universe.
 
 **Parameters**
 - `Sequence`
@@ -314,7 +314,7 @@ The getter whose value is the list of values of the given gettrs. If Sequence is
 > {:.ret}
 {:.intrinsic}
 
-The getter whose value is the sequence of values of gs.
+The getter whose value is the sequence of values of `gs`.
 
 
 ### Short-circuit reductions
@@ -325,7 +325,7 @@ The getter whose value is the sequence of values of gs.
 > {:.ret}
 {:.intrinsic}
 
-Given a function f taking any subsequence of S=[<i, Evaluate(gs[i])> : i in [1..#gs]] and returning either false,_ when the result is unknown or true,val when the result is known, where val is independent of the subsequence of S, returns the getter which evaluates to val. f(S) must return true.
+Given a function `f` taking any subsequence of S=[<i, Evaluate(`gs`[i])> : i in [1..#`gs`]] and returning either false,_ when the result is unknown or true,val when the result is known, where val is independent of the subsequence of S, returns the getter which evaluates to val. `f`(S) must return true.
 
 
 > **Exists** (gs :: [*ExactpAdics_Gettr*])
@@ -334,7 +334,7 @@ Given a function f taking any subsequence of S=[<i, Evaluate(gs[i])> : i in [1..
 > {:.ret}
 {:.intrinsic}
 
-The getter whose value is true iff there exists g in gs so that f(Evaluate(g)) is true.
+The getter whose value is true iff there exists g in `gs` so that f(Evaluate(g)) is true.
 
 
 > **ForAll** (gs :: [*ExactpAdics_Gettr*])
@@ -343,7 +343,7 @@ The getter whose value is true iff there exists g in gs so that f(Evaluate(g)) i
 > {:.ret}
 {:.intrinsic}
 
-The getter whose value is true iff for all g in gs f(Evaluate(g)) is true.
+The getter whose value is true iff for all g in `gs` f(Evaluate(g)) is true.
 
 
 ## ExtDataFldPadExact
@@ -354,7 +354,7 @@ The getter whose value is true iff for all g in gs f(Evaluate(g)) is true.
 > {:.ret}
 {:.intrinsic}
 
-The extension E/F.
+The extension `E`/`F`.
 
 
 > **\'/\'** (E :: *FldPadExact*, X :: *ExtDataFldPadExact*)
@@ -363,7 +363,7 @@ The extension E/F.
 > {:.ret}
 {:.intrinsic}
 
-Extension E/X.
+Extension `E`/`X`.
 
 
 > **\'/\'** (X :: *ExtDataFldPadExact*, F :: *FldPadExact*)
@@ -372,7 +372,7 @@ Extension E/X.
 > {:.ret}
 {:.intrinsic}
 
-Extension X/F.
+Extension `X`/`F`.
 
 
 > **\'/\'** (X1 :: *ExtDataFldPadExact*, X2 :: *ExtDataFldPadExact*)
@@ -381,7 +381,7 @@ Extension X/F.
 > {:.ret}
 {:.intrinsic}
 
-Extension X1/X2.
+Extension `X1`/`X2`.
 
 
 > **Flatten** (x :: *ExtDataFldPadExact*)
@@ -390,7 +390,7 @@ Extension X1/X2.
 > {:.ret}
 {:.intrinsic}
 
-Returns a version of x with type COMPOUND and all elements of x`list have type not COMPOUND.
+Returns a version of `x` with type COMPOUND and all elements of x`list have type not COMPOUND.
 
 
 > **TopField** (x :: *ExtDataFldPadExact*)
@@ -399,7 +399,7 @@ Returns a version of x with type COMPOUND and all elements of x`list have type n
 > {:.ret}
 {:.intrinsic}
 
-The top field of x.
+The top field of `x`.
 
 
 > **BaseField** (x :: *ExtDataFldPadExact*)
@@ -408,6 +408,6 @@ The top field of x.
 > {:.ret}
 {:.intrinsic}
 
-The base field of x.
+The base field of `x`.
 
 

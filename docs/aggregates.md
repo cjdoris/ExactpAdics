@@ -29,7 +29,7 @@ The cartesian product of the given `components`, which must all be p-adic sets.
 > {:.ret}
 {:.intrinsic}
 
-The `n`th cartesian power `X`, which must be a p-adic set.
+The `n` cartesian power `X`, which must be a p-adic set.
 
 
 ### Creation of tuples
@@ -65,7 +65,7 @@ The cartesian product containing `T`.
 > {:.ret}
 {:.intrinsic}
 
-Converts T to an ordinary tuple.
+Converts `T` to an ordinary tuple.
 
 
 > **ToSequence** (T :: *Tup_PadExact*)
@@ -74,7 +74,7 @@ Converts T to an ordinary tuple.
 > {:.ret}
 {:.intrinsic}
 
-Converts T to a sequence.
+Converts `T` to a sequence.
 
 
 > **NumberOfComponents** (C :: *SetCart_PadExact*)
@@ -83,7 +83,7 @@ Converts T to a sequence.
 > {:.ret}
 {:.intrinsic}
 
-The number of components of C.
+The number of components of `C`.
 
 
 > **\'@\'** (i :: *RngIntElt*, C :: *SetCart_PadExact*)
@@ -92,7 +92,7 @@ The number of components of C.
 > {:.ret}
 {:.intrinsic}
 
-The `i`th component of `C`.
+The `i` component of `C`.
 
 
 > **\'#\'** (T :: *Tup_PadExact*)
@@ -101,7 +101,7 @@ The `i`th component of `C`.
 > {:.ret}
 {:.intrinsic}
 
-The number of elements of T.
+The number of elements of `T`.
 
 
 > **\'@\'** (i :: *RngIntElt*, T :: *Tup_PadExact*)
@@ -110,7 +110,7 @@ The number of elements of T.
 > {:.ret}
 {:.intrinsic}
 
-The `i`th element of `T`.
+The `i` element of `T`.
 
 
 > **_ExactpAdics_WeakValuationOfApproximation** (C :: *SetCart_PadExact*, x)

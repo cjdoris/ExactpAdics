@@ -29,7 +29,7 @@
 > {:.ret}
 {:.intrinsic}
 
-The univariate polynomial ring over F.
+The univariate polynomial ring over `F`.
 
 
 ## Ring basics
@@ -40,13 +40,13 @@ The univariate polynomial ring over F.
 > {:.ret}
 {:.intrinsic}
 
-The base ring of R.
+The base ring of `R`.
 
 
 > **AssignNames** (~R :: *RngUPol_FldPadExact*, names :: [*MonStgElt*])
 {:.intrinsic}
 
-Assigns the name of the variable of R.
+Assigns the name of the variable of `R`.
 
 
 > **Names** (R :: *RngUPol_FldPadExact*)
@@ -55,7 +55,7 @@ Assigns the name of the variable of R.
 > {:.ret}
 {:.intrinsic}
 
-The names of R.
+The names of `R`.
 
 
 > **Name** (R :: *RngUPol_FldPadExact*, i :: *RngIntElt*)
@@ -66,7 +66,7 @@ The names of R.
 > {:.ret}
 {:.intrinsic}
 
-Gets the ith generator of R.
+Gets the `i` generator of `R`.
 
 
 
@@ -77,7 +77,7 @@ Gets the ith generator of R.
 > {:.ret}
 {:.intrinsic}
 
-The generator of R.
+The generator of `R`.
 
 
 > **\'eq\'** (R :: *RngUPol_FldPadExact*, S :: *RngUPol_FldPadExact*)
@@ -107,7 +107,7 @@ Equality.
 > {:.ret}
 {:.intrinsic}
 
-True if there is a polynomial ring containing both R and S.
+True if there is a polynomial ring containing both `R` and `S`.
 
 
 
@@ -141,7 +141,7 @@ The polynomial with the given coefficients.
 > {:.ret}
 {:.intrinsic}
 
-The polynomial over K with the given coefficients.
+The polynomial over `K` with the given coefficients.
 
 
 ### Coercion
@@ -170,7 +170,7 @@ Succeeds if either:
 > {:.ret}
 {:.intrinsic}
 
-True if f can be coerced to a polynomial over K. If so, also returns the coerced polynomial.
+True if `f` can be coerced to a polynomial over `K`. If so, also returns the coerced polynomial.
 
 
 
@@ -181,7 +181,7 @@ True if f can be coerced to a polynomial over K. If so, also returns the coerced
 > {:.ret}
 {:.intrinsic}
 
-Change the ring of f to K.
+Change the ring of `f` to `K`.
 
 
 ## Polynomial basics
@@ -192,7 +192,7 @@ Change the ring of f to K.
 > {:.ret}
 {:.intrinsic}
 
-The base ring of f.
+The base ring of `f`.
 
 
 ### Degree
@@ -203,7 +203,7 @@ The base ring of f.
 > {:.ret}
 {:.intrinsic}
 
-The degree of f.
+The degree of `f`.
 
 **Parameters**
 - `Strategy`
@@ -214,7 +214,7 @@ The degree of f.
 > {:.ret}
 {:.intrinsic}
 
-The weak degree of f, the degree of its approximation.
+The weak degree of `f`, the degree of its approximation.
 
 
 ### Coefficients
@@ -225,7 +225,7 @@ The weak degree of f, the degree of its approximation.
 > {:.ret}
 {:.intrinsic}
 
-The coefficients of f.
+The coefficients of `f`.
 
 **Parameters**
 - `Strategy`
@@ -236,7 +236,7 @@ The coefficients of f.
 > {:.ret}
 {:.intrinsic}
 
-The coefficients of f, possibly including some leading zeros.
+The coefficients of `f`, possibly including some leading zeros.
 
 
 > **LeadingCoefficient** (f :: *RngUPolElt_FldPadExact*)
@@ -245,7 +245,7 @@ The coefficients of f, possibly including some leading zeros.
 > {:.ret}
 {:.intrinsic}
 
-The leading coefficient of f.
+The leading coefficient of `f`.
 
 **Parameters**
 - `Strategy`
@@ -256,7 +256,7 @@ The leading coefficient of f.
 > {:.ret}
 {:.intrinsic}
 
-The leading weak coefficient of f.
+The leading weak coefficient of `f`.
 
 
 > **Coefficient** (f :: *RngUPolElt_FldPadExact*, i :: *RngIntElt*)
@@ -265,7 +265,7 @@ The leading weak coefficient of f.
 > {:.ret}
 {:.intrinsic}
 
-The ith coefficient of f.
+The `i` coefficient of `f`.
 
 
 ### Valuation
@@ -285,7 +285,7 @@ True if each coefficient of `f` is integral.
 > {:.ret}
 {:.intrinsic}
 
-The smallest valuation of the coefficients of f.
+The smallest valuation of the coefficients of `f`.
 
 **Parameters**
 - `Strategy`
@@ -296,7 +296,7 @@ The smallest valuation of the coefficients of f.
 > {:.ret}
 {:.intrinsic}
 
-True if the valuation of f is n.
+True if the valuation of `f` is `n`.
 
 
 > **ValuationNe** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
@@ -305,7 +305,7 @@ True if the valuation of f is n.
 > {:.ret}
 {:.intrinsic}
 
-True if the valuation of f is not n.
+True if the valuation of `f` is not `n`.
 
 
 > **ValuationLe** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
@@ -314,7 +314,7 @@ True if the valuation of f is not n.
 > {:.ret}
 {:.intrinsic}
 
-True if the valuation of f is at most n.
+True if the valuation of `f` is at most `n`.
 
 
 > **ValuationLt** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
@@ -323,7 +323,7 @@ True if the valuation of f is at most n.
 > {:.ret}
 {:.intrinsic}
 
-True if the valuation of f is less than n.
+True if the valuation of `f` is less than `n`.
 
 
 > **ValuationGe** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
@@ -332,7 +332,7 @@ True if the valuation of f is less than n.
 > {:.ret}
 {:.intrinsic}
 
-True if the valuation of f is at least n.
+True if the valuation of `f` is at least `n`.
 
 
 > **ValuationGt** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
@@ -341,7 +341,7 @@ True if the valuation of f is at least n.
 > {:.ret}
 {:.intrinsic}
 
-True if the valuation of f is greater than n.
+True if the valuation of `f` is greater than `n`.
 
 
 ### Arithmetic
@@ -407,7 +407,7 @@ Scalar division.
 > {:.ret}
 {:.intrinsic}
 
-Shifts the valuation of the `i`th coefficient of `f` by `ns(i)`.
+Shifts the valuation of the `i` coefficient of `f` by `ns(i)`.
 
 
 > **ShiftSlope** (f :: *RngUPolElt_FldPadExact*, n)
@@ -437,7 +437,7 @@ Shifts the valuation of the `i`th coefficient of `f` by `i*n`.
 > {:.ret}
 {:.intrinsic}
 
-The polynomial with the given coefficients of f.
+The polynomial with the given coefficients of `f`.
 
 
 > **Reverse** (f :: *RngUPolElt_FldPadExact*)
@@ -446,7 +446,7 @@ The polynomial with the given coefficients of f.
 > {:.ret}
 {:.intrinsic}
 
-The polynomial with the reversed coefficients of f: f(1/x)*x^deg(f).
+The polynomial with the reversed coefficients of `f`: `f`(1/x)*x^deg(`f`).
 
 **Parameters**
 - `Strategy`
@@ -457,7 +457,7 @@ The polynomial with the reversed coefficients of f: f(1/x)*x^deg(f).
 > {:.ret}
 {:.intrinsic}
 
-The polynomial with the reversed weak coefficient of f: f(1/x)*x^weakdeg(f).
+The polynomial with the reversed weak coefficient of `f`: `f`(1/x)*x^weakdeg(`f`).
 
 
 > **Decimate** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
@@ -466,7 +466,7 @@ The polynomial with the reversed weak coefficient of f: f(1/x)*x^weakdeg(f).
 > {:.ret}
 {:.intrinsic}
 
-The polynomial of the ith coefficients of f where i=Phase mod n.
+The polynomial of the ith coefficients of `f` where i=`Phase` mod `n`.
 
 **Parameters**
 - `Phase`
@@ -479,7 +479,7 @@ The polynomial of the ith coefficients of f where i=Phase mod n.
 > {:.ret}
 {:.intrinsic}
 
-The first derivative of f.
+The first derivative of `f`.
 
 
 > **Derivative** (f :: *RngUPolElt_FldPadExact*, n :: *RngIntElt*)
@@ -488,7 +488,7 @@ The first derivative of f.
 > {:.ret}
 {:.intrinsic}
 
-The nth derivative of f.
+The `n` derivative of `f`.
 
 
 ### Evaluate
@@ -527,7 +527,7 @@ Evaluates `f` at `g`.
 > {:.ret}
 {:.intrinsic}
 
-True if f is inertial (i.e. it is irreducible as a polynomial over the residue class field).
+True if `f` is inertial (i.e. it is irreducible as a polynomial over the residue class field).
 
 **Parameters**
 - `Strategy`
@@ -538,7 +538,7 @@ True if f is inertial (i.e. it is irreducible as a polynomial over the residue c
 > {:.ret}
 {:.intrinsic}
 
-True if f is Eisenstein.
+True if `f` is Eisenstein.
 
 
 ## Discriminant and Resultant
@@ -549,7 +549,7 @@ True if f is Eisenstein.
 > {:.ret}
 {:.intrinsic}
 
-The discriminant of f.
+The discriminant of `f`.
 
 **Parameters**
 - `Strategy`
@@ -560,7 +560,7 @@ The discriminant of f.
 > {:.ret}
 {:.intrinsic}
 
-The resultant of f and g.
+The resultant of `f` and `g`.
 
 **Parameters**
 - `Strategy`
@@ -573,7 +573,7 @@ The resultant of f and g.
 > {:.ret}
 {:.intrinsic}
 
-The weak resultant of f and g.
+The weak resultant of `f` and `g`.
 
 
 > **Resultant** (fs :: [*RngUPolElt_FldPadExact*])
@@ -582,7 +582,7 @@ The weak resultant of f and g.
 > {:.ret}
 {:.intrinsic}
 
-The generalized resultant of fs.
+The generalized resultant of `fs`.
 
 **Parameters**
 - `Strategy`
@@ -594,7 +594,7 @@ The generalized resultant of fs.
 > {:.ret}
 {:.intrinsic}
 
-The weak resultant of fs, i.e. the resultant assuming the weak degree of each f in fs is correct.
+The weak resultant of `fs`, i.e. the resultant assuming the weak degree of each f in `fs` is correct.
 
 
 ## Newton polygon
@@ -618,7 +618,7 @@ The Newton polygon of `f`.
 > {:.ret}
 {:.intrinsic}
 
-A fragment of the Newton polygon of f, based on its non weakly zero coefficients.
+A fragment of the Newton polygon of `f`, based on its non weakly zero coefficients.
 
 
 ## Hensel lifting
@@ -669,7 +669,7 @@ The root of `f` uniquely closest to `x` (see `IsHenselLiftable`).
 
 True if `g` is Hensel-liftable to a factor of `f`. If so, also returns the factor (with the same leading coefficient as `g`) and its cofactor.
 
-**Future.** Optionally choose Slope, fShift and gShift automagically.
+**Future.** Optionally choose `Slope`, `fShift` and `gShift` automagically.
 
 
 **Parameters**
@@ -683,13 +683,13 @@ True if `g` is Hensel-liftable to a factor of `f`. If so, also returns the facto
 > **SetBaselineValuation** (f :: *RngUPolElt_FldPadExact*, n)
 {:.intrinsic}
 
-Sets the baseline valuation of f to n.
+Sets the baseline valuation of `f` to `n`.
 
 
 > **IncreaseBaselinePrecision** (f :: *RngUPolElt_FldPadExact*, n)
 {:.intrinsic}
 
-Increases the baseline precision of f to n.
+Increases the baseline precision of `f` to `n`.
 
 
 > **WeakApproximation** (f :: *RngUPolElt_FldPadExact*)
@@ -707,7 +707,7 @@ An element weakly equal to x.
 > {:.ret}
 {:.intrinsic}
 
-The minimum valuation of the coefficients of the approximation of f.
+The minimum valuation of the coefficients of the approximation of `f`.
 
 
 > **IncreaseAbsolutePrecision_Lazy** (R :: *RngUPol_FldPadExact*, pr :: *RngIntElt*)
@@ -716,7 +716,7 @@ The minimum valuation of the coefficients of the approximation of f.
 > {:.ret}
 {:.intrinsic}
 
-Increases the precision of the approximation to R to at least pr.
+Increases the precision of the approximation to `R` to at least `pr`.
 
 
 > **Approximation_Lazy** (R :: *RngUPol_FldPadExact*, pr :: *RngIntElt*)
@@ -725,7 +725,7 @@ Increases the precision of the approximation to R to at least pr.
 > {:.ret}
 {:.intrinsic}
 
-An approximation to R whose base field has default precision pr.
+An approximation to `R` whose base field has default precision `pr`.
 
 
 > **IsDefinitelyZero** (f :: *RngUPolElt_FldPadExact*)
@@ -734,13 +734,13 @@ An approximation to R whose base field has default precision pr.
 > {:.ret}
 {:.intrinsic}
 
-True if f is precisely zero.
+True if `f` is precisely zero.
 
 
 > **UpdateZero** (f :: *RngUPolElt_FldPadExact*, aprs :: [*RngIntElt*])
 {:.intrinsic}
 
-Updates f to sum_i(O(pi^aprs[i+1])*x^i).
+Updates `f` to sum_i(O(pi^`aprs`[i+1])*x^i).
 
 
 > **IsWeaklyZero** (f :: *RngUPolElt_FldPadExact*)
@@ -749,7 +749,7 @@ Updates f to sum_i(O(pi^aprs[i+1])*x^i).
 > {:.ret}
 {:.intrinsic}
 
-True if f is weakly zero.
+True if `f` is weakly zero.
 
 **Parameters**
 - `Strategy`
@@ -760,7 +760,7 @@ True if f is weakly zero.
 > {:.ret}
 {:.intrinsic}
 
-True if f and g are weakly equal.
+True if `f` and `g` are weakly equal.
 
 
 ## Root-finding and factorization
@@ -771,7 +771,7 @@ True if f and g are weakly equal.
 > {:.ret}
 {:.intrinsic}
 
-The factorization of f as a sequence of `<factor, multiplicity>` pairs.
+The factorization of `f` as a sequence of `<factor, multiplicity>` pairs.
 
 It is only possible to factorize squarefree polynomials, so `multiplicity` is always 1. The factors are monic; also returns the leading coefficient of `f`.
 

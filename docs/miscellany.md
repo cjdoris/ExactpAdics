@@ -62,7 +62,7 @@ The new type `AssocDflt` is an associative array with a default value. Hence it 
 > {:.ret}
 {:.intrinsic}
 
-True if we can create a default associative array with default x.
+True if we can create a default associative array with default `x`.
 
 
 > **IsCoercible_DefaultAssociativeArray** (x, keys, values)
@@ -71,7 +71,7 @@ True if we can create a default associative array with default x.
 > {:.ret}
 {:.intrinsic}
 
-True if we can create a default associative array with default x and given keys and values.
+True if we can create a default associative array with default `x` and given `keys` and `values`.
 
 
 > **IsCoercible_DefaultAssociativeArray** (x, y)
@@ -84,7 +84,7 @@ True if we can create a default associative array with default x and given keys 
 > {:.ret}
 {:.intrinsic}
 
-True if we can create a default associative array with default x and values y.
+True if we can create a default associative array with default `x` and values `y`.
 
 
 
@@ -97,7 +97,7 @@ True if we can create a default associative array with default x and values y.
 > {:.ret}
 {:.intrinsic}
 
-The default associative array with default value x.
+The default associative array with default value `x`.
 
 
 > **DefaultAssociativeArray** (x, ys)
@@ -106,7 +106,7 @@ The default associative array with default value x.
 > {:.ret}
 {:.intrinsic}
 
-The default associative array with default value x and keys and values specified by ys (an associative array or sequence of <key,value> pairs).
+The default associative array with default value `x` and keys and values specified by `ys` (an associative array or sequence of <key,value> pairs).
 
 
 > **DefaultAssociativeArray** (x, keys, values)
@@ -115,7 +115,7 @@ The default associative array with default value x and keys and values specified
 > {:.ret}
 {:.intrinsic}
 
-The default associative array with default value x, and given keys and values.
+The default associative array with default value `x`, and given `keys` and `values`.
 
 
 > **Print** (x :: *AssocDflt*, lvl :: *MonStgElt*)
@@ -130,7 +130,7 @@ Print.
 > {:.ret}
 {:.intrinsic}
 
-The value at index i of x.
+The value at index `i` of `x`.
 
 
 > **ApplyPointwise** (f, x :: *AssocDflt*, y :: *AssocDflt*)
@@ -139,7 +139,7 @@ The value at index i of x.
 > {:.ret}
 {:.intrinsic}
 
-Applies the function f pointwise to values of x and y.
+Applies the function `f` pointwise to values of `x` and `y`.
 
 
 > **ApplyPointwise** (f, x :: *AssocDflt*)
@@ -148,7 +148,7 @@ Applies the function f pointwise to values of x and y.
 > {:.ret}
 {:.intrinsic}
 
-Applies the function f pointwise to values of x.
+Applies the function `f` pointwise to values of `x`.
 
 
 > **Image** (x :: *AssocDflt*)
@@ -166,7 +166,7 @@ The set of possible output values.
 > {:.ret}
 {:.intrinsic}
 
-The default value of x.
+The default value of `x`.
 
 
 > **SpecialAssociativeArray** (x :: *AssocDflt*)
@@ -175,7 +175,7 @@ The default value of x.
 > {:.ret}
 {:.intrinsic}
 
-The associative array of the special values of x.
+The associative array of the special values of `x`.
 
 
 > **SpecialKeys** (x :: *AssocDflt*)
@@ -184,7 +184,7 @@ The associative array of the special values of x.
 > {:.ret}
 {:.intrinsic}
 
-The keys of special values of x.
+The keys of special values of `x`.
 
 
 > **Zip** (xs :: [*AssocDflt*])
@@ -193,7 +193,7 @@ The keys of special values of x.
 > {:.ret}
 {:.intrinsic}
 
-The array [i] -> [x(i) : x in xs]. The inputs must have compatible indices.
+The array [i] -> [x(i) : x in `xs`]. The inputs must have compatible indices.
 
 
 > **ZipApplyPointwise** (f, xs :: [*AssocDflt*])
@@ -202,7 +202,7 @@ The array [i] -> [x(i) : x in xs]. The inputs must have compatible indices.
 > {:.ret}
 {:.intrinsic}
 
-The array [i] -> f([x(i) : x in xs]). Equivalent to ApplyPointwise(f,Zip(xs)).
+The array [i] -> `f`([x(i) : x in `xs`]). Equivalent to ApplyPointwise(`f`,Zip(`xs`)).
 
 
 > **ForAll** (x :: *AssocDflt*, f)
@@ -211,7 +211,7 @@ The array [i] -> f([x(i) : x in xs]). Equivalent to ApplyPointwise(f,Zip(xs)).
 > {:.ret}
 {:.intrinsic}
 
-True if f(x(i)) is true for all i.
+True if `f`(`x`(i)) is true for all i.
 
 
 > **ForAll** (x :: *AssocDflt*, y :: *AssocDflt*, f)
@@ -220,7 +220,7 @@ True if f(x(i)) is true for all i.
 > {:.ret}
 {:.intrinsic}
 
-True if f(x(i),y(i)) is true for all i.
+True if `f`(`x`(i),`y`(i)) is true for all i.
 
 
 ## Warnings
@@ -274,7 +274,7 @@ A basic scheme for promoting values in different structures to a common strucure
 > {:.ret}
 {:.intrinsic}
 
-True if x and y are promotable to the same parent.
+True if `x` and `y` are promotable to the same parent.
 
 
 > **Promote** (x, y)
@@ -283,7 +283,7 @@ True if x and y are promotable to the same parent.
 > {:.ret}
 {:.intrinsic}
 
-Promotes x and y to a common type.
+Promotes `x` and `y` to a common type.
 
 
 ## Lower bounds
@@ -296,7 +296,7 @@ A `ExactpAdics_BndLow` is a lower bound on a possibly unknown value.
 > {:.ret}
 {:.intrinsic}
 
-The lower bound v.
+The lower bound `v`.
 
 **Parameters**
 - `IsSharp`
@@ -307,7 +307,7 @@ The lower bound v.
 > {:.ret}
 {:.intrinsic}
 
-True if b is a sharp bound.
+True if `b` is a sharp bound.
 
 
 > **BoundValue** (b :: *ExactpAdics_BndLow*)
@@ -325,7 +325,7 @@ The lower bound.
 > {:.ret}
 {:.intrinsic}
 
-The value of b, assuming it is sharp.
+The value of `b`, assuming it is sharp.
 
 
 > **Print** (b :: *ExactpAdics_BndLow*, lvl :: *MonStgElt*)

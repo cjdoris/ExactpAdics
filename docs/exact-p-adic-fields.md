@@ -46,7 +46,7 @@
 > {:.ret}
 {:.intrinsic}
 
-The exact p-adic field.
+The exact `p`-adic field.
 
 
 ### Extensions
@@ -118,7 +118,7 @@ The totally ramified extension defined by `f` over its base field or `F`.
 > {:.ret}
 {:.intrinsic}
 
-The totally ramified extension of `F` of degree `n` got by adjoining the `n`th root of `pi` (or the default uniformizer of `F`).
+The totally ramified extension of `F` of degree `n` got by adjoining the `n` root of `pi` (or the default uniformizer of `F`).
 
 
 
@@ -137,7 +137,7 @@ The totally ramified extension of `F` of degree `n` got by adjoining the `n`th r
 > {:.ret}
 {:.intrinsic}
 
-The completion C of K at P as an exact p-adic field. Also returns the embedding K to C, and the invertible map K to xC (the approximation field for C).
+The completion C of `K` at `P` as an exact p-adic field. Also returns the embedding `K` to C, and the invertible map `K` to xC (the approximation field for C).
 
 
 
@@ -154,7 +154,7 @@ The completion C of K at P as an exact p-adic field. Also returns the embedding 
 > {:.ret}
 {:.intrinsic}
 
-Given a p-adic field xxL, returns L isomorphic to xxL and a map xxL -> xL.
+Given a p-adic field `xxL`, returns L isomorphic to `xxL` and a map `xxL` -> xL.
 
 **Parameters**
 - `NoCheckUnique`
@@ -165,7 +165,7 @@ Given a p-adic field xxL, returns L isomorphic to xxL and a map xxL -> xL.
 > {:.ret}
 {:.intrinsic}
 
-Given an extension xxL/xxK and mK : xxK -> xK where xK is the approximation field of K, returns L/K isomorphic to xxL/xxK and a map xxL -> xL.
+Given an extension `xxL`/xxK and `mK` : xxK -> xK where xK is the approximation field of `K`, returns L/`K` isomorphic to `xxL`/xxK and a map `xxL` -> xL.
 
 **Parameters**
 - `NoCheckUnique`
@@ -176,7 +176,7 @@ Given an extension xxL/xxK and mK : xxK -> xK where xK is the approximation fiel
 > {:.ret}
 {:.intrinsic}
 
-Given xxL/xxK where xxK is coercible to and from xK where xK is the approximation field of K, returns L/K isomorphic to xxL/xxK, and a map xxL -> xL.
+Given `xxL`/`xxK` where `xxK` is coercible to and from xK where xK is the approximation field of `K`, returns L/`K` isomorphic to `xxL`/`xxK`, and a map `xxL` -> xL.
 
 **Parameters**
 - `NoCheckUnique`
@@ -187,7 +187,7 @@ Given xxL/xxK where xxK is coercible to and from xK where xK is the approximatio
 > {:.ret}
 {:.intrinsic}
 
-Given xxL/xK where xK is the approximation field of K, returns L/K isomorphic to xxL/xK, and a map xL -> xxL.
+Given `xxL`/xK where xK is the approximation field of `K`, returns L/`K` isomorphic to `xxL`/xK, and a map xL -> `xxL`.
 
 **Parameters**
 - `NoCheckUnique`
@@ -220,7 +220,7 @@ One.
 > {:.ret}
 {:.intrinsic}
 
-The uniformizing element of F.
+The uniformizing element of `F`.
 
 
 > **InertiaGenerator** (F :: *FldPadExact*)
@@ -229,7 +229,7 @@ The uniformizing element of F.
 > {:.ret}
 {:.intrinsic}
 
-An element of F generating the maximal unramified subextension of F over its prime subfield, and its minimal polynomial.
+An element of `F` generating the maximal unramified subextension of `F` over its prime subfield, and its minimal polynomial.
 
 
 > **PrimitiveElement** (E :: *FldPadExact*)
@@ -286,7 +286,7 @@ True if `X` is coercible to an element of `F`, and the coerced element.
 > {:.ret}
 {:.intrinsic}
 
-A random integer of F.
+A random integer of `F`.
 
 
 > **Random** (F :: *FldPadExact*, v :: *RngIntElt*)
@@ -295,7 +295,7 @@ A random integer of F.
 > {:.ret}
 {:.intrinsic}
 
-A random element of F of value at least v.
+A random element of `F` of value at least `v`.
 
 
 > **RandomUnit** (F :: *FldPadExact*)
@@ -304,7 +304,7 @@ A random element of F of value at least v.
 > {:.ret}
 {:.intrinsic}
 
-A random unit of F.
+A random unit of `F`.
 
 
 > **RandomUnit** (F :: *FldPadExact*, v :: *RngIntElt*)
@@ -313,7 +313,7 @@ A random unit of F.
 > {:.ret}
 {:.intrinsic}
 
-A random element of F of value v.
+A random element of `F` of value `v`.
 
 
 ## Basic operations on p-adic numbers
@@ -324,7 +324,7 @@ A random element of F of value v.
 > {:.ret}
 {:.intrinsic}
 
-The generator^i coefficient of x in K(generator)/K.
+The generator^`i` coefficient of `x` in K(generator)/K.
 
 
 > **Coefficients** (x :: *FldPadExactElt*)
@@ -335,7 +335,7 @@ The generator^i coefficient of x in K(generator)/K.
 > {:.ret}
 {:.intrinsic}
 
-The coefficients of x in the basis generator^i in K(generator)/K.
+The coefficients of `x` in the basis generator^i in K(generator)/K.
 
 
 
@@ -399,7 +399,7 @@ Powering.
 > {:.ret}
 {:.intrinsic}
 
-Multiplies `x` by the `n`th power of the uniformizing element.
+Multiplies `x` by the `n` power of the uniformizing element.
 
 
 > **IsSquare** (x :: *FldPadExactElt*)
@@ -408,7 +408,7 @@ Multiplies `x` by the `n`th power of the uniformizing element.
 > {:.ret}
 {:.intrinsic}
 
-True iff x is a square. (Strategy is used to determine if x is nonzero.)
+True iff `x` is a square. (`Strategy` is used to determine if `x` is nonzero.)
 
 **Parameters**
 - `Strategy`
@@ -419,7 +419,7 @@ True iff x is a square. (Strategy is used to determine if x is nonzero.)
 > {:.ret}
 {:.intrinsic}
 
-True iff x is an nth power. (Strategy is used to determine if x is nonzero.)
+True iff `x` is an `n` power. (`Strategy` is used to determine if `x` is nonzero.)
 
 **Parameters**
 - `Strategy`
@@ -432,7 +432,7 @@ True iff x is an nth power. (Strategy is used to determine if x is nonzero.)
 > {:.ret}
 {:.intrinsic}
 
-The valuation of x.
+The valuation of `x`.
 
 **Parameters**
 - `Strategy`
@@ -508,7 +508,7 @@ True if `x` is an integer; that is, its valuation is at least 0.
 > {:.ret}
 {:.intrinsic}
 
-Respectively <0, 0 or >0 if the valuation of x is less than, equal to or greater than the valuation of y.
+Respectively <0, 0 or >0 if the valuation of `x` is less than, equal to or greater than the valuation of `y`.
 
 
 
@@ -526,7 +526,7 @@ Respectively <0, 0 or >0 if the valuation of x is less than, equal to or greater
 > {:.ret}
 {:.intrinsic}
 
-True iff x has greater valuation than y.
+True iff `x` has greater valuation than `y`.
 
 
 
@@ -541,7 +541,7 @@ True iff x has greater valuation than y.
 > {:.ret}
 {:.intrinsic}
 
-The index i maximizing Valuation(xs[i]). If Unique, raises an error if there is no unique smallest.
+The index i maximizing Valuation(`xs`[i]). If `Unique`, raises an error if there is no unique smallest.
 
 **Parameters**
 - `Strategy`
@@ -553,7 +553,7 @@ The index i maximizing Valuation(xs[i]). If Unique, raises an error if there is 
 > {:.ret}
 {:.intrinsic}
 
-The index i maximizing Valuation(x-ys[i]). If Unique, raises an error if there is no unique closest.
+The index i maximizing Valuation(`x`-`ys`[i]). If `Unique`, raises an error if there is no unique closest.
 
 **Parameters**
 - `Strategy`
@@ -565,7 +565,7 @@ The index i maximizing Valuation(x-ys[i]). If Unique, raises an error if there i
 > {:.ret}
 {:.intrinsic}
 
-The smallest element of xs, and its index.
+The smallest element of `xs`, and its index.
 
 **Parameters**
 - `Strategy`
@@ -577,7 +577,7 @@ The smallest element of xs, and its index.
 > {:.ret}
 {:.intrinsic}
 
-The closest element y of ys to x and its index.
+The closest element y of `ys` to `x` and its index.
 
 **Parameters**
 - `Strategy`
@@ -591,7 +591,7 @@ The closest element y of ys to x and its index.
 > {:.ret}
 {:.intrinsic}
 
-The base field of F.
+The base field of `F`.
 
 
 > **IsPrimeField** (F :: *FldPadExact*)
@@ -600,7 +600,7 @@ The base field of F.
 > {:.ret}
 {:.intrinsic}
 
-True if F is a prime p-adic field.
+True if `F` is a prime p-adic field.
 
 
 > **PrimeField** (F :: *FldPadExact*)
@@ -609,7 +609,7 @@ True if F is a prime p-adic field.
 > {:.ret}
 {:.intrinsic}
 
-The prime field of F.
+The prime field of `F`.
 
 
 > **IsExtensionOf** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -618,7 +618,7 @@ The prime field of F.
 > {:.ret}
 {:.intrinsic}
 
-True if E is an extension of F. If so, also returns an object representing the extension.
+True if `E` is an extension of `F`. If so, also returns an object representing the extension.
 
 
 > **ExistsCoveringStructure** (E :: *FldPadExact*, F :: *FldPadExact*)
@@ -635,7 +635,7 @@ True if E is an extension of F. If so, also returns an object representing the e
 > {:.ret}
 {:.intrinsic}
 
-True if there is a structure containing E and F, and the common structure.
+True if there is a structure containing `E` and `F`, and the common structure.
 
 
 
@@ -654,13 +654,13 @@ True if there is a structure containing E and F, and the common structure.
 > {:.ret}
 {:.intrinsic}
 
-The defining polynomial of K.
+The defining polynomial of `K`.
 
 
 > **AssignNames** (~F :: *FldPadExact*, names :: [*MonStgElt*])
 {:.intrinsic}
 
-Assigns a name to the generator of F.
+Assigns a name to the generator of `F`.
 
 
 > **Name** (F :: *FldPadExact*, i :: *RngIntElt*)
@@ -671,7 +671,7 @@ Assigns a name to the generator of F.
 > {:.ret}
 {:.intrinsic}
 
-The ith generator of F.
+The `i` generator of `F`.
 
 
 
@@ -682,7 +682,7 @@ The ith generator of F.
 > {:.ret}
 {:.intrinsic}
 
-The generating element of F.
+The generating element of `F`.
 
 
 > **\'eq\'** (F :: *FldPadExact*, E :: *FldPadExact*)
@@ -724,7 +724,7 @@ The degree of `E` over its base field or `F`.
 > {:.ret}
 {:.intrinsic}
 
-The degree of F over its prime field.
+The degree of `F` over its prime field.
 
 
 > **InertiaDegree** (E :: *FldPadExact*)
@@ -746,7 +746,7 @@ The inertia degree of `E` over its base field or `F`.
 > {:.ret}
 {:.intrinsic}
 
-The inertia degree of F over its prime field.
+The inertia degree of `F` over its prime field.
 
 
 > **RamificationDegree** (E :: *FldPadExact*)
@@ -768,7 +768,7 @@ The ramification degree of `E` over its base field or `F`.
 > {:.ret}
 {:.intrinsic}
 
-The ramification degree of F over its prime field.
+The ramification degree of `F` over its prime field.
 
 
 > **DiscriminantValuation** (E :: *FldPadExact*)
@@ -859,7 +859,7 @@ True if `E` is totally wildly ramified over its base field or `F`; that is, if i
 > {:.ret}
 {:.intrinsic}
 
-A string describing the extension E/F with F described as FName.
+A string describing the extension `E`/`F` with `F` described as FName.
 
 **Parameters**
 - `BaseName`
@@ -872,7 +872,7 @@ A string describing the extension E/F with F described as FName.
 > {:.ret}
 {:.intrinsic}
 
-True if E/F is in standard form: E is a totally ramified extension of an unramified extension of F.
+True if `E`/`F` is in standard form: `E` is a totally ramified extension of an unramified extension of `F`.
 
 
 ## Residue class field
@@ -883,7 +883,7 @@ True if E/F is in standard form: E is a totally ramified extension of an unramif
 > {:.ret}
 {:.intrinsic}
 
-The residue class field R of F, the map F to R, and the map from the approximation of F to R.
+The residue class field R of `F`, the map `F` to R, and the map from the approximation of `F` to R.
 
 
 > **ResidueClass** (x :: *FldPadExactElt*)
@@ -892,7 +892,7 @@ The residue class field R of F, the map F to R, and the map from the approximati
 > {:.ret}
 {:.intrinsic}
 
-The residue class of x.
+The residue class of `x`.
 
 
 ## Ramification polynomials and polygons
@@ -910,7 +910,7 @@ The Newton polygon is an invariant of an extension and describes the ramificatio
 > {:.ret}
 {:.intrinsic}
 
-The residual polynomials of the ramification polygon of f.
+The residual polynomials of the ramification polygon of `f`.
 
 
 > **RamificationResidualPolynomial** (f :: *RngUPolElt_FldPadExact*, face :: *NwtnPgonFace*)
@@ -919,7 +919,7 @@ The residual polynomials of the ramification polygon of f.
 > {:.ret}
 {:.intrinsic}
 
-The residual polynomial of the given face of the ramification polygon of f.
+The residual polynomial of the given `face` of the ramification polygon of `f`.
 
 
 > **RamificationPolynomial** (L :: *FldPadExact*)
@@ -928,7 +928,7 @@ The residual polynomial of the given face of the ramification polygon of f.
 > {:.ret}
 {:.intrinsic}
 
-The ramification polynomial of L with respect to its defining polynomial.
+The ramification polynomial of `L` with respect to its defining polynomial.
 
 
 > **RamificationPolygon** (f :: *RngUPolElt_FldPadExact*)
@@ -937,7 +937,7 @@ The ramification polynomial of L with respect to its defining polynomial.
 > {:.ret}
 {:.intrinsic}
 
-The ramification polygon of the extension defined by f.
+The ramification polygon of the extension defined by `f`.
 
 
 > **RamificationPolygon** (E :: *FldPadExact*)
@@ -1004,7 +1004,7 @@ The vertices of the function.
 > {:.ret}
 {:.intrinsic}
 
-The lower breaks of h.
+The lower breaks of `h`.
 
 
 > **UpperBreaks** (h :: *HassHerbTransFunc*)
@@ -1013,7 +1013,7 @@ The lower breaks of h.
 > {:.ret}
 {:.intrinsic}
 
-The upper breaks of h.
+The upper breaks of `h`.
 
 
 > **\'eq\'** (h1 :: *HassHerbTransFunc*, h2 :: *HassHerbTransFunc*)
@@ -1022,7 +1022,7 @@ The upper breaks of h.
 > {:.ret}
 {:.intrinsic}
 
-True if h1 and h2 are equal as field invariants, i.e. they define the same function.
+True if `h1` and `h2` are equal as field invariants, i.e. they define the same function.
 
 
 > **\'@\'** (v, h :: *HassHerbTransFunc*)
@@ -1031,7 +1031,7 @@ True if h1 and h2 are equal as field invariants, i.e. they define the same funct
 > {:.ret}
 {:.intrinsic}
 
-Evaluates h at v.
+Evaluates `h` at `v`.
 
 
 > **\'@@\'** (u, h :: *HassHerbTransFunc*)
@@ -1040,7 +1040,7 @@ Evaluates h at v.
 > {:.ret}
 {:.intrinsic}
 
-The inverse of h at u.
+The inverse of `h` at `u`.
 
 
 > **RamificationPolygon** (h :: *HassHerbTransFunc*)
@@ -1075,7 +1075,7 @@ True if `x` is a primitive element for `E` (or `Parent(x)`) over `F`.
 > {:.ret}
 {:.intrinsic}
 
-The minimal polynomial of x over F. Requires that x is a primitive element for E/F where E is the field containing x.
+The minimal polynomial of `x` over `F`. Requires that `x` is a primitive element for E/`F` where E is the field containing `x`.
 
 **Parameters**
 - `Strategy`
@@ -1088,7 +1088,7 @@ The minimal polynomial of x over F. Requires that x is a primitive element for E
 > {:.ret}
 {:.intrinsic}
 
-The integers Q of F mod pi^n, and the map F to Q.
+The integers Q of `F` mod pi^`n`, and the map `F` to Q.
 
 
 > **quo** \<F :: *FldPadExact* \| ...>
@@ -1108,7 +1108,7 @@ Quotient of the ring of integers of `F` by the elements on the right hand side.
 > {:.ret}
 {:.intrinsic}
 
-The base field of h, which is fixed.
+The base field of `h`, which is fixed.
 
 
 > **Domain** (h :: *HomFldPadExact*)
@@ -1117,7 +1117,7 @@ The base field of h, which is fixed.
 > {:.ret}
 {:.intrinsic}
 
-The domain of h.
+The domain of `h`.
 
 
 > **Codomain** (h :: *HomFldPadExact*)
@@ -1126,7 +1126,7 @@ The domain of h.
 > {:.ret}
 {:.intrinsic}
 
-The codomain of h.
+The codomain of `h`.
 
 
 > **\'@\'** (x, h :: *HomFldPadExact*)
@@ -1144,7 +1144,7 @@ Applies the map.
 > {:.ret}
 {:.intrinsic}
 
-True if h has an inverse, and the inverse.
+True if `h` has an inverse, and the inverse.
 
 
 > **Inverse** (h :: *HomFldPadExact*)
@@ -1153,7 +1153,7 @@ True if h has an inverse, and the inverse.
 > {:.ret}
 {:.intrinsic}
 
-The inverse of h.
+The inverse of `h`.
 
 
 > **\'@@\'** (x, h :: *HomFldPadExact*)
@@ -1171,7 +1171,7 @@ Applies the inverse map.
 > {:.ret}
 {:.intrinsic}
 
-The trivial embedding of BaseField(X) into TopField(X).
+The trivial embedding of BaseField(`X`) into TopField(`X`).
 
 
 > **TrivialEmbedding** (F :: *FldPadExactElt*, E :: *FldPadExactElt*)
@@ -1180,7 +1180,7 @@ The trivial embedding of BaseField(X) into TopField(X).
 > {:.ret}
 {:.intrinsic}
 
-The trivial embedding of F into E.
+The trivial embedding of `F` into `E`.
 
 
 > **\'\*\'** (h1 :: *HomFldPadExact*, h2 :: *HomFldPadExact*)
@@ -1189,7 +1189,7 @@ The trivial embedding of F into E.
 > {:.ret}
 {:.intrinsic}
 
-The composition x @ (h1 * h2) = x @ h1 @ h2.
+The composition x @ (`h1` * `h2`) = x @ `h1` @ `h2`.
 
 
 > **Embeddings** (X :: *ExtDataFldPadExact*, h :: *HomFldPadExact*)
@@ -1198,7 +1198,7 @@ The composition x @ (h1 * h2) = x @ h1 @ h2.
 > {:.ret}
 {:.intrinsic}
 
-The embeddings of TopField(X) into Codomain(h) extending h:BaseField(X)->Codomain(h).
+The embeddings of TopField(`X`) into Codomain(`h`) extending `h`:BaseField(`X`)->Codomain(`h`).
 
 
 > **Embeddings** (X1 :: *ExtDataFldPadExact*, X2 :: *ExtDataFldPadExact*, h0 :: *HomFldPadExact*)
@@ -1207,7 +1207,7 @@ The embeddings of TopField(X) into Codomain(h) extending h:BaseField(X)->Codomai
 > {:.ret}
 {:.intrinsic}
 
-The embeddings of TopField(X1) into TopField(X2) extending h0:BaseField(X1)->BaseField(X2).
+The embeddings of TopField(`X1`) into TopField(`X2`) extending `h0`:BaseField(`X1`)->BaseField(`X2`).
 
 
 > **Embeddings** (X1 :: *ExtDataFldPadExact*, X2 :: *ExtDataFldPadExact*)
@@ -1216,7 +1216,7 @@ The embeddings of TopField(X1) into TopField(X2) extending h0:BaseField(X1)->Bas
 > {:.ret}
 {:.intrinsic}
 
-The embeddings of TopField(X1) into TopField(X2) fixing BaseField(X1)=BaseField(X2).
+The embeddings of TopField(`X1`) into TopField(`X2`) fixing BaseField(`X1`)=BaseField(`X2`).
 
 
 ## Temporary field (incomplete feature)
@@ -1227,7 +1227,7 @@ The embeddings of TopField(X1) into TopField(X2) fixing BaseField(X1)=BaseField(
 > {:.ret}
 {:.intrinsic}
 
-The temporary elements of F.
+The temporary elements of `F`.
 
 
 > **Temporary** (x :: *FldPadExactElt*)
@@ -1236,7 +1236,7 @@ The temporary elements of F.
 > {:.ret}
 {:.intrinsic}
 
-A temporary representation of x.
+A temporary representation of `x`.
 
 
 > **Parent** (t :: *TmpFldPadExactElt*)
@@ -1245,19 +1245,19 @@ A temporary representation of x.
 > {:.ret}
 {:.intrinsic}
 
-The parent of t.
+The parent of `t`.
 
 
 > **Print** (T :: *TmpFldPadExact*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
-Print T.
+Print `T`.
 
 
 > **Print** (t :: *TmpFldPadExactElt*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
-Print t.
+Print `t`.
 
 
 > **Evaluate** (t :: *TmpFldPadExactElt*)
@@ -1266,7 +1266,7 @@ Print t.
 > {:.ret}
 {:.intrinsic}
 
-Returns a permanent version of t.
+Returns a permanent version of `t`.
 
 
 > **WeakValuation** (t :: *TmpFldPadExactElt*)
@@ -1275,7 +1275,7 @@ Returns a permanent version of t.
 > {:.ret}
 {:.intrinsic}
 
-A lower bound on the valuation of t.
+A lower bound on the valuation of `t`.
 
 
 > **AbsolutePrecision** (t :: *TmpFldPadExactElt*)
@@ -1284,7 +1284,7 @@ A lower bound on the valuation of t.
 > {:.ret}
 {:.intrinsic}
 
-The absolute precision to which a permanent version of t will be made.
+The absolute precision to which a permanent version of `t` will be made.
 
 
 > **\'&+\'** (ts :: [*TmpFldPadExactElt*])
@@ -1306,7 +1306,7 @@ Addition.
 > {:.ret}
 {:.intrinsic}
 
-The base field of T.
+The base field of `T`.
 
 
 > **ExistsCoveringStructure** (S :: *TmpFldPadExact*, T :: *TmpFldPadExact*)
@@ -1319,7 +1319,7 @@ The base field of T.
 > {:.ret}
 {:.intrinsic}
 
-True if there is a structure containing both S and T.
+True if there is a structure containing both `S` and `T`.
 
 
 
@@ -1347,7 +1347,7 @@ Equality.
 > {:.ret}
 {:.intrinsic}
 
-True if X is coercible to T, and the coerced element.
+True if `X` is coercible to `T`, and the coerced element.
 
 
 
@@ -1371,7 +1371,7 @@ Eltseq.
 > {:.ret}
 {:.intrinsic}
 
-Eltseq[i].
+Eltseq[`i`].
 
 
 ## Integer ring (incomplete feature)
@@ -1382,7 +1382,7 @@ Eltseq[i].
 > {:.ret}
 {:.intrinsic}
 
-The ring of elements of F of valuation at least v.
+The ring of elements of `F` of valuation at least `v`.
 
 
 > **Integers** (F :: *FldPadExact*)
@@ -1391,7 +1391,7 @@ The ring of elements of F of valuation at least v.
 > {:.ret}
 {:.intrinsic}
 
-The ring of integers of F.
+The ring of integers of `F`.
 
 
 > **FieldOfFractions** (F :: *FldPadExact*)
@@ -1426,7 +1426,7 @@ Equality.
 > {:.ret}
 {:.intrinsic}
 
-True if X is coercible into R and the coerced element.
+True if `X` is coercible into `R` and the coerced element.
 
 
 
@@ -1439,7 +1439,7 @@ True if X is coercible into R and the coerced element.
 > {:.ret}
 {:.intrinsic}
 
-Parent of x.
+Parent of `x`.
 
 
 > **Print** (x :: *RngPadExactElt*, lvl :: *MonStgElt*)
@@ -1454,7 +1454,7 @@ Print.
 > {:.ret}
 {:.intrinsic}
 
-A random element of R.
+A random element of `R`.
 
 
 > **Format** (x :: *FldPadExactElt*)
@@ -1463,7 +1463,7 @@ A random element of R.
 > {:.ret}
 {:.intrinsic}
 
-Returns a string representation of x.
+Returns a string representation of `x`.
 
 **Parameters**
 - `APr`
@@ -1474,7 +1474,7 @@ Returns a string representation of x.
 > {:.ret}
 {:.intrinsic}
 
-Returns a string representation of f.
+Returns a string representation of `f`.
 
 **Parameters**
 - `APr`
@@ -1485,7 +1485,7 @@ Returns a string representation of f.
 > {:.ret}
 {:.intrinsic}
 
-A random element of R of the given degree.
+A random element of `R` of the given degree.
 
 **Parameters**
 - `Eisenstein`
@@ -1515,7 +1515,7 @@ Increases the baseline precision.
 > {:.ret}
 {:.intrinsic}
 
-An element weakly equal to x.
+An element weakly equal to `x`.
 
 
 > **_ExactpAdics_PrecisionRequired** (F :: *FldPadExact*, xx :: *FldPadElt*, apr)
@@ -1542,7 +1542,7 @@ The precision required to approximate f with the given parameters.
 > {:.ret}
 {:.intrinsic}
 
-Getter which, when evaluated, the approximation field of F has at least precision pr.
+Getter which, when evaluated, the approximation field of `F` has at least precision `pr`.
 
 
 > **Approximation_Lazy** (F :: *FldPadExact*, pr)
@@ -1551,13 +1551,13 @@ Getter which, when evaluated, the approximation field of F has at least precisio
 > {:.ret}
 {:.intrinsic}
 
-The approximating field of F with default precision pr.
+The approximating field of `F` with default precision `pr`.
 
 
 > **UpdateZero** (x :: *FldPadExactElt*, apr :: *RngIntElt*)
 {:.intrinsic}
 
-Updates x to O(pi^apr).
+Updates `x` to O(pi^`apr`).
 
 
 > **IsDefinitelyZero** (x :: *FldPadExactElt*)
@@ -1566,7 +1566,7 @@ Updates x to O(pi^apr).
 > {:.ret}
 {:.intrinsic}
 
-True if x is precisely zero.
+True if `x` is precisely zero.
 
 
 > **IsWeaklyZero** (x :: *FldPadExactElt*)
@@ -1598,7 +1598,7 @@ True if each `x` in `xs` is weakly zero. If not, returns the index of a nonzero 
 > {:.ret}
 {:.intrinsic}
 
-True if x and y are weakly equal up to precision.
+True if `x` and `y` are weakly equal up to precision.
 
 **Parameters**
 - `Strategy`

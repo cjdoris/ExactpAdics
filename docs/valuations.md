@@ -178,7 +178,7 @@ Represents the valuation of a p-adic number.
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to a Val_FldPadElt, and the coerced value.
+True if `v` is coercible to a Val_FldPadElt, and the coerced value.
 
 
 
@@ -197,7 +197,7 @@ True if v is coercible to a Val_FldPadElt, and the coerced value.
 > {:.ret}
 {:.intrinsic}
 
-True if v and w are promotable to a common type.
+True if `v` and `w` are promotable to a common type.
 
 
 > **Val_FldPadElt_Make** (v)
@@ -206,7 +206,7 @@ True if v and w are promotable to a common type.
 > {:.ret}
 {:.intrinsic}
 
-A Val_FldPadElt with value v.
+A Val_FldPadElt with value `v`.
 
 
 ### Special values
@@ -246,7 +246,7 @@ The valuation 0.
 > {:.ret}
 {:.intrinsic}
 
-True if v is finite, i.e. an integer or rational.
+True if `v` is finite, i.e. an integer or rational.
 
 
 > **IsIntegral** (v :: *Val_FldPadElt*)
@@ -255,7 +255,7 @@ True if v is finite, i.e. an integer or rational.
 > {:.ret}
 {:.intrinsic}
 
-True if v has an integer value, and the value if so.
+True if `v` has an integer value, and the value if so.
 
 
 > **IntegerValue** (v :: *Val_FldPadElt*)
@@ -264,7 +264,7 @@ True if v has an integer value, and the value if so.
 > {:.ret}
 {:.intrinsic}
 
-The value of v coerced to an integer.
+The value of `v` coerced to an integer.
 
 
 > **Ceiling** (v :: *Val_FldPadElt*)
@@ -273,7 +273,7 @@ The value of v coerced to an integer.
 > {:.ret}
 {:.intrinsic}
 
-The integer valuation larger than v, or just v if infinite.
+The integer valuation larger than `v`, or just `v` if infinite.
 
 
 > **ExactpAdics_Val** (x :: *FldPadElt*)
@@ -282,7 +282,7 @@ The integer valuation larger than v, or just v if infinite.
 > {:.ret}
 {:.intrinsic}
 
-The valuation of x.
+The valuation of `x`.
 
 
 > **ExactpAdics_APr** (x :: *FldPadElt*)
@@ -291,7 +291,7 @@ The valuation of x.
 > {:.ret}
 {:.intrinsic}
 
-The absolute precision of x.
+The absolute precision of `x`.
 
 
 ## Val_RngUPolElt_FldPad
@@ -310,7 +310,7 @@ Represents the valuation of a univariate polynomial over a p-adic field.
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to a Val_RngUPolElt_FldPad.
+True if `v` is coercible to a Val_RngUPolElt_FldPad.
 
 
 
@@ -323,7 +323,7 @@ True if v is coercible to a Val_RngUPolElt_FldPad.
 > {:.ret}
 {:.intrinsic}
 
-True if v and w are promotable to a common type.
+True if `v` and `w` are promotable to a common type.
 
 
 > **Val_RngUPolElt_FldPad_IsCoercible** (dflt, v)
@@ -334,7 +334,7 @@ True if v and w are promotable to a common type.
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to a Val_RngUPolElt_FldPad with given default.
+True if `v` is coercible to a Val_RngUPolElt_FldPad with given default.
 
 
 
@@ -345,7 +345,7 @@ True if v is coercible to a Val_RngUPolElt_FldPad with given default.
 > {:.ret}
 {:.intrinsic}
 
-A Val_RngUPolElt_FldPad with value v.
+A Val_RngUPolElt_FldPad with value `v`.
 
 
 > **Val_RngUPolElt_FldPad_Make** (x, y)
@@ -354,7 +354,7 @@ A Val_RngUPolElt_FldPad with value v.
 > {:.ret}
 {:.intrinsic}
 
-Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
+Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`)).
 
 
 > **Val_RngUPolElt_FldPad_Make** (x, y, z)
@@ -363,7 +363,7 @@ Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
 > {:.ret}
 {:.intrinsic}
 
-Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z)).
+Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`,`z`)).
 
 
 ### Special values
@@ -412,7 +412,7 @@ The underlying associative array of values.
 > {:.ret}
 {:.intrinsic}
 
-The integer valuation larger than v, or just v if infinite.
+The integer valuation larger than `v`, or just `v` if infinite.
 
 
 > **\'&join\'** (v :: *Val_RngUPolElt_FldPad*)
@@ -421,7 +421,7 @@ The integer valuation larger than v, or just v if infinite.
 > {:.ret}
 {:.intrinsic}
 
-The join of the valuations at each coefficient. Equivalent to "&join Image(Value(v))".
+The join of the valuations at each coefficient. Equivalent to "&join Image(Value(`v`))".
 
 
 > **\'&meet\'** (v :: *Val_RngUPolElt_FldPad*)
@@ -430,7 +430,7 @@ The join of the valuations at each coefficient. Equivalent to "&join Image(Value
 > {:.ret}
 {:.intrinsic}
 
-The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value(v))".
+The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value(`v`))".
 
 
 > **\'@\'** (i :: *RngIntElt*, v :: *Val_RngUPolElt_FldPad*)
@@ -439,7 +439,7 @@ The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value
 > {:.ret}
 {:.intrinsic}
 
-The valuation of coefficient i.
+The valuation of coefficient `i`.
 
 
 > **ShiftSlope** (v :: *Val_RngUPolElt_FldPad*, s)
@@ -448,7 +448,7 @@ The valuation of coefficient i.
 > {:.ret}
 {:.intrinsic}
 
-Adds i*s onto v(i).
+Adds i*`s` onto `v`(i).
 
 
 > **ExactpAdics_Val** (f :: *RngUPolElt*[*FldPad*])
@@ -457,7 +457,7 @@ Adds i*s onto v(i).
 > {:.ret}
 {:.intrinsic}
 
-The valuation of f.
+The valuation of `f`.
 
 
 > **ExactpAdics_APr** (f :: *RngUPolElt*[*FldPad*])
@@ -466,7 +466,7 @@ The valuation of f.
 > {:.ret}
 {:.intrinsic}
 
-The absolute precision of f.
+The absolute precision of `f`.
 
 
 ## Val_RngMPolElt_FldPad
@@ -485,7 +485,7 @@ Represents the valuation of a multivariate polynomial over a p-adic field.
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to a Val_RngMPolElt_FldPad.
+True if `v` is coercible to a Val_RngMPolElt_FldPad.
 
 
 
@@ -498,7 +498,7 @@ True if v is coercible to a Val_RngMPolElt_FldPad.
 > {:.ret}
 {:.intrinsic}
 
-True if v and w are promotable to a common type.
+True if `v` and `w` are promotable to a common type.
 
 
 > **Val_RngMPolElt_FldPad_IsCoercible** (dflt, v)
@@ -509,7 +509,7 @@ True if v and w are promotable to a common type.
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to a Val_RngMPolElt_FldPad with given default.
+True if `v` is coercible to a Val_RngMPolElt_FldPad with given default.
 
 
 
@@ -520,7 +520,7 @@ True if v is coercible to a Val_RngMPolElt_FldPad with given default.
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to an absolute precision for x. Also returns the coerced value.
+True if `v` is coercible to an absolute precision for `x`. Also returns the coerced value.
 
 
 > **IsValidAbsolutePrecisionDiff** (x :: *RngMPolElt_FldPadExact*, v)
@@ -529,7 +529,7 @@ True if v is coercible to an absolute precision for x. Also returns the coerced 
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to an absolute precision diff for x. Also returns the coerced value.
+True if `v` is coercible to an absolute precision diff for `x`. Also returns the coerced value.
 
 
 > **IsValidRelativePrecision** (x :: *RngMPolElt_FldPadExact*, v)
@@ -538,7 +538,7 @@ True if v is coercible to an absolute precision diff for x. Also returns the coe
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to a relative precision for x. Also returns the coerced value.
+True if `v` is coercible to a relative precision for `x`. Also returns the coerced value.
 
 
 > **Val_RngMPolElt_FldPad_Make** (v)
@@ -547,7 +547,7 @@ True if v is coercible to a relative precision for x. Also returns the coerced v
 > {:.ret}
 {:.intrinsic}
 
-A Val_RngMPolElt_FldPad with value v.
+A Val_RngMPolElt_FldPad with value `v`.
 
 
 > **Val_RngMPolElt_FldPad_Make** (x, y)
@@ -556,7 +556,7 @@ A Val_RngMPolElt_FldPad with value v.
 > {:.ret}
 {:.intrinsic}
 
-Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
+Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`)).
 
 
 > **Val_RngMPolElt_FldPad_Make** (x, y, z)
@@ -565,7 +565,7 @@ Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y)).
 > {:.ret}
 {:.intrinsic}
 
-Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(x,y,z)).
+Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`,`z`)).
 
 
 ### Special values
@@ -605,7 +605,7 @@ The valuation 0.
 > {:.ret}
 {:.intrinsic}
 
-The integer valuation larger than v, or just v if infinite.
+The integer valuation larger than `v`, or just `v` if infinite.
 
 
 > **\'&join\'** (v :: *Val_RngMPolElt_FldPad*)
@@ -614,7 +614,7 @@ The integer valuation larger than v, or just v if infinite.
 > {:.ret}
 {:.intrinsic}
 
-The join of the valuations at each coefficient. Equivalent to "&join Image(Value(v))".
+The join of the valuations at each coefficient. Equivalent to "&join Image(Value(`v`))".
 
 
 > **\'&meet\'** (v :: *Val_RngMPolElt_FldPad*)
@@ -623,7 +623,7 @@ The join of the valuations at each coefficient. Equivalent to "&join Image(Value
 > {:.ret}
 {:.intrinsic}
 
-The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value(v))".
+The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value(`v`))".
 
 
 > **\'@\'** (i :: [*RngIntElt*], v :: *Val_RngMPolElt_FldPad*)
@@ -632,7 +632,7 @@ The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value
 > {:.ret}
 {:.intrinsic}
 
-The valuation of coefficient i.
+The valuation of coefficient `i`.
 
 
 > **\'@\'** (m :: *RngMPolElt*, v :: *Val_RngMPolElt_FldPad*)
@@ -641,7 +641,7 @@ The valuation of coefficient i.
 > {:.ret}
 {:.intrinsic}
 
-The valuation of coefficient Exponents(m).
+The valuation of coefficient Exponents(`m`).
 
 
 > **ShiftSlope** (v :: *Val_RngMPolElt_FldPad*, s :: [])
@@ -650,7 +650,7 @@ The valuation of coefficient Exponents(m).
 > {:.ret}
 {:.intrinsic}
 
-Adds i.s onto v(i).
+Adds i.`s` onto `v`(i).
 
 
 > **ExactpAdics_Val** (f :: *RngMPolElt*)
@@ -659,7 +659,7 @@ Adds i.s onto v(i).
 > {:.ret}
 {:.intrinsic}
 
-The valuation of f.
+The valuation of `f`.
 
 
 > **ExactpAdics_APr** (f :: *RngMPolElt*)
@@ -668,7 +668,7 @@ The valuation of f.
 > {:.ret}
 {:.intrinsic}
 
-The absolute precision of f.
+The absolute precision of `f`.
 
 
 ## Val_Tup_PadExact
@@ -687,7 +687,7 @@ Represents the valuation of a tuple of p-adic objects.
 > {:.ret}
 {:.intrinsic}
 
-True if v is coercible to a Val_Tup_PadExact, and the coerced value.
+True if `v` is coercible to a Val_Tup_PadExact, and the coerced value.
 
 
 
@@ -700,7 +700,7 @@ True if v is coercible to a Val_Tup_PadExact, and the coerced value.
 > {:.ret}
 {:.intrinsic}
 
-True if v and w are coercible to a common type.
+True if `v` and `w` are coercible to a common type.
 
 
 > **Val_Tup_PadExact_Make** (v)
@@ -709,7 +709,7 @@ True if v and w are coercible to a common type.
 > {:.ret}
 {:.intrinsic}
 
-Coerces v to a Val_Tup_PadExact.
+Coerces `v` to a Val_Tup_PadExact.
 
 
 ### Other operations
@@ -720,7 +720,7 @@ Coerces v to a Val_Tup_PadExact.
 > {:.ret}
 {:.intrinsic}
 
-The valuation in the `i`th component of `v`.
+The valuation in the `i` component of `v`.
 
 
 > **\'#\'** (v :: *Val_Tup_PadExact*)
@@ -738,7 +738,7 @@ The number of components in `v`.
 > {:.ret}
 {:.intrinsic}
 
-The valuation of t.
+The valuation of `t`.
 
 
 > **ExactpAdics_APr** (t :: *Tup*)
@@ -747,6 +747,6 @@ The valuation of t.
 > {:.ret}
 {:.intrinsic}
 
-The absolute precision of t.
+The absolute precision of `t`.
 
 
