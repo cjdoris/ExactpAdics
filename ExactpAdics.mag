@@ -859,10 +859,10 @@ intrinsic ExactpAdicField(xxL :: FldPad : NoCheckUnique:=false) -> FldPadExact, 
   {Given a p-adic field xxL, returns L isomorphic to xxL and a map xxL -> xL.}
   if IsPrimeField(xxL) then
     L := ExactpAdicField(Prime(xxL));
-    L`approximation := xxL;
-    return L, map<xxL -> xxL | x :-> x, y :-> y>;
+    return L, map<xxL -> L`approximation | x :-> x, y :-> y>;
   else
-    return ExactpAdicField(xxL, ExactpAdicField(PrimeField(xxL)) : NoCheckUnique:=NoCheckUnique);
+    K, mK := ExactpAdicField(PrimeField(xxL));
+    return ExactpAdicField(xxL, mK, K : NoCheckUnique:=NoCheckUnique);
   end if;
 end intrinsic;
 
