@@ -158,6 +158,49 @@ intrinsic Approximation(x :: PadExactElt, apr : Quick:=false, FixPr:=false) -> .
   return Evaluate(Approximation_Lazy(x, apr : Quick:=Quick, FixPr:=FixPr));
 end intrinsic;
 
+intrinsic RelativeApproximation_Lazy(x :: PadExactElt, pr : Quick:=false, FixPr:=false) -> ExactpAdics_Gettr
+  {An approximation to x to relative precision pr.}
+  return Approximation_Lazy(x, WeakValuation(x)+pr : Quick:=Quick, FixPr:=FixPr);
+end intrinsic;
+
+intrinsic RelativeApproximation(x :: PadExactElt, pr : Quick:=false, FixPr:=false) -> .
+  {"}
+  return Evaluate(RelativeApproximation_Lazy(x, pr : Quick:=Quick, FixPr:=FixPr));
+end intrinsic;
+
+intrinsic BaselineApproximation_Lazy(x :: PadExactElt, pr : Quick:=false, FixPr:=false) -> ExactpAdics_Gettr
+  {An approximation to x to baseline precision pr.}
+  return Approximation_Lazy(x, BaselineValuation(x)+pr : Quick:=Quick, FixPr:=FixPr);
+end intrinsic;
+
+intrinsic BaselineApproximation(x :: PadExactElt, pr : Quick:=false, FixPr:=false) -> .
+  {"}
+  return Evaluate(BaselineApproximation_Lazy(x, pr : Quick:=Quick, FixPr:=FixPr));
+end intrinsic;
+
+intrinsic WeakApproximation(x :: PadExactElt, apr : FixPr:=false) -> .
+  {An approximation to x of absolute precision at most apr.}
+  ok, apr := IsValidAbsolutePrecisionDiff(x, apr);
+  require ok: "apr: " cat apr;
+  y := x`approximation;
+  y := CAP_APR(y, apr);
+  if FixPr then
+    pr := _ExactpAdics_PrecisionRequired(x, apr);
+    _ExactpAdics_FixPrecision(y, pr);
+  end if;
+  return y;
+end intrinsic;
+
+intrinsic WeakRelativeApproximation(x :: PadExactElt, pr : FixPr:=false) -> .
+  {An approximation to x of relative precision at most pr.}
+  return WeakApproximation(x, WeakValuation(x) + pr : FixPr:=FixPr);
+end intrinsic;
+
+intrinsic WeakBaselineApproximation(x :: PadExactElt, pr : FixPr:=false) -> .
+  {An approximation to x of basline precision at most pr.}
+  return WeakApproximation(x, BaselineValuation(x) + pr : FixPr:=FixPr);
+end intrinsic;
+
 intrinsic Approximation(x :: PadExactElt) -> .
   {The current approximation to `x`.}
   return x`approximation;
