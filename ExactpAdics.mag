@@ -5022,16 +5022,23 @@ intrinsic ShiftArgument(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> Rng
     // so f(x+X)_j = sum_i f_i (i choose j) x^(i-j)
     // so if we want f(x+X)_j to absolute precision apr(j)
     // then we want f_i (i choose j) x^(i-j) to absolute precision apr(j)
-    // i.e. relative precision pr_ij apr(j) - val(f_i) - val(i choose j) - (i-j) val(x)
+    // i.e. relative precision pr_ij = apr(j) - val(f_i) - val(i choose j) - (i-j) val(x)
     // so we want f_i to absolute precision val(f_i) + pr_ij
     // and x to absolute precision val(x) + pr_ij
     vf := WVAL(f);
     vx := WVAL(x);
     pr := [[apr(j) - (vf(i) + binvals[j+1][i-j+1] + vx*(i-j)) : i in [j..df]] : j in [0..df]];
-    aprx := vx + &join &cat pr;
+    prx := &join &cat pr;
+    aprx := vx + prx;
     aprf := [<i, vf(i) + &join[pr[j+1][i-j+1] join 0 : j in [0..i]]> : i in [0..df]];
     return [Approximation_Lazy(f, aprf), Approximation_Lazy(x, aprx)] mod function (xf, xx)
-      Update(z, Evaluate(xf, Parent(xf).1 + xx));
+      loc_z := z;
+      loc_aprx := aprx;
+      loc_aprf := aprf;
+      loc_pr := pr;
+      xK := Parent(xx);
+      xK`DefaultPrecision := IntegerValue(prx);
+      Update(z, Evaluate(xf, Parent(xf) ! [xK| xx, 1]));
       // Update(z, Parent(xf)![&+[Coefficient(xf,i) * Binomial(i,j) * xx^(i-j) : i in [j..df]] : j in [0..df]]);
       return true;
     end function;
