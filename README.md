@@ -21,7 +21,9 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 ### Pending release
 ```
++ Adds `RelativeApproximation` and `BaselineApproximation` intrinsics, `_Lazy` versions and `Weak` versions (which are capped by the absolute precision)
 ! `ExactpAdicField(L :: FldPad)` not working when `L` has a finite precision
+! Bug in ShiftValuation, caused by R.1 not being to full precision where R::RngUPol[FldPad] (a Magma feature/bug)
 ```
 
 ### v1.1.0
