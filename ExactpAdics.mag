@@ -2854,7 +2854,7 @@ intrinsic TransitionFunction(E :: FldPad) -> HassHerbTransFunc
     return hhtf_trivial();
   elif RamificationDegree(E) eq Degree(E) then
     f := DefiningPolynomial(E);
-    alpha := F.1;
+    alpha := E.1;
     r := Evaluate(f, Polynomial([alpha,1]));
     assert Degree(r) eq Degree(f);
     assert IsWeaklyZero(Coefficient(r, 0));
