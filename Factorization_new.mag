@@ -547,8 +547,22 @@ procedure push_done_branch(~st, br : irred:=false, precerr:=false)
   Append(~st`brs_done, br);
 end procedure;
 
-procedure br_set_xpol(~br, xpol)
-  br`xpol := xpol;
+procedure br_set_xpol(~br, xpol : merge:=false)
+  if merge then
+    assert assigned br`xpol;
+    assert Degree(xpol) eq Degree(br`xpol);
+    ok, new_polring := ExistsCoveringStructure(Parent(xpol), Parent(br`xpol));
+    assert ok;
+    assert Precision(BaseRing(new_polring)) ge Precision(BaseRing(xpol));
+    assert Precision(BaseRing(new_polring)) ge Precision(BaseRing(br`xpol));
+    old_xpol := new_polring ! br`xpol;
+    new_xpol := new_polring ! xpol;
+    assert forall{i : i in [0..Degree(br`xpol)] | AbsolutePrecision(Coefficient(old_xpol, i)) ge AbsolutePrecision(Coefficient(br`xpol, i))};
+    assert forall{i : i in [0..Degree(xpol)] | AbsolutePrecision(Coefficient(new_xpol, i)) ge AbsolutePrecision(Coefficient(xpol, i))};
+    br`xpol := new_polring ! [AbsolutePrecision(c0) gt AbsolutePrecision(c1) select c0 else c1 where c0:=Coefficient(old_xpol,i) where c1:=Coefficient(new_xpol,i) : i in [0..Degree(xpol)]];
+  else
+    br`xpol := xpol;
+  end if;
   if not assigned br`basefield then
     assert #br`basis eq 0;
     br`basefield := BaseRing(br`xpol);
@@ -556,15 +570,15 @@ procedure br_set_xpol(~br, xpol)
     br`offset := br`basefield ! br`offset;
     br`xpolx := Evaluate(br`xpol, br`polring ! [br`offset, 1]);
   else
+    // basefield, polring
     old_basefield := br`basefield;
     old_polring := br`polring;
-    pr := pol_max_precision(br`xpol);
-    // basefield, polring
     br`basefield := BaseRing(br`xpol);
     br`polring := Parent(br`xpol);
-    // basis, xpolx, offset
+    pr := pol_max_precision(br`xpol);
     m := map<old_basefield -> br`basefield | x :-> WZERO(x) select br`basefield!0 else CHANGE_APR(br`basefield!x, VAL(x)+pr)>;
     m2 := map<old_polring -> br`polring | f :-> br`polring ! [m(c) : c in Coefficients(f)]>;
+    // basis, xpolx, offset
     old_basis := br`basis;
     br`offset := m(br`offset);
     br`basis := [];
@@ -843,7 +857,7 @@ end function;
 
 function br_lift(br, xpol)
   error if br`width ne 1, "not implemented: lift: width > 1";
-  br_set_xpol(~br, xpol);
+  br_set_xpol(~br, xpol : merge);
   wv := mval_wval(mvaluation(br, Coefficient(br`xpolx, 0)));
   while true do
     c0 := Coefficient(br`xpolx, 0);
@@ -931,7 +945,7 @@ CERT := recformat<
   InternalData // internal: the BRANCH yielding the factor
 >;
 
-intrinsic Factorization_New(f :: RngUPolElt_FldPadExact : Proof:=true, Certificates:=false, Extensions:=false, InternalData:=false, Strategy:="default", SimpleLift:=true) -> [], FldPadExactElt, []
+intrinsic Factorization_New(f :: RngUPolElt_FldPadExact : Proof:=true, Certificates:=false, Extensions:=false, InternalData:=false, Strategy:="default", SimpleLift:=false) -> [], FldPadExactElt, []
   {Factorization of f.}
   Certificates or:= Extensions;
   Certificates or:= InternalData;
@@ -945,61 +959,78 @@ intrinsic Factorization_New(f :: RngUPolElt_FldPadExact : Proof:=true, Certifica
   if Proof then
     error if exists{br : br in st`brs_done | br`done ne "irred"}, "precision error";
     assert &+[Z| &*[Z| b`deg : b in br`basis] : br in st`brs_done] eq WeakDegree(f);
+    for i in [1..#st`brs_done] do
+      add_flatten_errs(~st`brs_done[i]);
+    end for;
     if #st`brs_done eq 1 then
       facs := [<f / lc, 1>];
-    else
-      facs := [];
-      for i in [1..#st`brs_done] do
-        add_flatten_errs(~st`brs_done[i]);
-        if SimpleLift then
-          ok, _, fac:= ExactpAdics_ExecutePrecisionStrategy(function (pr)
-            xf := BaselineApproximation(f, pr);
-            br := br_lift(st`brs_done[i], xf);
-            xfac := approximate_factor(br);
-            d := Degree(xfac);
-            slope := (Valuation(Coefficient(xfac,d)) - Valuation(Coefficient(xfac, 0)))/d;
-            fShift := Min([Valuation(Coefficient(xf, i)) - i*slope : i in [0..Degree(xf)]]);
-            gShift := Min([Valuation(Coefficient(xfac, i)) - i*slope : i in [0..Degree(xfac)]]);
-            ok, fac := IsHenselLiftable(f, WeakApproximation(R!xfac) : Strategy:=Strategy, Slope:=slope, fShift:=fShift, gShift:=gShift);
-            if ok then
-              return true, fac;
-            else
+    elif SimpleLift then
+      ok, _, facs := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+        // approximate f
+        xf := BaselineApproximation(f, pr);
+        // get approximate factors
+        ok, xfacs := mb_has_value(mb_seq([mb_approximate_factor(br_lift(br, xf)) : br in st`brs_done]));
+        if not ok then
+          return false, _;
+        end if;
+        // ensure they are pairwise distinct (this could be optimized by classifying factors by degree and slope and only checking pairs within classes)
+        for i in [1..#xfacs] do
+          for j in [i+1..#xfacs] do
+            xfac1 := xfacs[i];
+            xfac2 := xfacs[j];
+            if Degree(xfac1) eq Degree(xfac2) and forall{i : i in [0..Degree(xfac1)] | IsWeaklyEqual(Coefficient(xfac1, i), Coefficient(xfac2, i))} then
               return false, _;
             end if;
-          end function, Strategy);
+          end for;
+        end for;
+        // ensure they are Hensel liftable (again this could be optimized by remebering the lifts from earlier iterations of the strategy if all factors within a class are liftable)
+        facs := [];
+        for xfac in xfacs do
+          d := Degree(xfac);
+          slope := (Valuation(Coefficient(xfac, d)) - Valuation(Coefficient(xfac, 0)))/d;
+          fShift := Min([Valuation(Coefficient(xf, i)) - i*slope : i in [0..Degree(xf)]]);
+          gShift := Min([Valuation(Coefficient(xfac, i)) - i*slope : i in [0..Degree(xfac)]]);
+          ok, fac := IsHenselLiftable(f, WeakApproximation(R!xfac) : Strategy:=Strategy, Slope:=slope, fShift:=fShift, gShift:=gShift);
           if ok then
             Append(~facs, <fac, 1>);
           else
-            error "precision error: simple Hensel lifting";
+            return false, _;
           end if;
-        else
-          br := st`brs_done[i];
-          xfac := approximate_factor(br);
-          // TODO: have an updateable pr_base added on to pr to hopefully make pr more accurate
-          mkupdate := func<z | function (apr)
-            br, pr_base := Explode(GetData(z));
-            pr0 := Ceiling(Value(&join(apr - WVAL(z))));
-            pr := pr0 + pr_base;
-            return ExactpAdics_GeneralGetter(pr,
-              procedure (~pr, ~dep)
-                dep := Approximation_Lazy(f, WVAL(f) + pr);
-              end procedure,
-              procedure (xf, ~pr, ~value)
-                br2 := br_lift(br, xf);
-                xfac := approximate_factor(br2);
-                d := Value(&join(apr - ExactpAdics_APr(xfac)));
-                if d gt 0 then
-                  pr +:= d;
-                else
-                  Update(z, xfac);
-                  SetData(z, <br2, pr - pr0>);
-                  value := true;
-                end if;
-              end procedure
-            );
-          end function>;
-          Append(~facs, <R ! <approximate_factor(br), mkupdate, <br, 0>>, 1>);
-        end if;
+        end for;
+        return true, facs;
+      end function, Strategy);
+      if not ok then
+        return "precision error: simple Hensel lifting";
+      end if;
+    else
+      facs := [];
+      for i in [1..#st`brs_done] do
+        br := st`brs_done[i];
+        xfac := approximate_factor(br);
+        // TODO: have an updateable pr_base added on to pr to hopefully make pr more accurate
+        mkupdate := func<z | function (apr)
+          br, pr_base := Explode(GetData(z));
+          pr0 := Ceiling(Value(&join(apr - WVAL(z))));
+          pr := pr0 + pr_base;
+          return ExactpAdics_GeneralGetter(pr,
+            procedure (~pr, ~dep)
+              dep := Approximation_Lazy(f, WVAL(f) + pr);
+            end procedure,
+            procedure (xf, ~pr, ~value)
+              br2 := br_lift(br, xf);
+              xfac := approximate_factor(br2);
+              d := Value(&join(apr - ExactpAdics_APr(xfac)));
+              if d gt 0 then
+                pr +:= d;
+              else
+                Update(z, xfac);
+                SetData(z, <br2, pr - pr0>);
+                value := true;
+              end if;
+            end procedure
+          );
+        end function>;
+        Append(~facs, <R ! <approximate_factor(br), mkupdate, <br, 0>>, 1>);
       end for;
     end if;
   else
