@@ -27,6 +27,8 @@ declare attributes RngMPolElt_FldPadExact
   , min_valuation                   // MinValuation(*)
   ;
 
+declare type Updater_RngMPolElt_FldPadExact: Updater_PadExactElt;
+
 ///## Creation of rings
 
 intrinsic PolynomialRing(F :: FldPadExact, n :: RngIntElt) -> RngMPol_FldPadExact
@@ -107,8 +109,9 @@ end intrinsic;
 function makeMPoly(R, init, mkupdate)
   f := New(RngMPolElt_FldPadExact);
   f`parent := R;
-  FUDGE := GLOBAL_FUDGE(BaseRing(R));
-  f`update := FUDGE eq 0 select u else func<apr | u(apr + FUDGE)> where u := mkupdate(f);
+  if not _ExactpAdics_InitUpdater(f, mkupdate) then
+    return false, "bad mkupdate";
+  end if;
   f`id := NEXTID();
   case Type(init):
   when RngMPolElt:
@@ -777,318 +780,318 @@ intrinsic IsHenselLiftable(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt
   return true, ToSequence(ExactpAdics_CartesianPower(K, n) ! <init, mkupdate, data>);
 end intrinsic;
 
-///hide
-intrinsic IsHenselLiftable_Old(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt] : Strategy:="default") -> BoolElt, []
-  {True if xs are Hensel liftable to roots of fs. If so, also returns the lifted roots.}
-  require #fs eq Rank(Universe(fs)): "Length of argument 1 must equal the rank of its universe";
-  require #fs eq #xs: "Arguments 1 and 2 must have the same length";
-  // put fs and xs over the same field
-  ok, K := ExistsCoveringStructure(BaseRing(Universe(fs)), Universe(xs));
-  require ok: "Arguments 1 and 2 must be defined over a common field";
-  fs := [ChangeRing(f, K) : f in fs];
-  xs := [K!x : x in xs];
-  R := Universe(fs);
-  assert BaseRing(R) eq K;
-  n := Rank(R);
-  // check the hensel condition
-  ok, pr, res := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-    // get approximations
-    xfs, xxs := Explode(Evaluate(Flatten([&cat[Approximation_Lazy(f, BaselineValuation(f)+pr) : f in fs], &cat[Approximation_Lazy(x, BaselineValuation(x)+pr) : x in xs]])));
-    // shift
-    xR := Universe(xfs);
-    xK := BaseRing(xR);
-    zeromial := Polynomial([xK!1], [Monomial(xR, [0 : i in [1..n]])]);
-    oneomials := [Polynomial([xK!1], [Monomial(xR, [i eq j select 1 else 0 : j in [1..n]])]) : i in [1..n]];
-    xK := BaseRing(xR);
-    xgs := [Evaluate(f, [oneomials[i] + xxs[i] : i in [1..n]]) : f in xfs];
-    // compute the jacobian matrix
-    J := Matrix([[MonomialCoefficient(g, oneomials[i]) : i in [1..n]] : g in xgs]);
-    // it needs to be invertible
-    if WZERO(Determinant(J)) then
-      return false, _;
-    end if;
-    // compute the inverse
-    Jinv := J^-1;
-    // transform the equations by J^-1
-    xhs := [&+[row[i] * xgs[i] : i in [1..n]] : row in Rows(Jinv)];
-    assert forall{i : i in [1..n], j in [1..n] | i eq j or WZERO(MonomialCoefficient(xhs[i], oneomials[j]))};
-    assert forall{i : i in [1..n] | WEQ(MonomialCoefficient(xhs[i], oneomials[i]), xK!1)};
-    // check necessary and sufficient conditions
-    // we want s[i] = VAL(xhs[i](0)) - t
-    // and see if it is impossible for such a t to exist (necessary condition => not liftable)
-    // and see if there is a t such that s[i] = WVAL(xhs[i](0)) - t is valid (sufficient condition => liftable)
-    t := OO;
-    vxh0s := [VAL(MonomialCoefficient(xh, zeromial)) : xh in xhs];
-    vixh0s := [intvl_make_wval(MonomialCoefficient(xh, zeromial)) : xh in xhs];
-    for i in [1..n] do
-      xh := xhs[i];
-      for m in Monomials(xh) do
-        c := MonomialCoefficient(xh, m);
-        e := Exponents(m);
-        wt := &+e;
-        if wt eq 0 or (wt eq 1 and e[i] eq 1) then
-          continue;
-        end if;
-        wv := VAL(c) + &+[vxh0s[j] * (e[j] - (j eq i select 1 else 0)) : j in [1..n]];
-        vi := intvl_add(intvl_make_wval(c), intvl_sum([intvl_smul(vixh0s[j], ej) : j in [1..n] | ej ne 0 where ej:=e[j] - (j eq i select 1 else 0)]));
-        if wt eq 1 then
-          // need v ge 0
-          if vi[2] lt 0 then
-            return true, [*false*];
-          elif wv lt 0 then
-            t := 0;
-            break i;
-          end if;
-        else
-          // need v gt 0
-          assert wt ge 2;
-          if vi[2] le 0 then
-            return true, [*false*];
-          elif wv le 0 then
-            t := 0;
-            break i;
-          else
-            t := Min(t, wv/(wt-1));
-          end if;
-        end if;
-      end for;
-    end for;
-    assert t lt OO;
-    if t gt 0 then
-      return true, [*true, [v-t : v in vxh0s], t*];
-    end if;
-    // or else we don't know the answer
-    return false, _;
-  end function, Strategy);
-  // precision error?
-  if not ok then
-    error "precision error";
-  end if;
-  // not liftable?
-  if not res[1] then
-    return false, _;
-  end if;
-  // now lift
-  S := res[2];
-  t := res[3];
-  ok, splust := CanChangeUniverse([s+t : s in S], Z);
-  assert ok;
-  assert forall{i : i in [1..n] | APR(xs[i]) ge splust[i]};
-  inits := [CAP_APR(xs[i]`approximation, splust[i]) : i in [1..n]];
-  // the roots cannel all their updates through the first root
-  // TODO: better would be to have a type "vector of p-adics" in a similar sense to polynomials of p-adics
-  //       (more generally, we should implement sequences, sets, lists, and other aggregate types in generality, i.e. they can take any p-adic type recursively)
-  roots := [i eq 1 select K ! <inits[i], false, <[x`approximation : x in xs], 0>> else K ! <inits[i], func<z | func<apr | r1`update(apr - S[i] + S[1])>> where r1:=Self(1)> : i in [1..n]];
-  r1 := roots[1];
-  // we could, in principle, compute the precision required in f to compute the lift in one go, in a predetermined number of iterations; but we cheat and just take a guess at the precision required, and then increase this precision if it turns out it was not high enough; this will result in more updates than necessary, though for most purposes is good enough.
-  r1`update := function (apr)
-    t_target := Value(apr) - S[1];
-    assert t_target gt t;
-    // initial guess at the precision required
-    xxs0, pr_base := Explode(GetData(r1));
-    return ExactpAdics_GeneralGetter(Ceiling(t_target + pr_base),
-      procedure (~pr, ~getter)
-        getter := &cat[Approximation_Lazy(f, BaselineValuation(f) + pr) : f in fs];
-      end procedure,
-      procedure (xfs, ~pr, ~val)
-        xR := Universe(xfs);
-        xK := BaseRing(xR);
-        xxs := [xK| WZERO(xx) select 0 else CHANGE_APR(xx, VAL(xx)+pr) : xx in ChangeUniverse(xxs0, xK)];
-        xdfs := [[Derivative(xfs[i], j) : j in [1..n]] : i in [1..n]];
-        while true do
-          xfxs := Vector([Evaluate(xfs[i], xxs) : i in [1..n]]);
-          J := Matrix([[Evaluate(xdfs[i][j], xxs) : j in [1..n]] : i in [1..n]]);
-          ok, Jinv := IsInvertible(J);
-          if not ok then
-            pr +:= 2*Floor(pr - t_target)+1;
-            return;
-          end if;
-          xxs_diff := xfxs * Transpose(Jinv);
-          xxs_new := Eltseq(Vector(xxs) - xxs_diff);
-          if forall{i : i in [1..n] | WEQ(xxs_new[i], xxs[i])} then
-            t_new := Min([VAL(xxs_diff[i]) - S[i] : i in [1..n]]);
-            t_diff := t_target - t_new;
-            if t_diff gt 0 then
-              pr +:= Ceiling(t_diff);
-            else
-              for i in [1..n] do
-                Update(roots[i], CAP_APR(xxs[i], Ceiling(S[i] + t_new)));
-              end for;
-              SetData(r1, <xxs, Floor(pr - t_target)>);
-              val := true;
-            end if;
-            return;
-          else
-            xxs := xxs_new;
-          end if;
-        end while;
-      end procedure
-    );
-  end function;
-  return true, roots;
-end intrinsic;
+// ///hide
+// intrinsic IsHenselLiftable_Old(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt] : Strategy:="default") -> BoolElt, []
+//   {True if xs are Hensel liftable to roots of fs. If so, also returns the lifted roots.}
+//   require #fs eq Rank(Universe(fs)): "Length of argument 1 must equal the rank of its universe";
+//   require #fs eq #xs: "Arguments 1 and 2 must have the same length";
+//   // put fs and xs over the same field
+//   ok, K := ExistsCoveringStructure(BaseRing(Universe(fs)), Universe(xs));
+//   require ok: "Arguments 1 and 2 must be defined over a common field";
+//   fs := [ChangeRing(f, K) : f in fs];
+//   xs := [K!x : x in xs];
+//   R := Universe(fs);
+//   assert BaseRing(R) eq K;
+//   n := Rank(R);
+//   // check the hensel condition
+//   ok, pr, res := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+//     // get approximations
+//     xfs, xxs := Explode(Evaluate(Flatten([&cat[Approximation_Lazy(f, BaselineValuation(f)+pr) : f in fs], &cat[Approximation_Lazy(x, BaselineValuation(x)+pr) : x in xs]])));
+//     // shift
+//     xR := Universe(xfs);
+//     xK := BaseRing(xR);
+//     zeromial := Polynomial([xK!1], [Monomial(xR, [0 : i in [1..n]])]);
+//     oneomials := [Polynomial([xK!1], [Monomial(xR, [i eq j select 1 else 0 : j in [1..n]])]) : i in [1..n]];
+//     xK := BaseRing(xR);
+//     xgs := [Evaluate(f, [oneomials[i] + xxs[i] : i in [1..n]]) : f in xfs];
+//     // compute the jacobian matrix
+//     J := Matrix([[MonomialCoefficient(g, oneomials[i]) : i in [1..n]] : g in xgs]);
+//     // it needs to be invertible
+//     if WZERO(Determinant(J)) then
+//       return false, _;
+//     end if;
+//     // compute the inverse
+//     Jinv := J^-1;
+//     // transform the equations by J^-1
+//     xhs := [&+[row[i] * xgs[i] : i in [1..n]] : row in Rows(Jinv)];
+//     assert forall{i : i in [1..n], j in [1..n] | i eq j or WZERO(MonomialCoefficient(xhs[i], oneomials[j]))};
+//     assert forall{i : i in [1..n] | WEQ(MonomialCoefficient(xhs[i], oneomials[i]), xK!1)};
+//     // check necessary and sufficient conditions
+//     // we want s[i] = VAL(xhs[i](0)) - t
+//     // and see if it is impossible for such a t to exist (necessary condition => not liftable)
+//     // and see if there is a t such that s[i] = WVAL(xhs[i](0)) - t is valid (sufficient condition => liftable)
+//     t := OO;
+//     vxh0s := [VAL(MonomialCoefficient(xh, zeromial)) : xh in xhs];
+//     vixh0s := [intvl_make_wval(MonomialCoefficient(xh, zeromial)) : xh in xhs];
+//     for i in [1..n] do
+//       xh := xhs[i];
+//       for m in Monomials(xh) do
+//         c := MonomialCoefficient(xh, m);
+//         e := Exponents(m);
+//         wt := &+e;
+//         if wt eq 0 or (wt eq 1 and e[i] eq 1) then
+//           continue;
+//         end if;
+//         wv := VAL(c) + &+[vxh0s[j] * (e[j] - (j eq i select 1 else 0)) : j in [1..n]];
+//         vi := intvl_add(intvl_make_wval(c), intvl_sum([intvl_smul(vixh0s[j], ej) : j in [1..n] | ej ne 0 where ej:=e[j] - (j eq i select 1 else 0)]));
+//         if wt eq 1 then
+//           // need v ge 0
+//           if vi[2] lt 0 then
+//             return true, [*false*];
+//           elif wv lt 0 then
+//             t := 0;
+//             break i;
+//           end if;
+//         else
+//           // need v gt 0
+//           assert wt ge 2;
+//           if vi[2] le 0 then
+//             return true, [*false*];
+//           elif wv le 0 then
+//             t := 0;
+//             break i;
+//           else
+//             t := Min(t, wv/(wt-1));
+//           end if;
+//         end if;
+//       end for;
+//     end for;
+//     assert t lt OO;
+//     if t gt 0 then
+//       return true, [*true, [v-t : v in vxh0s], t*];
+//     end if;
+//     // or else we don't know the answer
+//     return false, _;
+//   end function, Strategy);
+//   // precision error?
+//   if not ok then
+//     error "precision error";
+//   end if;
+//   // not liftable?
+//   if not res[1] then
+//     return false, _;
+//   end if;
+//   // now lift
+//   S := res[2];
+//   t := res[3];
+//   ok, splust := CanChangeUniverse([s+t : s in S], Z);
+//   assert ok;
+//   assert forall{i : i in [1..n] | APR(xs[i]) ge splust[i]};
+//   inits := [CAP_APR(xs[i]`approximation, splust[i]) : i in [1..n]];
+//   // the roots cannel all their updates through the first root
+//   // TODO: better would be to have a type "vector of p-adics" in a similar sense to polynomials of p-adics
+//   //       (more generally, we should implement sequences, sets, lists, and other aggregate types in generality, i.e. they can take any p-adic type recursively)
+//   roots := [i eq 1 select K ! <inits[i], false, <[x`approximation : x in xs], 0>> else K ! <inits[i], func<z | func<apr | r1`update(apr - S[i] + S[1])>> where r1:=Self(1)> : i in [1..n]];
+//   r1 := roots[1];
+//   // we could, in principle, compute the precision required in f to compute the lift in one go, in a predetermined number of iterations; but we cheat and just take a guess at the precision required, and then increase this precision if it turns out it was not high enough; this will result in more updates than necessary, though for most purposes is good enough.
+//   r1`update := function (apr)
+//     t_target := Value(apr) - S[1];
+//     assert t_target gt t;
+//     // initial guess at the precision required
+//     xxs0, pr_base := Explode(GetData(r1));
+//     return ExactpAdics_GeneralGetter(Ceiling(t_target + pr_base),
+//       procedure (~pr, ~getter)
+//         getter := &cat[Approximation_Lazy(f, BaselineValuation(f) + pr) : f in fs];
+//       end procedure,
+//       procedure (xfs, ~pr, ~val)
+//         xR := Universe(xfs);
+//         xK := BaseRing(xR);
+//         xxs := [xK| WZERO(xx) select 0 else CHANGE_APR(xx, VAL(xx)+pr) : xx in ChangeUniverse(xxs0, xK)];
+//         xdfs := [[Derivative(xfs[i], j) : j in [1..n]] : i in [1..n]];
+//         while true do
+//           xfxs := Vector([Evaluate(xfs[i], xxs) : i in [1..n]]);
+//           J := Matrix([[Evaluate(xdfs[i][j], xxs) : j in [1..n]] : i in [1..n]]);
+//           ok, Jinv := IsInvertible(J);
+//           if not ok then
+//             pr +:= 2*Floor(pr - t_target)+1;
+//             return;
+//           end if;
+//           xxs_diff := xfxs * Transpose(Jinv);
+//           xxs_new := Eltseq(Vector(xxs) - xxs_diff);
+//           if forall{i : i in [1..n] | WEQ(xxs_new[i], xxs[i])} then
+//             t_new := Min([VAL(xxs_diff[i]) - S[i] : i in [1..n]]);
+//             t_diff := t_target - t_new;
+//             if t_diff gt 0 then
+//               pr +:= Ceiling(t_diff);
+//             else
+//               for i in [1..n] do
+//                 Update(roots[i], CAP_APR(xxs[i], Ceiling(S[i] + t_new)));
+//               end for;
+//               SetData(r1, <xxs, Floor(pr - t_target)>);
+//               val := true;
+//             end if;
+//             return;
+//           else
+//             xxs := xxs_new;
+//           end if;
+//         end while;
+//       end procedure
+//     );
+//   end function;
+//   return true, roots;
+// end intrinsic;
 
-///hide
-intrinsic IsHenselLiftable_Hard(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt] : Strategy:="default") -> BoolElt, []
-  {True if xs are Hensel liftable to roots of fs. If so, also returns the lifted roots.}
-  require #fs eq Rank(Universe(fs)): "Number of polynomials must equal polynomial rank";
-  require #fs eq #xs: "Length of solution must equal polynomial rank";
-  // put fs and xs over the same field
-  ok, K := ExistsCoveringStructure(BaseRing(Universe(fs)), Universe(xs));
-  require ok: "Arguments must be defined over a common field";
-  R := Parent(ChangeRing(fs[1], K));
-  assert BaseRing(R) eq K;
-  fs := ChangeUniverse(fs, R);
-  xs := ChangeUniverse(xs, K);
-  n := Rank(R);
-  // check the Hensel condition
-  ok, pr, res := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-    // We are given fs and xs.
-    // Let gs(ys) = fs(xs + ys), i.e. we have shifted the root to 0.
-    // We want to find rationals bs and cs so that defining hs(ys) = pi^bs * gs(pi^cs * ys) then we can apply Hensel's lemma to hs.
-    // (a) The approximate root is 0, which is already integral.
-    // (b) hs(ys) must be integral
-    //      i.e. v(hs[i][e]) ge 0
-    //      i.e. v(pi^bs[i] * gs[i][e] * pi^(e.cs)) ge 0
-    //      i.e. bs[i] + e.cs + v(gs[i][e]) ge 0
-    // (c) s > 2t where
-    //      s = min_i v(h[i][0])
-    //        = min_i bs[i] + v(gs[i][0])
-    //      t = v(det_ij dh[i]/dx[j])
-    //        = v(det_ij pi^(bs[i] + cs[j]) gs[i][e_j])
-    //        = sum(bs) + sum(cs) + v(det_ij gs[i][e_j])
-    // We want to solve these for bs and cs.
-    // Everything else in the equations is in principle known.
-    // However, we might only have weak valuations.
-    // In (b), if v(gs[i][e]) is weak, then the inequality is sufficient but not necessary.
-    // In (c), if v(gs[i][0]) is weak, then the inequality is sufficient but not necessary.
-    // In (c), if v(det) is weak, then the inequality is necessary but not sufficient.
-    // In (c), if both valuations are weak, then the inequality is neither necessary nor sufficient.
-    // Hence, if all of the inequalities are sufficient and solvable then we are Hensel liftable.
-    // If the necessary inequalities are not solvable, then we are not Hensel liftable.
-    // Otherwise, it is a precision error.
-    // If bs, cs is a solution, then 0 is a root of hs to precision s-t, and so 0 is a root of gs to precision c+s-t, and so X is a root of fs to precision c+s-t.
-    // If we do Hensel-lifting, then t is fixed, and we can fix c, and so the precision of the root is determined by s = min_i v(h[i][0]) = min_i bs[i] + v(gs[i][0]) = min_i bs[i] + v(fs[i](X)).
+// ///hide
+// intrinsic IsHenselLiftable_Hard(fs :: [RngMPolElt_FldPadExact], xs :: [FldPadExactElt] : Strategy:="default") -> BoolElt, []
+//   {True if xs are Hensel liftable to roots of fs. If so, also returns the lifted roots.}
+//   require #fs eq Rank(Universe(fs)): "Number of polynomials must equal polynomial rank";
+//   require #fs eq #xs: "Length of solution must equal polynomial rank";
+//   // put fs and xs over the same field
+//   ok, K := ExistsCoveringStructure(BaseRing(Universe(fs)), Universe(xs));
+//   require ok: "Arguments must be defined over a common field";
+//   R := Parent(ChangeRing(fs[1], K));
+//   assert BaseRing(R) eq K;
+//   fs := ChangeUniverse(fs, R);
+//   xs := ChangeUniverse(xs, K);
+//   n := Rank(R);
+//   // check the Hensel condition
+//   ok, pr, res := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+//     // We are given fs and xs.
+//     // Let gs(ys) = fs(xs + ys), i.e. we have shifted the root to 0.
+//     // We want to find rationals bs and cs so that defining hs(ys) = pi^bs * gs(pi^cs * ys) then we can apply Hensel's lemma to hs.
+//     // (a) The approximate root is 0, which is already integral.
+//     // (b) hs(ys) must be integral
+//     //      i.e. v(hs[i][e]) ge 0
+//     //      i.e. v(pi^bs[i] * gs[i][e] * pi^(e.cs)) ge 0
+//     //      i.e. bs[i] + e.cs + v(gs[i][e]) ge 0
+//     // (c) s > 2t where
+//     //      s = min_i v(h[i][0])
+//     //        = min_i bs[i] + v(gs[i][0])
+//     //      t = v(det_ij dh[i]/dx[j])
+//     //        = v(det_ij pi^(bs[i] + cs[j]) gs[i][e_j])
+//     //        = sum(bs) + sum(cs) + v(det_ij gs[i][e_j])
+//     // We want to solve these for bs and cs.
+//     // Everything else in the equations is in principle known.
+//     // However, we might only have weak valuations.
+//     // In (b), if v(gs[i][e]) is weak, then the inequality is sufficient but not necessary.
+//     // In (c), if v(gs[i][0]) is weak, then the inequality is sufficient but not necessary.
+//     // In (c), if v(det) is weak, then the inequality is necessary but not sufficient.
+//     // In (c), if both valuations are weak, then the inequality is neither necessary nor sufficient.
+//     // Hence, if all of the inequalities are sufficient and solvable then we are Hensel liftable.
+//     // If the necessary inequalities are not solvable, then we are not Hensel liftable.
+//     // Otherwise, it is a precision error.
+//     // If bs, cs is a solution, then 0 is a root of hs to precision s-t, and so 0 is a root of gs to precision c+s-t, and so X is a root of fs to precision c+s-t.
+//     // If we do Hensel-lifting, then t is fixed, and we can fix c, and so the precision of the root is determined by s = min_i v(h[i][0]) = min_i bs[i] + v(gs[i][0]) = min_i bs[i] + v(fs[i](X)).
 
-    // get approximations
-    // it would be nice if there were a way to ensure the xfs and xxs are all over a common field directly
-    xfs, xxs, xR := Explode(Evaluate(Flatten([
-      &cat[Approximation_Lazy(f, BaselineValuation(f)+pr) : f in fs],
-      &cat[Approximation_Lazy(x, BaselineValuation(x)+pr) : x in xs],
-      Approximation_Lazy(R, pr)
-    ])));
-    xK := BaseRing(xR);
-    xfs := ChangeUniverse(xfs, xR);
-    xxs := ChangeUniverse(xxs, xK);
+//     // get approximations
+//     // it would be nice if there were a way to ensure the xfs and xxs are all over a common field directly
+//     xfs, xxs, xR := Explode(Evaluate(Flatten([
+//       &cat[Approximation_Lazy(f, BaselineValuation(f)+pr) : f in fs],
+//       &cat[Approximation_Lazy(x, BaselineValuation(x)+pr) : x in xs],
+//       Approximation_Lazy(R, pr)
+//     ])));
+//     xK := BaseRing(xR);
+//     xfs := ChangeUniverse(xfs, xR);
+//     xxs := ChangeUniverse(xxs, xK);
 
-    // annoyingly, Magma caches the monomials xR.i, and in particular its coefficient is 1 to some fixed precision
-    // so this monomial function forces the coefficient to be 1 to the current precision
-    monomial := func<e | Polynomial([xK!1], [Monomial(xR, e)])>;
-    one := monomial([0 : i in [1..n]]);
-    X := [monomial([i eq j select 1 else 0 : j in [1..n]]) : i in [1..n]];
+//     // annoyingly, Magma caches the monomials xR.i, and in particular its coefficient is 1 to some fixed precision
+//     // so this monomial function forces the coefficient to be 1 to the current precision
+//     monomial := func<e | Polynomial([xK!1], [Monomial(xR, e)])>;
+//     one := monomial([0 : i in [1..n]]);
+//     X := [monomial([i eq j select 1 else 0 : j in [1..n]]) : i in [1..n]];
 
-    // shift xfs to xgs (so we are looking for a root near 0)
-    xgs := [Evaluate(xf, [X[i] + xxs[i] : i in [1..n]]) : xf in xfs];
-    print "xgs:", xgs;
+//     // shift xfs to xgs (so we are looking for a root near 0)
+//     xgs := [Evaluate(xf, [X[i] + xxs[i] : i in [1..n]]) : xf in xfs];
+//     print "xgs:", xgs;
 
-    // find necessary and sufficient conditions on the bs and cs
-    // conditions are represented as a whitelist and blacklist of polyhedra; a solution lies in the intersection of the whitelist but not the union of the blacklist
-    // each element of the blacklist must intersect the intersection of the whitelist at a face of the whitelist
-    sufficient_whitelist := [];
-    sufficient_blacklist := [];
-    necessary_whitelist := [];
-    necessary_blacklist := [];
+//     // find necessary and sufficient conditions on the bs and cs
+//     // conditions are represented as a whitelist and blacklist of polyhedra; a solution lies in the intersection of the whitelist but not the union of the blacklist
+//     // each element of the blacklist must intersect the intersection of the whitelist at a face of the whitelist
+//     sufficient_whitelist := [];
+//     sufficient_blacklist := [];
+//     necessary_whitelist := [];
+//     necessary_blacklist := [];
 
-    // first, the integrality conditions
-    for i in [1..n] do
-      xg := xgs[i];
-      for m in Monomials(xg) do
-        c := MonomialCoefficient(xg, m);
-        v := Valuation(c);
-        h := HalfspaceToPolyhedron([j eq i select 1 else 0 : j in [1..n]] cat Exponents(m), -v);
-        Append(~sufficient_whitelist, h);
-        if not IsWeaklyZero(c) then
-          Append(~necessary_whitelist, h);
-        end if;
-      end for;
-    end for;
+//     // first, the integrality conditions
+//     for i in [1..n] do
+//       xg := xgs[i];
+//       for m in Monomials(xg) do
+//         c := MonomialCoefficient(xg, m);
+//         v := Valuation(c);
+//         h := HalfspaceToPolyhedron([j eq i select 1 else 0 : j in [1..n]] cat Exponents(m), -v);
+//         Append(~sufficient_whitelist, h);
+//         if not IsWeaklyZero(c) then
+//           Append(~necessary_whitelist, h);
+//         end if;
+//       end for;
+//     end for;
 
-    // next, the Hensel conditions
-    det := Determinant(Matrix([[MonomialCoefficient(xgs[i], X[j]) : j in [1..n]] : i in [1..n]]));
-    detok := not IsWeaklyZero(det);
-    for i in [1..n] do
-      xg := xgs[i];
-      c := MonomialCoefficient(xg, one);
-      coeffs := [j eq i select -1 else -2 : j in [1..n]] cat [-2 : j in [1..n]];
-      bound := 2*Valuation(det) - Valuation(c);
-      h1 := HalfspaceToPolyhedron(coeffs, bound);
-      h2 := HyperplaneToPolyhedron(coeffs, bound);
-      if not IsWeaklyZero(det) then
-        Append(~sufficient_whitelist, h1);
-        Append(~sufficient_blacklist, h2);
-      end if;
-      if not IsWeaklyZero(c) then
-        Append(~necessary_whitelist, h1);
-        Append(~necessary_blacklist, h2);
-      end if;
-    end for;
+//     // next, the Hensel conditions
+//     det := Determinant(Matrix([[MonomialCoefficient(xgs[i], X[j]) : j in [1..n]] : i in [1..n]]));
+//     detok := not IsWeaklyZero(det);
+//     for i in [1..n] do
+//       xg := xgs[i];
+//       c := MonomialCoefficient(xg, one);
+//       coeffs := [j eq i select -1 else -2 : j in [1..n]] cat [-2 : j in [1..n]];
+//       bound := 2*Valuation(det) - Valuation(c);
+//       h1 := HalfspaceToPolyhedron(coeffs, bound);
+//       h2 := HyperplaneToPolyhedron(coeffs, bound);
+//       if not IsWeaklyZero(det) then
+//         Append(~sufficient_whitelist, h1);
+//         Append(~sufficient_blacklist, h2);
+//       end if;
+//       if not IsWeaklyZero(c) then
+//         Append(~necessary_whitelist, h1);
+//         Append(~necessary_blacklist, h2);
+//       end if;
+//     end for;
 
-    // sufficient?
-    // if detok is false, then we don't have a full set of sufficient conditions, so can't
-    if detok then
-      assert #sufficient_whitelist gt 0;
-      h := &meet sufficient_whitelist;
-      all_faces := &cat Faces(h);
-      good_faces := all_faces;
-      for b in sufficient_blacklist do
-        bface := b meet h;
-        if not IsEmpty(bface) then
-          assert bface in all_faces;
-          good_faces := [face : face in good_faces | face notsubset bface];
-        end if;
-      end for;
-      print "sufficient_faces:", good_faces;
-      // there are faces remaining iff the system is solvable
-      if #good_faces gt 0 then
-        // find a solution
-        error "not implemented";
-        bs := [];
-        cs := [];
-        return true, [*true, bs, cs*];
-      end if;
-    end if;
+//     // sufficient?
+//     // if detok is false, then we don't have a full set of sufficient conditions, so can't
+//     if detok then
+//       assert #sufficient_whitelist gt 0;
+//       h := &meet sufficient_whitelist;
+//       all_faces := &cat Faces(h);
+//       good_faces := all_faces;
+//       for b in sufficient_blacklist do
+//         bface := b meet h;
+//         if not IsEmpty(bface) then
+//           assert bface in all_faces;
+//           good_faces := [face : face in good_faces | face notsubset bface];
+//         end if;
+//       end for;
+//       print "sufficient_faces:", good_faces;
+//       // there are faces remaining iff the system is solvable
+//       if #good_faces gt 0 then
+//         // find a solution
+//         error "not implemented";
+//         bs := [];
+//         cs := [];
+//         return true, [*true, bs, cs*];
+//       end if;
+//     end if;
 
-    // necessary?
-    if #necessary_whitelist gt 0 then
-      h := &meet necessary_whitelist;
-      all_faces := &cat Faces(h);
-      good_faces := all_faces;
-      for b in necessary_blacklist do
-        bface := b meet h;
-        if not IsEmpty(bface) then
-          assert bface in all_faces;
-          good_faces := [face : face in good_faces | face notsubset bface];
-        end if;
-      end for;
-      print "necessary faces:", good_faces;
-      // there are faces remaining iff the system is solvable
-      if #good_faces eq 0 then
-        return true, [*false*];
-      end if;
-    end if;
+//     // necessary?
+//     if #necessary_whitelist gt 0 then
+//       h := &meet necessary_whitelist;
+//       all_faces := &cat Faces(h);
+//       good_faces := all_faces;
+//       for b in necessary_blacklist do
+//         bface := b meet h;
+//         if not IsEmpty(bface) then
+//           assert bface in all_faces;
+//           good_faces := [face : face in good_faces | face notsubset bface];
+//         end if;
+//       end for;
+//       print "necessary faces:", good_faces;
+//       // there are faces remaining iff the system is solvable
+//       if #good_faces eq 0 then
+//         return true, [*false*];
+//       end if;
+//     end if;
 
-    // neither sufficiently solvable or necessarily insolvable => don't know
-    return false, _;
-  end function, Strategy);
-  // precision error?
-  if not ok then
-    error "precision error";
-  end if;
-  // not liftable?
-  if not res[1] then
-    return false, _;
-  end if;
-  // lift
-  error "not implemented";
-end intrinsic;
+//     // neither sufficiently solvable or necessarily insolvable => don't know
+//     return false, _;
+//   end function, Strategy);
+//   // precision error?
+//   if not ok then
+//     error "precision error";
+//   end if;
+//   // not liftable?
+//   if not res[1] then
+//     return false, _;
+//   end if;
+//   // lift
+//   error "not implemented";
+// end intrinsic;
 

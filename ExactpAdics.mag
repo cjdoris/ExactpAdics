@@ -119,6 +119,53 @@ end procedure;
 // UTILITY FUNCTIONS
 ///hide-all
 
+declare type Updater_PadExactElt_Fudged;
+declare attributes Updater_PadExactElt_Fudged: parent, fudge;
+
+intrinsic '@'(apr, u :: Updater_PadExactElt_Fudged) -> .
+  {Update.}
+  return u`parent(apr + u`fudge);
+end intrinsic;
+
+intrinsic _ExactpAdics_InitUpdater(x :: PadExactElt, u) -> BoolElt
+  {Assigns the updater u to x, if possible.}
+  return false;
+end intrinsic;
+
+intrinsic _ExactpAdics_InitUpdater(x :: PadExactElt, u :: Updater_PadExactElt) -> BoolElt
+  {"}
+  FUDGE := GLOBAL_FUDGE(Parent(x));
+  u`element := x;
+  if FUDGE eq 0 then
+    u2 := u;
+  else
+    u2 := New(Updater_PadExactElt_Fudged);
+    u2`fudge := FUDGE;
+    u2`parent := u;
+  end if;
+  x`update := u2;
+  return true;
+end intrinsic;
+
+intrinsic _ExactpAdics_InitUpdater(x :: PadExactElt, u :: UserProgram) -> BoolElt
+  {"}
+  FUDGE := GLOBAL_FUDGE(Parent(x));
+  if FUDGE eq 0 then
+    u2 := u(x);
+  else
+    u2 := New(Updater_PadExactElt_Fudged);
+    u2`fudge := FUDGE;
+    u2`parent := u(x);
+  end if;
+  x`update := u2;
+  return true;
+end intrinsic;
+
+intrinsic _ExactpAdics_InitUpdater(x :: PadExactElt, u :: BoolElt) -> BoolElt
+  {"}
+  return not u;
+end intrinsic;
+
 intrinsic _ExactpAdics_FixPrecision(xx :: FldPadExactElt, pr :: RngIntElt) -> .
   {Coerces xx to a fixed-precision structure.}
   return ChangePrecision(Parent(xx), Max(1,pr)) ! xx;
@@ -479,6 +526,8 @@ declare attributes FldPadExactElt
   , power                           // [n] -> '^'(*,n)
   ;
 
+declare type Updater_FldPadExactElt: Updater_PadExactElt;
+
 declare type RngUPol_FldPadExact[RngUPolElt_FldPadExact]: StrPadExact;
 declare attributes RngUPol_FldPadExact
   // DEFINING DATA
@@ -528,6 +577,8 @@ declare attributes RngUPolElt_FldPadExact
   , min_valuation        // MinValuation(*)
   , powers               // [n] -> '^'(*,n)
   ;
+
+declare type Updater_RngUPolElt_FldPadExact: Updater_PadExactElt;
 
 declare type RngPadExact[RngPadExactElt];
 declare attributes RngPadExact
@@ -1089,16 +1140,13 @@ end intrinsic;
 function makeElt(F, init, mkupdate)
   x := New(FldPadExactElt);
   x`parent := F;
-  FUDGE := GLOBAL_FUDGE(F);
-  case Type(mkupdate):
-  when UserProgram:
-    x`update := FUDGE eq 0 select u else func<apr | u(apr + FUDGE)> where u:=mkupdate(x);
-  when BoolElt:
-    ;
-  else
+  // update
+  if not _ExactpAdics_InitUpdater(x, mkupdate) then
     return false, "bad mkupdate";
-  end case;
+  end if;
+  // id
   x`id := NEXTID();
+  // init
   case Type(init):
   when FldPadElt:
     ok, init := IS_VALID_APPROX(F, init);
@@ -1112,6 +1160,7 @@ function makeElt(F, init, mkupdate)
   else
     return false, "bad init";
   end case;
+  // baseline valuation
   SetBaselineValuation(x, WeakValuation(x));
   return true, x;
 end function;
@@ -2573,6 +2622,14 @@ procedure assignResidueClassFieldNames(~R, F)
   end case;
 end procedure;
 
+declare type Updater_FldPadExactElt_ResidueClassPreimage: Updater_FldPadExactElt;
+
+///hide
+intrinsic '@'(apr, u :: Updater_FldPadExactElt_ResidueClassPreimage) -> .
+  {Update.}
+  error "cannot increase precision of preimages of residue classes (consider using WeakApproximation)";
+end intrinsic;
+
 intrinsic ResidueClassField(F :: FldPadExact) -> FldFin, Map, Map
   {The residue class field R of F, the map F to R, and the map from the approximation of F to R.}
   if not assigned F`residue_class_field then
@@ -2588,14 +2645,9 @@ intrinsic ResidueClassField(F :: FldPadExact) -> FldFin, Map, Map
       return x`residue_class;
     end function;
     function RtoF(y)
-      x := New(FldPadExactElt);
-      x`approximation := CAP_APR(CAST(A, y @@ m), 1);
-      x`id := NEXTID();
-      x`parent := F;
-      x`update := function (apr)
-        error "cannot increase precision of preimages of residue classes (consider using WeakApproximation)";
-      end function;
-      return x;
+      init := CAP_APR(CAST(A, y @@ m), 1);
+      update := New(Updater_FldPadExactElt_ResidueClassPreimage);
+      return F!<init,update>;
     end function;
     F`residue_class_field := [*R, map<F -> R | x :-> FtoR(x), y :-> RtoF(y)>, m*];
   end if;
@@ -3154,6 +3206,14 @@ procedure assignQuotientRingNames(~R, F)
   end case;
 end procedure;
 
+declare type Updater_FldPadExactElt_QuotientPreimage: Updater_FldPadExactElt;
+
+///hide
+intrinsic '@'(apr, u :: Updater_FldPadExactElt_QuotientPreimage) -> .
+  {Update.}
+  error "cannot increase precision of images of p-adic quotients";
+end intrinsic;
+
 intrinsic Quotient(F :: FldPadExact, n :: RngIntElt) -> RngPadRes, Map
   {The integers Q of F mod pi^n, and the map F to Q.}
   require n ge 0: "n must be non-negative";
@@ -3165,14 +3225,9 @@ intrinsic Quotient(F :: FldPadExact, n :: RngIntElt) -> RngPadRes, Map
     return CAST(xQF, Approximation(x : APr:=n));
   end function;
   function QtoF(y)
-    x := New(FldPadExactElt);
-    x`parent := F;
-    x`id := NEXTID();
-    x`approximation := CAST(xF, CAST(xOF, y));
-    x`update := function (apr)
-      error "cannot increase precision of images of p-adic quotients";
-    end function;
-    return x;
+    init := CAST(xF, CAST(xOF, y));
+    update := New(Updater_FldPadExactElt_QuotientPreimage);
+    return F ! <init, update>;
   end function;
   return xQF,
     map<F -> xQF | x :-> FtoQ(x), y :-> QtoF(y)>;
@@ -4335,14 +4390,9 @@ intrinsic IsCoercible(R :: RngUPol_FldPadExact, X :: RngUPolElt[FldPad]) -> Bool
   {"}
   ok, app := IS_VALID_APPROX(R, X);
   if ok then
-    x := New(RngUPolElt_FldPadExact);
-    x`id := NEXTID();
-    x`parent := R;
-    x`approximation := app;
-    x`update := function (apr)
+    return true, R ! <app, func<z | function (apr)
       error "cannot increase precision of approximate p-adics";
-    end function;
-    return true, x;
+    end function>>;
   end if;
   return IsCoercible(R, Coefficients(X));
 end intrinsic;
@@ -4350,9 +4400,13 @@ end intrinsic;
 function makePoly(R, init, mkupdate)
   f := New(RngUPolElt_FldPadExact);
   f`parent := R;
-  FUDGE := GLOBAL_FUDGE(BaseRing(R));
-  f`update := FUDGE eq 0 select u else func<apr | u(apr + FUDGE)> where u := mkupdate(f);
+  // update
+  if not _ExactpAdics_InitUpdater(f, mkupdate) then
+    return false, "bad mkupdate";
+  end if;
+  // id
   f`id := NEXTID();
+  // init
   case Type(init):
   when RngUPolElt:
     ok, init := IS_VALID_APPROX(R, init);
@@ -4364,6 +4418,7 @@ function makePoly(R, init, mkupdate)
   else
     return false, "bad init";
   end case;
+  // baseline valuation
   SetBaselineValuation(f, WeakValuation(f));
   return true, f;
 end function;
@@ -5673,6 +5728,7 @@ intrinsic IsHenselLiftable(f :: RngUPolElt_FldPadExact, g :: RngUPolElt_FldPadEx
   ok, Slope := IsCoercible(Q, Slope);
   require ok: "Slope must be a rational number";
   ok, fShift := IsCoercible(Q, fShift);
+
   require ok: "fShift must be a rational number";
   ok, gShift := IsCoercible(Q, gShift);
   require ok: "gShift must be a rational number";

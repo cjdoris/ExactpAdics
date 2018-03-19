@@ -13,7 +13,7 @@ declare attributes PadExactElt
   , parent                 // the parent, a StrPadExact
   , approximation          // an approximation of the element
   , data                   // element-specific data
-  , update                 // update function (apr) -> Getter, which updates the approximation
+  , update                 // update function (apr) -> Getter, which updates the approximation (can be an Updater_PadExactElt)
   , update_expecting_apr   // when assigned, Update() will check that the absolute precision is updated to at least this
   , baseline_valuation     // the baseline valuation, usually the weak valuation of the initial approximation
   ;
@@ -21,6 +21,11 @@ declare attributes PadExactElt
 // ABSTRACT TYPE
 // Valuations of PadExactElts
 declare type Val_PadExactElt;
+
+// ABSTRACT TYPE
+// Updaters for PadExactElts
+declare type Updater_PadExactElt;
+declare attributes Updater_PadExactElt: element;
 
 ///# Internals
 ///
@@ -239,3 +244,8 @@ intrinsic IncreaseAbsolutePrecision_Lazy(x :: PadExactElt, apr) -> ExactpAdics_G
     end procedure);
 end intrinsic;
 
+///hide
+intrinsic '@'(apr, u :: Updater_PadExactElt) -> ExactpAdics_Gettr
+  {Calls the update function u.}
+  error "not implemented";
+end intrinsic;

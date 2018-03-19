@@ -27,6 +27,8 @@ declare attributes Tup_PadExact
   , data
   ;
 
+declare type Updater_Tup_PadExact: Updater_PadExactElt;
+
 ///hide-all
 
 intrinsic _ExactpAdics_IsValidApproximation(C :: SetCart_PadExact, x :: Tup) -> BoolElt, .
@@ -102,7 +104,9 @@ end intrinsic;
 function makeTup(C, init, mkupdate)
   T := New(Tup_PadExact);
   T`parent := C;
-  T`update := mkupdate(T);
+  if not _ExactpAdics_InitUpdater(T, mkupdate) then
+    return false, "bad mkupdate";
+  end if;
   T`id := NEXTID();
   case Type(init):
   when Tup:
