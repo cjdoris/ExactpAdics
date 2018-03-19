@@ -13,6 +13,7 @@
   Val_RngMPolElt_FldPad.mag
   Roots.mag
   Factorization.mag
+  Factorization_new.mag
   LowerBound.mag
   Tuples.mag
   Val_Tup_PadExact.mag

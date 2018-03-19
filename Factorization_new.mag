@@ -301,7 +301,7 @@ function state_make_exact(f, strategy)
     xpol_get := function (xst)
       ExactpAdics_StepPrecisionStrategy(~ok, ~pr, ~xst);
       if ok then
-        return true, Approximation(f, BaselineValuation(f) + pr), xst;
+        return true, BaselineApproximation(f, pr), xst;
       else
         return false, _, _;
       end if;
@@ -315,6 +315,25 @@ function state_make_exact(f, strategy)
       slopes_done := {},
       resfield := ResidueClassField(BaseRing(f)),
       width := WeakDegree(f)
+    >],
+    brs_done := []
+  >;
+end function;
+
+function state_make(f)
+  assert ExtendedType(f) eq RngUPolElt[FldPad];
+  return rec<STATE |
+    xpol_state := false,
+    xpol_get := function(xst) return false, _, _; end function,
+    xpols := [* f *],
+    brs_todo := [rec<BRANCH |
+      on_pop := [* "next_xpol" *],
+      xpol_index := 0,
+      basis := [],
+      offset := 0,
+      slopes_done := {},
+      resfield := ResidueClassField(Integers(BaseRing(f))),
+      width := Degree(f)
     >],
     brs_done := []
   >;
@@ -808,7 +827,7 @@ function br_polynomial(br, xs : k:=#br`basis)
 end function;
 
 function mb_br_invmod(br, f)
-  monoms := [&*ms : ms in CartesianProduct([[(b`basering ! [0, 1])^i : i in [0..b`deg-1]] : b in br`basis])];
+  monoms := #br`basis eq 0 select [1] else [&*ms : ms in CartesianProduct([[(b`basering ! [0, 1])^i : i in [0..b`deg-1]] : b in br`basis])];
   M := Matrix([br_coeffs(br, m*f) : m in monoms]);
   ok, Minv := IsInvertible(M);
   if ok then
@@ -912,7 +931,7 @@ CERT := recformat<
   InternalData // internal: the BRANCH yielding the factor
 >;
 
-intrinsic Factorization(f :: RngUPolElt_FldPadExact : Proof:=true, Certificates:=false, Extensions:=false, InternalData:=false, Strategy:="default") -> [], FldPadExactElt, []
+intrinsic Factorization_New(f :: RngUPolElt_FldPadExact : Proof:=true, Certificates:=false, Extensions:=false, InternalData:=false, Strategy:="default", SimpleLift:=true) -> [], FldPadExactElt, []
   {Factorization of f.}
   Certificates or:= Extensions;
   Certificates or:= InternalData;
@@ -932,32 +951,55 @@ intrinsic Factorization(f :: RngUPolElt_FldPadExact : Proof:=true, Certificates:
       facs := [];
       for i in [1..#st`brs_done] do
         add_flatten_errs(~st`brs_done[i]);
-        br := st`brs_done[i];
-        xfac := approximate_factor(br);
-        // TODO: have an updateable pr_base added on to pr to hopefully make pr more accurate
-        mkupdate := func<z | function (apr)
-          br, pr_base := Explode(GetData(z));
-          pr0 := Ceiling(Value(&join(apr - WVAL(z))));
-          pr := pr0 + pr_base;
-          return ExactpAdics_GeneralGetter(pr,
-            procedure (~pr, ~dep)
-              dep := Approximation_Lazy(f, WVAL(f) + pr);
-            end procedure,
-            procedure (xf, ~pr, ~value)
-              br2 := br_lift(br, xf);
-              xfac := approximate_factor(br2);
-              d := Value(&join(apr - ExactpAdics_APr(xfac)));
-              if d gt 0 then
-                pr +:= d;
-              else
-                Update(z, xfac);
-                SetData(z, <br2, pr - pr0>);
-                value := true;
-              end if;
-            end procedure
-          );
-        end function>;
-        Append(~facs, <R ! <approximate_factor(br), mkupdate, <br, 0>>, 1>);
+        if SimpleLift then
+          ok, _, fac:= ExactpAdics_ExecutePrecisionStrategy(function (pr)
+            xf := BaselineApproximation(f, pr);
+            br := br_lift(st`brs_done[i], xf);
+            xfac := approximate_factor(br);
+            d := Degree(xfac);
+            slope := (Valuation(Coefficient(xfac,d)) - Valuation(Coefficient(xfac, 0)))/d;
+            fShift := Min([Valuation(Coefficient(xf, i)) - i*slope : i in [0..Degree(xf)]]);
+            gShift := Min([Valuation(Coefficient(xfac, i)) - i*slope : i in [0..Degree(xfac)]]);
+            ok, fac := IsHenselLiftable(f, WeakApproximation(R!xfac) : Strategy:=Strategy, Slope:=slope, fShift:=fShift, gShift:=gShift);
+            if ok then
+              return true, fac;
+            else
+              return false, _;
+            end if;
+          end function, Strategy);
+          if ok then
+            Append(~facs, <fac, 1>);
+          else
+            error "precision error: simple Hensel lifting";
+          end if;
+        else
+          br := st`brs_done[i];
+          xfac := approximate_factor(br);
+          // TODO: have an updateable pr_base added on to pr to hopefully make pr more accurate
+          mkupdate := func<z | function (apr)
+            br, pr_base := Explode(GetData(z));
+            pr0 := Ceiling(Value(&join(apr - WVAL(z))));
+            pr := pr0 + pr_base;
+            return ExactpAdics_GeneralGetter(pr,
+              procedure (~pr, ~dep)
+                dep := Approximation_Lazy(f, WVAL(f) + pr);
+              end procedure,
+              procedure (xf, ~pr, ~value)
+                br2 := br_lift(br, xf);
+                xfac := approximate_factor(br2);
+                d := Value(&join(apr - ExactpAdics_APr(xfac)));
+                if d gt 0 then
+                  pr +:= d;
+                else
+                  Update(z, xfac);
+                  SetData(z, <br2, pr - pr0>);
+                  value := true;
+                end if;
+              end procedure
+            );
+          end function>;
+          Append(~facs, <R ! <approximate_factor(br), mkupdate, <br, 0>>, 1>);
+        end if;
       end for;
     end if;
   else
@@ -1012,7 +1054,79 @@ intrinsic Factorization(f :: RngUPolElt_FldPadExact : Proof:=true, Certificates:
   end if;
 end intrinsic;
 
-intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default") -> []
+intrinsic Factorization_New(f :: RngUPolElt[FldPad] : Proof:=true, Certificates:=false, Extensions:=false, InternalData:=false, Lift:=true) -> [], FldPadElt, []
+  {"}
+  Certificates or:= Extensions;
+  Certificates or:= InternalData;
+  Proof or:= Certificates;
+  R := Parent(f);
+  K := BaseRing(R);
+  st := state_make(f);
+  factorize(~st);
+  assert #st`brs_todo eq 0;
+  lc := LeadingCoefficient(f);
+  if Proof then
+    error if exists{br : br in st`brs_done | br`done ne "irred"}, "precision error";
+    assert &+[Z| &*[Z| b`deg : b in br`basis] : br in st`brs_done] eq Degree(f);
+    if #st`brs_done eq 1 then
+      facs := [<f / lc, 1>];
+    else
+      facs := [];
+      for i in [1..#st`brs_done] do
+        add_flatten_errs(~st`brs_done[i]);
+        br := Lift select br_lift(st`brs_done[i], f) else st`brs_done[i];
+        xfac := approximate_factor(br);
+        Append(~facs, <R!xfac, 1>);
+      end for;
+    end if;
+  else
+    not_implemented(:msg:="Proof:=false");
+    facs := [];
+  end if;
+  if Certificates then
+    certs := [rec<CERT
+      | F:=absresdeg(br)
+      , E:=absramdeg(br)
+      , Rho:=R!base_flatten(br, elt_with_residue_class(br, NormalElement(resfield(br), br`resfield)))
+      , Pi:=R!base_flatten(br, elt_with_valuation(br, 1/absramdeg(br)))
+      , InternalData:=br
+      >
+      : br in st`brs_done
+    ];
+    if Extensions then
+      // we compute extensions by factoring the polynomial again over the unramified extension of the right degree
+      // TODO: this seems like the wrong thing to do, we should be able to alter the basis as if we had worked over the unramified extension from the beginning
+      for i in [1..#certs] do
+        if certs[i]`F eq 1 then
+          if certs[i]`E eq 1 then
+            certs[i]`Extension := K;
+          else
+            br := br_lift(certs[i]`InternalData, f);
+            ok, epol := mb_has_value(mb_eisenstein_poly(br));
+            if ok and forall{c : c in Coefficients(epol) | APR(c) ge 2} and eisensteinPolyDefinesUniqueExtension(epol) then
+              certs[i]`Extension := TotallyRamifiedExtension(K, WeakApproximation(R ! epol));
+            else
+              error "precision error getting extension";
+            end if;
+          end if;
+        else
+          U := UnramifiedExtension(K, certs[i]`F);
+          certs[i]`Extension := ucerts[1]`Extension where _,_,ucerts:=Factorization(ChangeRing(f, U) : Extensions);
+        end if;
+      end for;
+    end if;
+    if not InternalData then
+      for i in [1..#certs] do
+        delete certs[i]`InternalData;
+      end for;
+    end if;
+    return facs, lc, certs;
+  else
+    return facs, lc, _;
+  end if;  
+end intrinsic;
+
+intrinsic Roots_New(f :: RngUPolElt_FldPadExact : Strategy:="default") -> []
   {The roots of f.}
   R := Parent(f);
   K := BaseRing(R);
@@ -1021,6 +1135,25 @@ intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default") -> []
   error if exists{br : br in st`brs_done | br`done ne "irred"}, "precision error";
   assert forall{br : br in st`brs_done | (absdeg(br) eq 1) and (#br`basis eq 0)};
   rs := [<r, 1> where _,r:=IsHenselLiftable(f, WeakApproximation(K!br`offset)) : br in st`brs_done];
+  return rs;
+end intrinsic;
+
+intrinsic Roots_New(f :: RngUPolElt[FldPad] : Lift:=true) -> []
+  {"}
+  R := Parent(f);
+  K := BaseRing(R);
+  st := state_make(f);
+  factorize(~st : JustRoots);
+  error if exists{br : br in st`brs_done | br`done ne "irred"}, "precision error";
+  assert forall{br : br in st`brs_done | (absdeg(br) eq 1) and (#br`basis eq 0)};
+  rs := [];
+  for i in [1..#st`brs_done] do
+    add_flatten_errs(~st`brs_done[i]);
+    br := Lift select br_lift(st`brs_done[i], f) else st`brs_done[i];
+    xfac := approximate_factor(br);
+    assert Degree(xfac) eq 1;
+    Append(~rs, <K!(-Coefficient(xfac,0)/Coefficient(xfac,1)), 1>);
+  end for;
   return rs;
 end intrinsic;
 
