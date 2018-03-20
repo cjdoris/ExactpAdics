@@ -16,7 +16,7 @@ Bits and bobs not belonging to the main features of the package, but needed by t
 
 To help isolate the slow parts of code, we provide some profiling tools.
 
-<a id="ExactpAdics_SetProfile--BoolElt"></a><a id="ExactpAdics_SetProfile"></a>
+<a id="ExactpAdics_SetProfile"></a><a id="ExactpAdics_SetProfile--BoolElt"></a>
 > **ExactpAdics_SetProfile** (doProfile :: *BoolElt*)
 {:.intrinsic}
 
@@ -26,7 +26,7 @@ Turn profiling on or off.
 **Parameters**
 - `Reset := false`: When true, also resets the profile.
 
-<a id="ExactpAdics_GetProfile--noargs"></a><a id="ExactpAdics_GetProfile"></a>
+<a id="ExactpAdics_GetProfile"></a><a id="ExactpAdics_GetProfile--noargs"></a>
 > **ExactpAdics_GetProfile** ()
 > 
 > -> *BoolElt*
@@ -73,7 +73,7 @@ The new type `AssocDflt` is an associative array with a default value. Hence it 
 True if we can create a default associative array with default `x`.
 
 
-<a id="IsCoercible_DefaultAssociativeArray--any--any--any"></a><a id="IsCoercible_DefaultAssociativeArray-2"></a><a id="IsCoercible_DefaultAssociativeArray--any--etc"></a>
+<a id="IsCoercible_DefaultAssociativeArray-2"></a><a id="IsCoercible_DefaultAssociativeArray--any--etc"></a><a id="IsCoercible_DefaultAssociativeArray--any--any--any"></a>
 > **IsCoercible_DefaultAssociativeArray** (x, keys, values)
 > 
 > -> *BoolElt*, *AssocDflt*
@@ -83,7 +83,7 @@ True if we can create a default associative array with default `x`.
 True if we can create a default associative array with default `x` and given `keys` and `values`.
 
 
-<a id="IsCoercible_DefaultAssociativeArray--any--any"></a><a id="IsCoercible_DefaultAssociativeArray-3"></a><a id="IsCoercible_DefaultAssociativeArray--any--etc-2"></a><a id="IsCoercible_DefaultAssociativeArray--any--Assoc"></a><a id="IsCoercible_DefaultAssociativeArray--any--seq-Tup"></a>
+<a id="IsCoercible_DefaultAssociativeArray-3"></a><a id="IsCoercible_DefaultAssociativeArray--any--etc-2"></a><a id="IsCoercible_DefaultAssociativeArray--any--any"></a><a id="IsCoercible_DefaultAssociativeArray--any--Assoc"></a><a id="IsCoercible_DefaultAssociativeArray--any--seq-Tup"></a>
 > **IsCoercible_DefaultAssociativeArray** (x, y)
 > 
 > **IsCoercible_DefaultAssociativeArray** (x, y :: *Assoc*)
@@ -101,7 +101,7 @@ True if we can create a default associative array with default `x` and values `y
 
 
 
-<a id="DefaultAssociativeArray--any"></a><a id="DefaultAssociativeArray"></a>
+<a id="DefaultAssociativeArray"></a><a id="DefaultAssociativeArray--any"></a>
 > **DefaultAssociativeArray** (x)
 > 
 > -> *AssocDflt*
@@ -121,7 +121,7 @@ The default associative array with default value `x`.
 The default associative array with default value `x` and keys and values specified by `ys` (an associative array or sequence of <key,value> pairs).
 
 
-<a id="DefaultAssociativeArray--any--any--any"></a><a id="DefaultAssociativeArray-3"></a><a id="DefaultAssociativeArray--any--etc-2"></a>
+<a id="DefaultAssociativeArray-3"></a><a id="DefaultAssociativeArray--any--etc-2"></a><a id="DefaultAssociativeArray--any--any--any"></a>
 > **DefaultAssociativeArray** (x, keys, values)
 > 
 > -> *AssocDflt*
@@ -131,14 +131,14 @@ The default associative array with default value `x` and keys and values specifi
 The default associative array with default value `x`, and given `keys` and `values`.
 
 
-<a id="Print"></a><a id="Print--AssocDflt--MonStgElt"></a><a id="Print--AssocDflt--etc"></a>
+<a id="Print"></a><a id="Print--AssocDflt--etc"></a><a id="Print--AssocDflt--MonStgElt"></a>
 > **Print** (x :: *AssocDflt*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
 Print.
 
 
-<a id="@--any--AssocDflt"></a><a id="@--any--etc"></a><a id="@"></a>
+<a id="@"></a><a id="@--any--etc"></a><a id="@--any--AssocDflt"></a>
 > **\'@\'** (i, x :: *AssocDflt*)
 > 
 > -> Any
@@ -148,7 +148,7 @@ Print.
 The value at index `i` of `x`.
 
 
-<a id="ApplyPointwise"></a><a id="ApplyPointwise--any--AssocDflt--AssocDflt"></a><a id="ApplyPointwise--any--etc"></a>
+<a id="ApplyPointwise"></a><a id="ApplyPointwise--any--etc"></a><a id="ApplyPointwise--any--AssocDflt--AssocDflt"></a>
 > **ApplyPointwise** (f, x :: *AssocDflt*, y :: *AssocDflt*)
 > 
 > -> *AssocDflt*
@@ -178,7 +178,7 @@ Applies the function `f` pointwise to values of `x`.
 The set of possible output values.
 
 
-<a id="DefaultValue--AssocDflt"></a><a id="DefaultValue"></a>
+<a id="DefaultValue"></a><a id="DefaultValue--AssocDflt"></a>
 > **DefaultValue** (x :: *AssocDflt*)
 > 
 > -> Any
@@ -208,7 +208,7 @@ The associative array of the special values of `x`.
 The keys of special values of `x`.
 
 
-<a id="Zip--seq-AssocDflt"></a><a id="Zip"></a>
+<a id="Zip"></a><a id="Zip--seq-AssocDflt"></a>
 > **Zip** (xs :: [*AssocDflt*])
 > 
 > -> *AssocDflt*
@@ -218,7 +218,7 @@ The keys of special values of `x`.
 The array [i] -> [x(i) : x in `xs`]. The inputs must have compatible indices.
 
 
-<a id="ZipApplyPointwise--any--etc"></a><a id="ZipApplyPointwise"></a><a id="ZipApplyPointwise--any--seq-AssocDflt"></a>
+<a id="ZipApplyPointwise"></a><a id="ZipApplyPointwise--any--etc"></a><a id="ZipApplyPointwise--any--seq-AssocDflt"></a>
 > **ZipApplyPointwise** (f, xs :: [*AssocDflt*])
 > 
 > -> *AssocDflt*
@@ -228,7 +228,7 @@ The array [i] -> [x(i) : x in `xs`]. The inputs must have compatible indices.
 The array [i] -> `f`([x(i) : x in `xs`]). Equivalent to ApplyPointwise(`f`,Zip(`xs`)).
 
 
-<a id="ForAll--AssocDflt--any"></a><a id="ForAll--AssocDflt--etc"></a><a id="ForAll"></a>
+<a id="ForAll"></a><a id="ForAll--AssocDflt--etc"></a><a id="ForAll--AssocDflt--any"></a>
 > **ForAll** (x :: *AssocDflt*, f)
 > 
 > -> *BoolElt*
@@ -238,7 +238,7 @@ The array [i] -> `f`([x(i) : x in `xs`]). Equivalent to ApplyPointwise(`f`,Zip(`
 True if `f`(`x`(i)) is true for all i.
 
 
-<a id="ForAll--AssocDflt--etc-2"></a><a id="ForAll--AssocDflt--AssocDflt--any"></a><a id="ForAll-2"></a>
+<a id="ForAll-2"></a><a id="ForAll--AssocDflt--etc-2"></a><a id="ForAll--AssocDflt--AssocDflt--any"></a>
 > **ForAll** (x :: *AssocDflt*, y :: *AssocDflt*, f)
 > 
 > -> *BoolElt*
@@ -253,7 +253,7 @@ True if `f`(`x`(i),`y`(i)) is true for all i.
 
 For controlling the extent to which errors and warnings occur in the ExactpAdics package.
 
-<a id="ExactpAdics_SetWarningAction"></a><a id="ExactpAdics_SetWarningAction--MonStgElt--MonStgElt"></a><a id="ExactpAdics_SetWarningAction--MonStgElt--etc"></a>
+<a id="ExactpAdics_SetWarningAction"></a><a id="ExactpAdics_SetWarningAction--MonStgElt--etc"></a><a id="ExactpAdics_SetWarningAction--MonStgElt--MonStgElt"></a>
 > **ExactpAdics_SetWarningAction** (name :: *MonStgElt*, action :: *MonStgElt*)
 {:.intrinsic}
 
@@ -274,7 +274,7 @@ Sets how the warning `name` is displayed. `action` is one of:
 True if there is a warning action defined for warning `name`. If so, also returns the action.
 
 
-<a id="ExactpAdics_GetWarningAction--MonStgElt--etc"></a><a id="ExactpAdics_GetWarningAction--MonStgElt--MonStgElt"></a><a id="ExactpAdics_GetWarningAction"></a>
+<a id="ExactpAdics_GetWarningAction"></a><a id="ExactpAdics_GetWarningAction--MonStgElt--etc"></a><a id="ExactpAdics_GetWarningAction--MonStgElt--MonStgElt"></a>
 > **ExactpAdics_GetWarningAction** (name :: *MonStgElt*, dflt :: *MonStgElt*)
 > 
 > -> *MonStgElt*
@@ -284,7 +284,7 @@ True if there is a warning action defined for warning `name`. If so, also return
 The warning action set for warning `name`, if set, or else `dflt`.
 
 
-<a id="ExactpAdics_Warn--MonStgElt--etc"></a><a id="ExactpAdics_Warn"></a><a id="ExactpAdics_Warn--MonStgElt--any"></a>
+<a id="ExactpAdics_Warn"></a><a id="ExactpAdics_Warn--MonStgElt--etc"></a><a id="ExactpAdics_Warn--MonStgElt--any"></a>
 > **ExactpAdics_Warn** (name :: *MonStgElt*, msg)
 {:.intrinsic}
 
@@ -299,7 +299,7 @@ Raises the warning `name` with message `msg`.
 
 A basic scheme for promoting values in different structures to a common strucure.
 
-<a id="IsPromotable--any--etc"></a><a id="IsPromotable"></a><a id="IsPromotable--any--any"></a>
+<a id="IsPromotable"></a><a id="IsPromotable--any--etc"></a><a id="IsPromotable--any--any"></a>
 > **IsPromotable** (x, y)
 > 
 > -> *BoolElt*, Any, Any
@@ -324,7 +324,7 @@ Promotes `x` and `y` to a common type.
 
 A `ExactpAdics_BndLow` is a lower bound on a possibly unknown value.
 
-<a id="ExactpAdics_LowerBound--any"></a><a id="ExactpAdics_LowerBound"></a>
+<a id="ExactpAdics_LowerBound"></a><a id="ExactpAdics_LowerBound--any"></a>
 > **ExactpAdics_LowerBound** (v)
 > 
 > -> *ExactpAdics_BndLow*
@@ -366,14 +366,14 @@ The lower bound.
 The value of `b`, assuming it is sharp.
 
 
-<a id="Print-2"></a><a id="Print--ExactpAdics_BndLow--MonStgElt"></a><a id="Print--ExactpAdics_BndLow--etc"></a>
+<a id="Print-2"></a><a id="Print--ExactpAdics_BndLow--etc"></a><a id="Print--ExactpAdics_BndLow--MonStgElt"></a>
 > **Print** (b :: *ExactpAdics_BndLow*, lvl :: *MonStgElt*)
 {:.intrinsic}
 
 Print.
 
 
-<a id="&+--seq-ExactpAdics_BndLow"></a><a id="&+"></a>
+<a id="&+"></a><a id="&+--seq-ExactpAdics_BndLow"></a>
 > **\'&+\'** (bs :: [*ExactpAdics_BndLow*])
 > 
 > -> *ExactpAdics_BndLow*
@@ -383,7 +383,7 @@ Print.
 Lower bound on the sum of the values being bounded.
 
 
-<a id="Max--seq-ExactpAdics_BndLow"></a><a id="Max"></a>
+<a id="Max"></a><a id="Max--seq-ExactpAdics_BndLow"></a>
 > **Max** (bs :: [*ExactpAdics_BndLow*])
 > 
 > -> *ExactpAdics_BndLow*
@@ -393,7 +393,7 @@ Lower bound on the sum of the values being bounded.
 Lower bound on the maximum of the values being bounded.
 
 
-<a id="Min--seq-ExactpAdics_BndLow"></a><a id="Min"></a>
+<a id="Min"></a><a id="Min--seq-ExactpAdics_BndLow"></a>
 > **Min** (bs :: [*ExactpAdics_BndLow*])
 > 
 > -> *ExactpAdics_BndLow*

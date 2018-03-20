@@ -39,7 +39,7 @@ The valuation of a polynomial is (by definition in the package) a function takin
 
 In this section we document intrinsics common to all valuations. Where there are multiple `Val` inputs, it suffices for only one to be a `Val` and for them all to be coercible to a common `Val` type.
 
-<a id="+--Val--Val"></a><a id="---Val--Val"></a><a id="+--Val--etc"></a><a id="-"></a><a id="---Val--etc"></a><a id="+"></a><a id="---Val"></a>
+<a id="-"></a><a id="---Val"></a><a id="+"></a><a id="+--Val--etc"></a><a id="+--Val--Val"></a><a id="---Val--etc"></a><a id="---Val--Val"></a>
 > **\'-\'** (v :: *Val*)
 > 
 > **\'+\'** (v :: *Val*, w :: *Val*)
@@ -59,7 +59,7 @@ This is as normal for `Val_FldPadElt`, and defined pointwise otherwise. For conv
 
 
 
-<a id="/"></a><a id="*--Val--any"></a><a id="*"></a><a id="*--any--etc"></a><a id="*--any--Val"></a><a id="/--Val--any"></a><a id="*--Val--etc"></a><a id="/--Val--etc"></a>
+<a id="*"></a><a id="*--Val--etc"></a><a id="*--Val--any"></a><a id="*--any--etc"></a><a id="*--any--Val"></a><a id="/"></a><a id="/--Val--etc"></a><a id="/--Val--any"></a>
 > **\'\*\'** (v :: *Val*, n)
 > 
 > **\'\*\'** (n, v :: *Val*)
@@ -77,7 +77,7 @@ Scalar multiplication and division. `n` must be an integer or rational.
 
 
 
-<a id="le--Val--Val"></a><a id="ne"></a><a id="lt"></a><a id="gt--Val--Val"></a><a id="eq--Val--Val"></a><a id="ne--Val--Val"></a><a id="lt--Val--Val"></a><a id="eq"></a><a id="le"></a><a id="le--Val--etc"></a><a id="ne--Val--etc"></a><a id="gt"></a><a id="gt--Val--etc"></a><a id="lt--Val--etc"></a><a id="ge"></a><a id="ge--Val--etc"></a><a id="ge--Val--Val"></a><a id="eq--Val--etc"></a>
+<a id="eq"></a><a id="eq--Val--etc"></a><a id="eq--Val--Val"></a><a id="ne"></a><a id="ne--Val--etc"></a><a id="ne--Val--Val"></a><a id="le"></a><a id="le--Val--etc"></a><a id="le--Val--Val"></a><a id="lt"></a><a id="lt--Val--etc"></a><a id="lt--Val--Val"></a><a id="ge"></a><a id="ge--Val--etc"></a><a id="ge--Val--Val"></a><a id="gt"></a><a id="gt--Val--etc"></a><a id="gt--Val--Val"></a>
 > **\'eq\'** (v :: *Val*, w :: *Val*)
 > 
 > **\'ne\'** (v :: *Val*, w :: *Val*)
@@ -109,7 +109,7 @@ This is as normal for `Val_FldPadElt` (i.e. a total ordering), and defined point
 
 
 
-<a id="join--Val--etc"></a><a id="meet"></a><a id="meet--Val--etc"></a><a id="join"></a><a id="join--Val--Val"></a><a id="meet--Val--Val"></a>
+<a id="join"></a><a id="join--Val--etc"></a><a id="join--Val--Val"></a><a id="meet"></a><a id="meet--Val--etc"></a><a id="meet--Val--Val"></a>
 > **\'join\'** (v :: *Val*, w :: *Val*)
 > 
 > **\'meet\'** (v :: *Val*, w :: *Val*)
@@ -125,7 +125,7 @@ This is just maximum and minimum for `Val_FldPadElt`, and defined pointwise othe
 
 
 
-<a id="diff--Val--Val"></a><a id="diff"></a><a id="diff--Val--etc"></a>
+<a id="diff"></a><a id="diff--Val--etc"></a><a id="diff--Val--Val"></a>
 > **\'diff\'** (v :: *Val*, w :: *Val*)
 > 
 > -> *Val*
@@ -137,7 +137,7 @@ Diff. For `Val_FldPadElt`, `v diff w` is defined to be `v` if `v gt w` and other
 If you view the valuation of a compound structure like a multiset, except where the multiplicities on each element are tropical integers instead of normal integers, then `diff` is like set difference defined via a universal property.
 
 
-<a id="Value--Val"></a><a id="Value"></a>
+<a id="Value"></a><a id="Value--Val"></a>
 > **Value** (v :: *Val*)
 > 
 > -> Any
@@ -147,7 +147,7 @@ If you view the valuation of a compound structure like a multiset, except where 
 Retrieves the value of the valuation. For `Val_FldPadElt` this is an integer, rational or infinite. For compound structures it is the underlying function, e.g. for polynomials it is an `AssocDflt` representing a function which is constant almost everywhere.
 
 
-<a id="IsValidAbsolutePrecision--any--any"></a><a id="IsValidAbsolutePrecision"></a><a id="IsValidAbsolutePrecision--any--etc"></a>
+<a id="IsValidAbsolutePrecision"></a><a id="IsValidAbsolutePrecision--any--etc"></a><a id="IsValidAbsolutePrecision--any--any"></a>
 > **IsValidAbsolutePrecision** (x, v)
 > 
 > -> *Val*
@@ -175,7 +175,7 @@ Represents the valuation of a p-adic number.
 ### Creation
 {:#creation}
 
-<a id="Val_FldPadElt_IsCoercible--any"></a><a id="Val_FldPadElt_IsCoercible--Val_FldPadElt"></a><a id="Val_FldPadElt_IsCoercible--ExtReElt"></a><a id="Val_FldPadElt_IsCoercible"></a><a id="Val_FldPadElt_IsCoercible--Infty"></a><a id="Val_FldPadElt_IsCoercible--RngIntElt"></a><a id="Val_FldPadElt_IsCoercible--FldRatElt"></a>
+<a id="Val_FldPadElt_IsCoercible"></a><a id="Val_FldPadElt_IsCoercible--any"></a><a id="Val_FldPadElt_IsCoercible--Val_FldPadElt"></a><a id="Val_FldPadElt_IsCoercible--RngIntElt"></a><a id="Val_FldPadElt_IsCoercible--Infty"></a><a id="Val_FldPadElt_IsCoercible--ExtReElt"></a><a id="Val_FldPadElt_IsCoercible--FldRatElt"></a>
 > **Val_FldPadElt_IsCoercible** (v)
 > 
 > **Val_FldPadElt_IsCoercible** (v :: *Val_FldPadElt*)
@@ -329,7 +329,7 @@ Represents the valuation of a univariate polynomial over a p-adic field.
 ### Creation
 {:#creation-2}
 
-<a id="Val_RngUPolElt_FldPad_IsCoercible--AssocDflt"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--Val_RngUPolElt_FldPad"></a><a id="Val_RngUPolElt_FldPad_IsCoercible"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--any"></a>
+<a id="Val_RngUPolElt_FldPad_IsCoercible"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--any"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--Val_RngUPolElt_FldPad"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--AssocDflt"></a>
 > **Val_RngUPolElt_FldPad_IsCoercible** (v)
 > 
 > **Val_RngUPolElt_FldPad_IsCoercible** (v :: *Val_RngUPolElt_FldPad*)
@@ -347,7 +347,7 @@ True if `v` is coercible to a Val_RngUPolElt_FldPad.
 
 
 
-<a id="IsPromotable-2"></a><a id="IsPromotable--Val_RngUPolElt_FldPad--any"></a><a id="IsPromotable--Val_RngUPolElt_FldPad--etc"></a>
+<a id="IsPromotable-2"></a><a id="IsPromotable--Val_RngUPolElt_FldPad--etc"></a><a id="IsPromotable--Val_RngUPolElt_FldPad--any"></a>
 > **IsPromotable** (v :: *Val_RngUPolElt_FldPad*, w)
 > 
 > -> *BoolElt*, Any
@@ -357,7 +357,7 @@ True if `v` is coercible to a Val_RngUPolElt_FldPad.
 True if `v` and `w` are promotable to a common type.
 
 
-<a id="Val_RngUPolElt_FldPad_IsCoercible--any--any"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--Val_FldPadElt--any"></a><a id="Val_RngUPolElt_FldPad_IsCoercible-2"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--Val_FldPadElt--etc"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--any--etc"></a>
+<a id="Val_RngUPolElt_FldPad_IsCoercible-2"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--any--etc"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--any--any"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--Val_FldPadElt--etc"></a><a id="Val_RngUPolElt_FldPad_IsCoercible--Val_FldPadElt--any"></a>
 > **Val_RngUPolElt_FldPad_IsCoercible** (dflt, v)
 > 
 > **Val_RngUPolElt_FldPad_IsCoercible** (dflt :: *Val_FldPadElt*, v)
@@ -381,7 +381,7 @@ True if `v` is coercible to a Val_RngUPolElt_FldPad with given default.
 A Val_RngUPolElt_FldPad with value `v`.
 
 
-<a id="Val_RngUPolElt_FldPad_Make--any--any"></a><a id="Val_RngUPolElt_FldPad_Make-2"></a><a id="Val_RngUPolElt_FldPad_Make--any--etc"></a>
+<a id="Val_RngUPolElt_FldPad_Make-2"></a><a id="Val_RngUPolElt_FldPad_Make--any--etc"></a><a id="Val_RngUPolElt_FldPad_Make--any--any"></a>
 > **Val_RngUPolElt_FldPad_Make** (x, y)
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -391,7 +391,7 @@ A Val_RngUPolElt_FldPad with value `v`.
 Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`)).
 
 
-<a id="Val_RngUPolElt_FldPad_Make--any--any--any"></a><a id="Val_RngUPolElt_FldPad_Make-3"></a><a id="Val_RngUPolElt_FldPad_Make--any--etc-2"></a>
+<a id="Val_RngUPolElt_FldPad_Make-3"></a><a id="Val_RngUPolElt_FldPad_Make--any--etc-2"></a><a id="Val_RngUPolElt_FldPad_Make--any--any--any"></a>
 > **Val_RngUPolElt_FldPad_Make** (x, y, z)
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -404,7 +404,7 @@ Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`,`z`)).
 ### Special values
 {:#special-values-2}
 
-<a id="Val_RngUPolElt_FldPad_Infinity--noargs"></a><a id="Val_RngUPolElt_FldPad_Infinity"></a>
+<a id="Val_RngUPolElt_FldPad_Infinity"></a><a id="Val_RngUPolElt_FldPad_Infinity--noargs"></a>
 > **Val_RngUPolElt_FldPad_Infinity** ()
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -414,7 +414,7 @@ Same as Val_RngUPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`,`z`)).
 The valuation Infinity.
 
 
-<a id="Val_RngUPolElt_FldPad_NegInfinity--noargs"></a><a id="Val_RngUPolElt_FldPad_NegInfinity"></a>
+<a id="Val_RngUPolElt_FldPad_NegInfinity"></a><a id="Val_RngUPolElt_FldPad_NegInfinity--noargs"></a>
 > **Val_RngUPolElt_FldPad_NegInfinity** ()
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -424,7 +424,7 @@ The valuation Infinity.
 The valuation -Infinity.
 
 
-<a id="Val_RngUPolElt_FldPad_Zero--noargs"></a><a id="Val_RngUPolElt_FldPad_Zero"></a>
+<a id="Val_RngUPolElt_FldPad_Zero"></a><a id="Val_RngUPolElt_FldPad_Zero--noargs"></a>
 > **Val_RngUPolElt_FldPad_Zero** ()
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -437,7 +437,7 @@ The valuation 0.
 ### Other operations
 {:#other-operations-2}
 
-<a id="Value--Val_RngUPolElt_FldPad"></a><a id="Value-2"></a>
+<a id="Value-2"></a><a id="Value--Val_RngUPolElt_FldPad"></a>
 > **Value** (v :: *Val_RngUPolElt_FldPad*)
 > 
 > -> *AssocDflt*
@@ -457,7 +457,7 @@ The underlying associative array of values.
 The integer valuation larger than `v`, or just `v` if infinite.
 
 
-<a id="&join--Val_RngUPolElt_FldPad"></a><a id="&join"></a>
+<a id="&join"></a><a id="&join--Val_RngUPolElt_FldPad"></a>
 > **\'&join\'** (v :: *Val_RngUPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -467,7 +467,7 @@ The integer valuation larger than `v`, or just `v` if infinite.
 The join of the valuations at each coefficient. Equivalent to "&join Image(Value(`v`))".
 
 
-<a id="&meet--Val_RngUPolElt_FldPad"></a><a id="&meet"></a>
+<a id="&meet"></a><a id="&meet--Val_RngUPolElt_FldPad"></a>
 > **\'&meet\'** (v :: *Val_RngUPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -477,7 +477,7 @@ The join of the valuations at each coefficient. Equivalent to "&join Image(Value
 The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value(`v`))".
 
 
-<a id="@--RngIntElt--etc"></a><a id="@--RngIntElt--Val_RngUPolElt_FldPad"></a><a id="@"></a>
+<a id="@"></a><a id="@--RngIntElt--etc"></a><a id="@--RngIntElt--Val_RngUPolElt_FldPad"></a>
 > **\'@\'** (i :: *RngIntElt*, v :: *Val_RngUPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -487,7 +487,7 @@ The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value
 The valuation of coefficient `i`.
 
 
-<a id="ShiftSlope"></a><a id="ShiftSlope--Val_RngUPolElt_FldPad--any"></a><a id="ShiftSlope--Val_RngUPolElt_FldPad--etc"></a>
+<a id="ShiftSlope"></a><a id="ShiftSlope--Val_RngUPolElt_FldPad--etc"></a><a id="ShiftSlope--Val_RngUPolElt_FldPad--any"></a>
 > **ShiftSlope** (v :: *Val_RngUPolElt_FldPad*, s)
 > 
 > -> *Val_RngUPolElt_FldPad*
@@ -525,7 +525,7 @@ Represents the valuation of a multivariate polynomial over a p-adic field.
 ### Creation
 {:#creation-3}
 
-<a id="Val_RngMPolElt_FldPad_IsCoercible--any"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--AssocDflt"></a><a id="Val_RngMPolElt_FldPad_IsCoercible"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--Val_RngMPolElt_FldPad"></a>
+<a id="Val_RngMPolElt_FldPad_IsCoercible"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--any"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--Val_RngMPolElt_FldPad"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--AssocDflt"></a>
 > **Val_RngMPolElt_FldPad_IsCoercible** (v)
 > 
 > **Val_RngMPolElt_FldPad_IsCoercible** (v :: *Val_RngMPolElt_FldPad*)
@@ -553,7 +553,7 @@ True if `v` is coercible to a Val_RngMPolElt_FldPad.
 True if `v` and `w` are promotable to a common type.
 
 
-<a id="Val_RngMPolElt_FldPad_IsCoercible--Val_FldPadElt--etc"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--any--etc"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--any--any"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--Val_FldPadElt--any"></a><a id="Val_RngMPolElt_FldPad_IsCoercible-2"></a>
+<a id="Val_RngMPolElt_FldPad_IsCoercible-2"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--any--etc"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--any--any"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--Val_FldPadElt--etc"></a><a id="Val_RngMPolElt_FldPad_IsCoercible--Val_FldPadElt--any"></a>
 > **Val_RngMPolElt_FldPad_IsCoercible** (dflt, v)
 > 
 > **Val_RngMPolElt_FldPad_IsCoercible** (dflt :: *Val_FldPadElt*, v)
@@ -577,7 +577,7 @@ True if `v` is coercible to a Val_RngMPolElt_FldPad with given default.
 True if `v` is coercible to an absolute precision for `x`. Also returns the coerced value.
 
 
-<a id="IsValidAbsolutePrecisionDiff-2"></a><a id="IsValidAbsolutePrecisionDiff--RngMPolElt_FldPadExact--any"></a><a id="IsValidAbsolutePrecisionDiff--RngMPolElt_FldPadExact--etc"></a>
+<a id="IsValidAbsolutePrecisionDiff-2"></a><a id="IsValidAbsolutePrecisionDiff--RngMPolElt_FldPadExact--etc"></a><a id="IsValidAbsolutePrecisionDiff--RngMPolElt_FldPadExact--any"></a>
 > **IsValidAbsolutePrecisionDiff** (x :: *RngMPolElt_FldPadExact*, v)
 > 
 > -> *BoolElt*, Any
@@ -587,7 +587,7 @@ True if `v` is coercible to an absolute precision for `x`. Also returns the coer
 True if `v` is coercible to an absolute precision diff for `x`. Also returns the coerced value.
 
 
-<a id="IsValidRelativePrecision"></a><a id="IsValidRelativePrecision--RngMPolElt_FldPadExact--any"></a><a id="IsValidRelativePrecision--RngMPolElt_FldPadExact--etc"></a>
+<a id="IsValidRelativePrecision"></a><a id="IsValidRelativePrecision--RngMPolElt_FldPadExact--etc"></a><a id="IsValidRelativePrecision--RngMPolElt_FldPadExact--any"></a>
 > **IsValidRelativePrecision** (x :: *RngMPolElt_FldPadExact*, v)
 > 
 > -> *BoolElt*, Any
@@ -597,7 +597,7 @@ True if `v` is coercible to an absolute precision diff for `x`. Also returns the
 True if `v` is coercible to a relative precision for `x`. Also returns the coerced value.
 
 
-<a id="Val_RngMPolElt_FldPad_Make--any"></a><a id="Val_RngMPolElt_FldPad_Make"></a>
+<a id="Val_RngMPolElt_FldPad_Make"></a><a id="Val_RngMPolElt_FldPad_Make--any"></a>
 > **Val_RngMPolElt_FldPad_Make** (v)
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -607,7 +607,7 @@ True if `v` is coercible to a relative precision for `x`. Also returns the coerc
 A Val_RngMPolElt_FldPad with value `v`.
 
 
-<a id="Val_RngMPolElt_FldPad_Make--any--any"></a><a id="Val_RngMPolElt_FldPad_Make-2"></a><a id="Val_RngMPolElt_FldPad_Make--any--etc"></a>
+<a id="Val_RngMPolElt_FldPad_Make-2"></a><a id="Val_RngMPolElt_FldPad_Make--any--etc"></a><a id="Val_RngMPolElt_FldPad_Make--any--any"></a>
 > **Val_RngMPolElt_FldPad_Make** (x, y)
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -617,7 +617,7 @@ A Val_RngMPolElt_FldPad with value `v`.
 Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`)).
 
 
-<a id="Val_RngMPolElt_FldPad_Make--any--any--any"></a><a id="Val_RngMPolElt_FldPad_Make-3"></a><a id="Val_RngMPolElt_FldPad_Make--any--etc-2"></a>
+<a id="Val_RngMPolElt_FldPad_Make-3"></a><a id="Val_RngMPolElt_FldPad_Make--any--etc-2"></a><a id="Val_RngMPolElt_FldPad_Make--any--any--any"></a>
 > **Val_RngMPolElt_FldPad_Make** (x, y, z)
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -640,7 +640,7 @@ Same as Val_RngMPolElt_FldPad_Make(DefaultAssociativeArray(`x`,`y`,`z`)).
 The valuation Infinity.
 
 
-<a id="Val_RngMPolElt_FldPad_NegInfinity--noargs"></a><a id="Val_RngMPolElt_FldPad_NegInfinity"></a>
+<a id="Val_RngMPolElt_FldPad_NegInfinity"></a><a id="Val_RngMPolElt_FldPad_NegInfinity--noargs"></a>
 > **Val_RngMPolElt_FldPad_NegInfinity** ()
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -673,7 +673,7 @@ The valuation 0.
 The integer valuation larger than `v`, or just `v` if infinite.
 
 
-<a id="&join--Val_RngMPolElt_FldPad"></a><a id="&join-2"></a>
+<a id="&join-2"></a><a id="&join--Val_RngMPolElt_FldPad"></a>
 > **\'&join\'** (v :: *Val_RngMPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -683,7 +683,7 @@ The integer valuation larger than `v`, or just `v` if infinite.
 The join of the valuations at each coefficient. Equivalent to "&join Image(Value(`v`))".
 
 
-<a id="&meet--Val_RngMPolElt_FldPad"></a><a id="&meet-2"></a>
+<a id="&meet-2"></a><a id="&meet--Val_RngMPolElt_FldPad"></a>
 > **\'&meet\'** (v :: *Val_RngMPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -693,7 +693,7 @@ The join of the valuations at each coefficient. Equivalent to "&join Image(Value
 The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value(`v`))".
 
 
-<a id="@--seq-RngIntElt--Val_RngMPolElt_FldPad"></a><a id="@--seq-RngIntElt--etc"></a><a id="@-2"></a>
+<a id="@-2"></a><a id="@--seq-RngIntElt--etc"></a><a id="@--seq-RngIntElt--Val_RngMPolElt_FldPad"></a>
 > **\'@\'** (i :: [*RngIntElt*], v :: *Val_RngMPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -703,7 +703,7 @@ The meet of the valuations at each coefficient. Equivalent to "&meet Image(Value
 The valuation of coefficient `i`.
 
 
-<a id="@--RngMPolElt--etc"></a><a id="@--RngMPolElt--Val_RngMPolElt_FldPad"></a><a id="@-3"></a>
+<a id="@-3"></a><a id="@--RngMPolElt--etc"></a><a id="@--RngMPolElt--Val_RngMPolElt_FldPad"></a>
 > **\'@\'** (m :: *RngMPolElt*, v :: *Val_RngMPolElt_FldPad*)
 > 
 > -> *Val_FldPadElt*
@@ -713,7 +713,7 @@ The valuation of coefficient `i`.
 The valuation of coefficient Exponents(`m`).
 
 
-<a id="ShiftSlope--Val_RngMPolElt_FldPad--seq"></a><a id="ShiftSlope-2"></a><a id="ShiftSlope--Val_RngMPolElt_FldPad--etc"></a>
+<a id="ShiftSlope-2"></a><a id="ShiftSlope--Val_RngMPolElt_FldPad--etc"></a><a id="ShiftSlope--Val_RngMPolElt_FldPad--seq"></a>
 > **ShiftSlope** (v :: *Val_RngMPolElt_FldPad*, s :: [])
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -733,7 +733,7 @@ Adds i.`s` onto `v`(i).
 The valuation of `f`.
 
 
-<a id="ExactpAdics_APr--RngMPolElt"></a><a id="ExactpAdics_APr-3"></a>
+<a id="ExactpAdics_APr-3"></a><a id="ExactpAdics_APr--RngMPolElt"></a>
 > **ExactpAdics_APr** (f :: *RngMPolElt*)
 > 
 > -> *Val_RngMPolElt_FldPad*
@@ -769,7 +769,7 @@ True if `v` is coercible to a Val_Tup_PadExact, and the coerced value.
 
 
 
-<a id="IsPromotable--Val_Tup_PadExact--etc"></a><a id="IsPromotable-4"></a><a id="IsPromotable--Val_Tup_PadExact--any"></a>
+<a id="IsPromotable-4"></a><a id="IsPromotable--Val_Tup_PadExact--etc"></a><a id="IsPromotable--Val_Tup_PadExact--any"></a>
 > **IsPromotable** (v :: *Val_Tup_PadExact*, w)
 > 
 > -> *BoolElt*, Any, Any
@@ -792,7 +792,7 @@ Coerces `v` to a Val_Tup_PadExact.
 ### Other operations
 {:#other-operations-4}
 
-<a id="@--RngIntElt--etc-2"></a><a id="@--RngIntElt--Val_Tup_PadExact"></a><a id="@-4"></a>
+<a id="@-4"></a><a id="@--RngIntElt--etc-2"></a><a id="@--RngIntElt--Val_Tup_PadExact"></a>
 > **\'@\'** (i :: *RngIntElt*, v :: *Val_Tup_PadExact*)
 > 
 > -> *Val_PadExactElt*
@@ -812,7 +812,7 @@ The valuation in the `i`th component of `v`.
 The number of components in `v`.
 
 
-<a id="ExactpAdics_Val--Tup"></a><a id="ExactpAdics_Val-4"></a>
+<a id="ExactpAdics_Val-4"></a><a id="ExactpAdics_Val--Tup"></a>
 > **ExactpAdics_Val** (t :: *Tup*)
 > 
 > -> *Val_Tup_PadExact*
@@ -822,7 +822,7 @@ The number of components in `v`.
 The valuation of `t`.
 
 
-<a id="ExactpAdics_APr--Tup"></a><a id="ExactpAdics_APr-4"></a>
+<a id="ExactpAdics_APr-4"></a><a id="ExactpAdics_APr--Tup"></a>
 > **ExactpAdics_APr** (t :: *Tup*)
 > 
 > -> *Val_Tup_PadExact*

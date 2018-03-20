@@ -25,14 +25,14 @@ All subtypes of `StrPadExact` adhere to a generic interface. That interface is d
 
 Elements (deriving from `PadExactElt`) have valuations which are a subtype of `Val_PadExactElt`. The generic interface for valuations is described [here]({{site.baseurl}}/valuations).
 
-<a id="Update"></a><a id="Update--PadExactElt--any"></a><a id="Update--PadExactElt--etc"></a>
+<a id="Update"></a><a id="Update--PadExactElt--etc"></a><a id="Update--PadExactElt--any"></a>
 > **Update** (x :: *PadExactElt*, app)
 {:.intrinsic}
 
 Updates `x` from `app`.
 
 
-<a id="Parent--PadExactElt"></a><a id="Parent"></a>
+<a id="Parent"></a><a id="Parent--PadExactElt"></a>
 > **Parent** (x :: *PadExactElt*)
 > 
 > -> *StrPadExact*
@@ -52,7 +52,7 @@ The parent structure of `x`.
 The baseline valuation of `x`.
 
 
-<a id="_ExactpAdics_PrecisionRequired--PadExactElt--etc"></a><a id="_ExactpAdics_PrecisionRequired--PadExactElt--any"></a><a id="_ExactpAdics_PrecisionRequired"></a>
+<a id="_ExactpAdics_PrecisionRequired"></a><a id="_ExactpAdics_PrecisionRequired--PadExactElt--etc"></a><a id="_ExactpAdics_PrecisionRequired--PadExactElt--any"></a>
 > **_ExactpAdics_PrecisionRequired** (x :: *PadExactElt*, apr)
 > 
 > -> *Val_PadExactElt*
@@ -102,7 +102,7 @@ The baseline precision of `x`.
 The relative precision of `x`.
 
 
-<a id="Approximation_Lazy--StrPadExact--etc"></a><a id="Approximation"></a><a id="Approximation--StrPadExact--etc"></a><a id="Approximation_Lazy--StrPadExact--any"></a><a id="Approximation_Lazy"></a><a id="Approximation--StrPadExact--any"></a>
+<a id="Approximation_Lazy"></a><a id="Approximation_Lazy--StrPadExact--etc"></a><a id="Approximation_Lazy--StrPadExact--any"></a><a id="Approximation"></a><a id="Approximation--StrPadExact--etc"></a><a id="Approximation--StrPadExact--any"></a>
 > **Approximation_Lazy** (X :: *StrPadExact*, pr)
 > 
 > -> *ExactpAdics_Gettr*
@@ -129,7 +129,7 @@ The approximation structure of `X` to precision `pr`.
 The approximating structure of `X`.
 
 
-<a id="Approximation-3"></a><a id="Approximation--PadExactElt--any"></a><a id="Approximation_Lazy-2"></a><a id="Approximation_Lazy--PadExactElt--etc"></a><a id="Approximation_Lazy--PadExactElt--any"></a><a id="Approximation--PadExactElt--etc"></a>
+<a id="Approximation_Lazy-2"></a><a id="Approximation_Lazy--PadExactElt--etc"></a><a id="Approximation_Lazy--PadExactElt--any"></a><a id="Approximation-3"></a><a id="Approximation--PadExactElt--etc"></a><a id="Approximation--PadExactElt--any"></a>
 > **Approximation_Lazy** (x :: *PadExactElt*, apr)
 > 
 > -> *ExactpAdics_Gettr*
@@ -149,6 +149,82 @@ An approximation of `x` to absolute precision `apr`.
 - `Quick`
 - `FixPr`
 
+<a id="RelativeApproximation_Lazy"></a><a id="RelativeApproximation_Lazy--PadExactElt--etc"></a><a id="RelativeApproximation_Lazy--PadExactElt--any"></a><a id="RelativeApproximation"></a><a id="RelativeApproximation--PadExactElt--etc"></a><a id="RelativeApproximation--PadExactElt--any"></a>
+> **RelativeApproximation_Lazy** (x :: *PadExactElt*, pr)
+> 
+> -> *ExactpAdics_Gettr*
+> {:.ret}
+> 
+> **RelativeApproximation** (x :: *PadExactElt*, pr)
+> 
+> -> Any
+> {:.ret}
+{:.intrinsic}
+
+An approximation to `x` to relative precision `pr`.
+
+
+
+**Parameters**
+- `Quick`
+- `FixPr`
+
+<a id="BaselineApproximation_Lazy"></a><a id="BaselineApproximation_Lazy--PadExactElt--etc"></a><a id="BaselineApproximation_Lazy--PadExactElt--any"></a><a id="BaselineApproximation"></a><a id="BaselineApproximation--PadExactElt--etc"></a><a id="BaselineApproximation--PadExactElt--any"></a>
+> **BaselineApproximation_Lazy** (x :: *PadExactElt*, pr)
+> 
+> -> *ExactpAdics_Gettr*
+> {:.ret}
+> 
+> **BaselineApproximation** (x :: *PadExactElt*, pr)
+> 
+> -> Any
+> {:.ret}
+{:.intrinsic}
+
+An approximation to `x` to baseline precision `pr`.
+
+
+
+**Parameters**
+- `Quick`
+- `FixPr`
+
+<a id="WeakApproximation"></a><a id="WeakApproximation--PadExactElt--etc"></a><a id="WeakApproximation--PadExactElt--any"></a>
+> **WeakApproximation** (x :: *PadExactElt*, apr)
+> 
+> -> Any
+> {:.ret}
+{:.intrinsic}
+
+An approximation to `x` of absolute precision at most `apr`.
+
+**Parameters**
+- `FixPr`
+
+<a id="WeakRelativeApproximation"></a><a id="WeakRelativeApproximation--PadExactElt--etc"></a><a id="WeakRelativeApproximation--PadExactElt--any"></a>
+> **WeakRelativeApproximation** (x :: *PadExactElt*, pr)
+> 
+> -> Any
+> {:.ret}
+{:.intrinsic}
+
+An approximation to `x` of relative precision at most `pr`.
+
+**Parameters**
+- `FixPr`
+
+<a id="WeakBaselineApproximation"></a><a id="WeakBaselineApproximation--PadExactElt--etc"></a><a id="WeakBaselineApproximation--PadExactElt--any"></a>
+> **WeakBaselineApproximation** (x :: *PadExactElt*, pr)
+> 
+> -> Any
+> {:.ret}
+{:.intrinsic}
+
+An approximation to `x` of basline precision at most `pr`.
+
+**Parameters**
+- `FixPr`
+
 <a id="Approximation-4"></a><a id="Approximation--PadExactElt"></a>
 > **Approximation** (x :: *PadExactElt*)
 > 
@@ -159,7 +235,7 @@ An approximation of `x` to absolute precision `apr`.
 The current approximation to `x`.
 
 
-<a id="IncreaseAbsolutePrecision_Lazy"></a><a id="IncreaseAbsolutePrecision--PadExactElt--any"></a><a id="IncreaseAbsolutePrecision--PadExactElt--etc"></a><a id="IncreaseAbsolutePrecision"></a><a id="IncreaseAbsolutePrecision_Lazy--PadExactElt--etc"></a><a id="IncreaseAbsolutePrecision_Lazy--PadExactElt--any"></a>
+<a id="IncreaseAbsolutePrecision"></a><a id="IncreaseAbsolutePrecision--PadExactElt--etc"></a><a id="IncreaseAbsolutePrecision--PadExactElt--any"></a><a id="IncreaseAbsolutePrecision_Lazy"></a><a id="IncreaseAbsolutePrecision_Lazy--PadExactElt--etc"></a><a id="IncreaseAbsolutePrecision_Lazy--PadExactElt--any"></a>
 > **IncreaseAbsolutePrecision** (x :: *PadExactElt*, apr)
 > 
 > **IncreaseAbsolutePrecision_Lazy** (x :: *PadExactElt*, apr)
@@ -211,7 +287,7 @@ As an optimization, if two dependencies `<x,apr1>`, `<x,apr2>` in the tree are f
 Creates a new getter with initial `state` `state`. `getDeps` must be a `procedure(~state, ~deps)` assigning to `deps` a list of `<x,apr>` pairs such that the computation depends on the absolute precision of `x` being at least `apr`. `getValue` must be a `procedure(~state, ~value)` which either assigns to `value`, giving the value of the getter, or does not assign to `value` meaning that the computation has more dependencies, and hence `getDeps` needs to be called again.
 
 
-<a id="ExactpAdics_ConstGetter--any"></a><a id="ExactpAdics_ConstGetter"></a>
+<a id="ExactpAdics_ConstGetter"></a><a id="ExactpAdics_ConstGetter--any"></a>
 > **ExactpAdics_ConstGetter** (X)
 > 
 > -> *ExactpAdics_Gettr*
@@ -231,7 +307,7 @@ The getter returning `X`.
 The getter with no dependencies that does nothing.
 
 
-<a id="ExactpAdics_GeneralGetter--any--etc"></a><a id="ExactpAdics_GeneralGetter--any--any--any"></a><a id="ExactpAdics_GeneralGetter"></a>
+<a id="ExactpAdics_GeneralGetter"></a><a id="ExactpAdics_GeneralGetter--any--etc"></a><a id="ExactpAdics_GeneralGetter--any--any--any"></a>
 > **ExactpAdics_GeneralGetter** (state, getGetter, getValue)
 > 
 > -> *ExactpAdics_Gettr*
@@ -257,7 +333,7 @@ Evaluates the getter and retuns its value.
 ## Composition
 {:#composition}
 
-<a id="Apply"></a><a id="Compose--ExactpAdics_Gettr--etc"></a><a id="Compose"></a><a id="Apply--any--ExactpAdics_Gettr"></a><a id="Compose--ExactpAdics_Gettr--any"></a><a id="Apply--any--etc"></a>
+<a id="Apply"></a><a id="Apply--any--etc"></a><a id="Apply--any--ExactpAdics_Gettr"></a><a id="Compose"></a><a id="Compose--ExactpAdics_Gettr--etc"></a><a id="Compose--ExactpAdics_Gettr--any"></a>
 > **Apply** (f, g :: *ExactpAdics_Gettr*)
 > 
 > **Compose** (g :: *ExactpAdics_Gettr*, f)
@@ -271,7 +347,7 @@ Applies `f` to the output of `g`.
 
 
 
-<a id="ApplyProcedure--any--ExactpAdics_Gettr"></a><a id="ApplyProcedure--any--etc"></a><a id="ComposeProcedure--ExactpAdics_Gettr--any"></a><a id="ComposeProcedure"></a><a id="ApplyProcedure"></a><a id="ComposeProcedure--ExactpAdics_Gettr--etc"></a>
+<a id="ApplyProcedure"></a><a id="ApplyProcedure--any--etc"></a><a id="ApplyProcedure--any--ExactpAdics_Gettr"></a><a id="ComposeProcedure"></a><a id="ComposeProcedure--ExactpAdics_Gettr--etc"></a><a id="ComposeProcedure--ExactpAdics_Gettr--any"></a>
 > **ApplyProcedure** (f, g :: *ExactpAdics_Gettr*)
 > 
 > **ComposeProcedure** (g :: *ExactpAdics_Gettr*, f)
@@ -287,7 +363,7 @@ Applies the procedure `f` to the output of `g`, and sets the output `Value`.
 **Parameters**
 - `Value`
 
-<a id="ApplyGetter"></a><a id="mod--ExactpAdics_Gettr--any"></a><a id="ApplyGetter--any--ExactpAdics_Gettr"></a><a id="mod"></a><a id="ApplyGetter--any--etc"></a><a id="mod--ExactpAdics_Gettr--etc"></a>
+<a id="ApplyGetter"></a><a id="ApplyGetter--any--etc"></a><a id="ApplyGetter--any--ExactpAdics_Gettr"></a><a id="mod"></a><a id="mod--ExactpAdics_Gettr--etc"></a><a id="mod--ExactpAdics_Gettr--any"></a>
 > **ApplyGetter** (f, g :: *ExactpAdics_Gettr*)
 > 
 > **\'mod\'** (g :: *ExactpAdics_Gettr*, f)
@@ -303,7 +379,7 @@ The getter which returns the return value of `f`(return value of `g`). If `Allow
 **Parameters**
 - `AllowConst`
 
-<a id="ComposeGetter--ExactpAdics_Gettr--any"></a><a id="ApplyGetter-2"></a><a id="ApplyGetter--any--seq-ExactpAdics_Gettr"></a><a id="mod--seq-ExactpAdics_Gettr--any"></a><a id="ComposeGetter"></a><a id="mod-2"></a><a id="ApplyGetter--any--etc-2"></a><a id="mod--seq-ExactpAdics_Gettr--etc"></a><a id="ComposeGetter--ExactpAdics_Gettr--etc"></a>
+<a id="ApplyGetter-2"></a><a id="ApplyGetter--any--etc-2"></a><a id="ApplyGetter--any--seq-ExactpAdics_Gettr"></a><a id="mod-2"></a><a id="mod--seq-ExactpAdics_Gettr--etc"></a><a id="mod--seq-ExactpAdics_Gettr--any"></a><a id="ComposeGetter"></a><a id="ComposeGetter--ExactpAdics_Gettr--etc"></a><a id="ComposeGetter--ExactpAdics_Gettr--any"></a>
 > **ApplyGetter** (f, gs :: [*ExactpAdics_Gettr*])
 > 
 > **\'mod\'** (gs :: [*ExactpAdics_Gettr*], f)
@@ -326,7 +402,7 @@ The getter which returns the return value of `f`(return value of `gs`[1], ...).
 ### Reductions
 {:#reductions}
 
-<a id="Flatten--seq-ExactpAdics_Gettr"></a><a id="Flatten"></a>
+<a id="Flatten"></a><a id="Flatten--seq-ExactpAdics_Gettr"></a>
 > **Flatten** (gs :: [*ExactpAdics_Gettr*])
 > 
 > -> *ExactpAdics_Gettr*
@@ -339,7 +415,7 @@ The getter whose value is the list of values of the given gettrs. If `Sequence` 
 - `Sequence`
 - `Universe`
 
-<a id="&cat--seq-ExactpAdics_Gettr"></a><a id="&cat"></a>
+<a id="&cat"></a><a id="&cat--seq-ExactpAdics_Gettr"></a>
 > **\'&cat\'** (gs :: [*ExactpAdics_Gettr*])
 > 
 > -> *ExactpAdics_Gettr*
@@ -362,7 +438,7 @@ The getter whose value is the sequence of values of `gs`.
 Given a function `f` taking any subsequence of S=[<i, Evaluate(`gs`[i])> : i in [1..#`gs`]] and returning either false,_ when the result is unknown or true,val when the result is known, where val is independent of the subsequence of S, returns the getter which evaluates to val. `f`(S) must return true.
 
 
-<a id="Exists--seq-ExactpAdics_Gettr"></a><a id="Exists"></a>
+<a id="Exists"></a><a id="Exists--seq-ExactpAdics_Gettr"></a>
 > **Exists** (gs :: [*ExactpAdics_Gettr*])
 > 
 > -> *ExactpAdics_Gettr*
@@ -385,7 +461,7 @@ The getter whose value is true iff for all g in `gs` f(Evaluate(g)) is true.
 ## ExtDataFldPadExact
 {:#extdatafldpadexact}
 
-<a id="/--FldPadExact--FldPadExact"></a><a id="/"></a><a id="/--FldPadExact--etc"></a>
+<a id="/"></a><a id="/--FldPadExact--etc"></a><a id="/--FldPadExact--FldPadExact"></a>
 > **\'/\'** (E :: *FldPadExact*, F :: *FldPadExact*)
 > 
 > -> *ExtDataFldPadExact*
@@ -395,7 +471,7 @@ The getter whose value is true iff for all g in `gs` f(Evaluate(g)) is true.
 The extension `E`/`F`.
 
 
-<a id="/--FldPadExact--ExtDataFldPadExact"></a><a id="/-2"></a><a id="/--FldPadExact--etc-2"></a>
+<a id="/-2"></a><a id="/--FldPadExact--etc-2"></a><a id="/--FldPadExact--ExtDataFldPadExact"></a>
 > **\'/\'** (E :: *FldPadExact*, X :: *ExtDataFldPadExact*)
 > 
 > -> *ExtDataFldPadExact*
@@ -405,7 +481,7 @@ The extension `E`/`F`.
 Extension `E`/`X`.
 
 
-<a id="/--ExtDataFldPadExact--FldPadExact"></a><a id="/-3"></a><a id="/--ExtDataFldPadExact--etc"></a>
+<a id="/-3"></a><a id="/--ExtDataFldPadExact--etc"></a><a id="/--ExtDataFldPadExact--FldPadExact"></a>
 > **\'/\'** (X :: *ExtDataFldPadExact*, F :: *FldPadExact*)
 > 
 > -> *ExtDataFldPadExact*
@@ -415,7 +491,7 @@ Extension `E`/`X`.
 Extension `X`/`F`.
 
 
-<a id="/--ExtDataFldPadExact--ExtDataFldPadExact"></a><a id="/-4"></a><a id="/--ExtDataFldPadExact--etc-2"></a>
+<a id="/-4"></a><a id="/--ExtDataFldPadExact--etc-2"></a><a id="/--ExtDataFldPadExact--ExtDataFldPadExact"></a>
 > **\'/\'** (X1 :: *ExtDataFldPadExact*, X2 :: *ExtDataFldPadExact*)
 > 
 > -> *ExtDataFldPadExact*
@@ -425,7 +501,7 @@ Extension `X`/`F`.
 Extension `X1`/`X2`.
 
 
-<a id="Flatten--ExtDataFldPadExact"></a><a id="Flatten-2"></a>
+<a id="Flatten-2"></a><a id="Flatten--ExtDataFldPadExact"></a>
 > **Flatten** (x :: *ExtDataFldPadExact*)
 > 
 > -> *ExtDataFldPadExact*
@@ -435,7 +511,7 @@ Extension `X1`/`X2`.
 Returns a version of `x` with type COMPOUND and all elements of `x``list have type not COMPOUND.
 
 
-<a id="TopField--ExtDataFldPadExact"></a><a id="TopField"></a>
+<a id="TopField"></a><a id="TopField--ExtDataFldPadExact"></a>
 > **TopField** (x :: *ExtDataFldPadExact*)
 > 
 > -> *FldPadExact*
@@ -445,7 +521,7 @@ Returns a version of `x` with type COMPOUND and all elements of `x``list have ty
 The top field of `x`.
 
 
-<a id="BaseField--ExtDataFldPadExact"></a><a id="BaseField"></a>
+<a id="BaseField"></a><a id="BaseField--ExtDataFldPadExact"></a>
 > **BaseField** (x :: *ExtDataFldPadExact*)
 > 
 > -> *FldPadExact*

@@ -134,7 +134,7 @@ Executes the given precision `strategy`: calls `cb`(pr) for each pr in the `stra
 **Parameters**
 - `InitialPrecision`
 
-<a id="ExactpAdics_ExecutePrecisionStrategy_Lazy--any--etc"></a><a id="ExactpAdics_ExecutePrecisionStrategy_Lazy"></a><a id="ExactpAdics_ExecutePrecisionStrategy_Lazy--any--UserProgram--UserProgram"></a>
+<a id="ExactpAdics_ExecutePrecisionStrategy_Lazy"></a><a id="ExactpAdics_ExecutePrecisionStrategy_Lazy--any--etc"></a><a id="ExactpAdics_ExecutePrecisionStrategy_Lazy--any--UserProgram--UserProgram"></a>
 > **ExactpAdics_ExecutePrecisionStrategy_Lazy** (strategy, getDeps :: *UserProgram*, getValue :: *UserProgram*)
 > 
 > -> *ExactpAdics_Gettr*
@@ -172,7 +172,7 @@ Returns true if there is a global strategy with the given `name`, and if so, ret
 Defines the global strategy with the given `name` to the given strategy.
 
 
-<a id="ExactpAdics_GetGlobalPrecisionStrategy--MonStgElt"></a><a id="ExactpAdics_GetGlobalPrecisionStrategy"></a>
+<a id="ExactpAdics_GetGlobalPrecisionStrategy"></a><a id="ExactpAdics_GetGlobalPrecisionStrategy--MonStgElt"></a>
 > **ExactpAdics_GetGlobalPrecisionStrategy** (name :: *MonStgElt*)
 > 
 > -> Any

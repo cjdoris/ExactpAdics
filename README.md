@@ -4,7 +4,7 @@ A package for exact p-adic computation for the [Magma computer algebra system](h
 
 The aim of this package is to provide the user with a higher-level interface to computing with p-adics, making it easier to perform everyday computations and coding more complex algorithms.
 
-The rationale for the design of the package and an overview of the internal structure can be found in [this article](http://arxiv.org/my-article).
+See the [user manual](https://cjdoris.github.io/ExactpAdics). The rationale for the design of the package and an overview of the internal structure can be found in [this article](http://arxiv.org/my-article).
 
 The package is [hosted here on GitHub](https://github.com/cjdoris/ExactpAdics) and can be [downloaded from here](https://github.com/cjdoris/ExactpAdics/releases/latest). The [user manual is here](https://cjdoris.github.io/ExactpAdics).
 
@@ -22,8 +22,9 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 ### Pending release
 ```
 + Adds `RelativeApproximation` and `BaselineApproximation` intrinsics, `_Lazy` versions and `Weak` versions (which are capped by the absolute precision)
++ Adds an implementation of the "OM" factoring algorithm, which is now the default algorithm used by `Factorization` and `Roots`. These are directly accessible as `ExactpAdics_Factorization` and `ExactpAdics_Roots`, with versions for `RngUPolElt[FldPad]` available too. The original behaviour, wrapping Magma's implementation, is available by passing `Alg:="Builtin"`, or calling `Builtin_Factorization` or `Builtin_Roots` directly.
 ! `ExactpAdicField(L :: FldPad)` not working when `L` has a finite precision
-! Bug in ShiftValuation, caused by R.1 not being to full precision where R::RngUPol[FldPad] (a Magma feature/bug)
+! Bug in `ShiftValuation`, caused by `R.1` not being to full precision where `R::RngUPol[FldPad]` (a Magma feature/bug)
 ```
 
 ### v1.1.0

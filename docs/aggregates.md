@@ -17,7 +17,7 @@ Sometimes a collection of p-adic objects are highly related and should share a s
 ### Cartesian products
 {:#cartesian-products}
 
-<a id="ExactpAdics_CartesianProduct--Tup"></a><a id="ExactpAdics_CartesianProduct"></a>
+<a id="ExactpAdics_CartesianProduct"></a><a id="ExactpAdics_CartesianProduct--Tup"></a>
 > **ExactpAdics_CartesianProduct** (components :: *Tup*)
 > 
 > -> *SetCart_PadExact*
@@ -27,7 +27,7 @@ Sometimes a collection of p-adic objects are highly related and should share a s
 The cartesian product of the given `components`, which must all be p-adic sets.
 
 
-<a id="ExactpAdics_CartesianPower--StrPadExact--etc"></a><a id="ExactpAdics_CartesianPower"></a><a id="ExactpAdics_CartesianPower--StrPadExact--RngIntElt"></a>
+<a id="ExactpAdics_CartesianPower"></a><a id="ExactpAdics_CartesianPower--StrPadExact--etc"></a><a id="ExactpAdics_CartesianPower--StrPadExact--RngIntElt"></a>
 > **ExactpAdics_CartesianPower** (X :: *StrPadExact*, n :: *RngIntElt*)
 > 
 > -> *SetCart_PadExact*
@@ -40,7 +40,7 @@ The `n`th cartesian power `X`, which must be a p-adic set.
 ### Creation of tuples
 {:#creation-of-tuples}
 
-<a id="IsCoercible"></a><a id="IsCoercible--SetCart_PadExact--any"></a><a id="IsCoercible--SetCart_PadExact--etc"></a>
+<a id="IsCoercible"></a><a id="IsCoercible--SetCart_PadExact--etc"></a><a id="IsCoercible--SetCart_PadExact--any"></a>
 > **IsCoercible** (C :: *SetCart_PadExact*, X)
 > 
 > -> *BoolElt*, Any
@@ -58,7 +58,7 @@ Succeeds if `X` is:
 ### Basic operations
 {:#basic-operations}
 
-<a id="Parent--Tup_PadExact"></a><a id="Parent"></a>
+<a id="Parent"></a><a id="Parent--Tup_PadExact"></a>
 > **Parent** (T :: *Tup_PadExact*)
 > 
 > -> *SetCart_PadExact*
@@ -78,7 +78,7 @@ The cartesian product containing `T`.
 Converts `T` to an ordinary tuple.
 
 
-<a id="ToSequence--Tup_PadExact"></a><a id="ToSequence"></a>
+<a id="ToSequence"></a><a id="ToSequence--Tup_PadExact"></a>
 > **ToSequence** (T :: *Tup_PadExact*)
 > 
 > -> []
@@ -88,7 +88,7 @@ Converts `T` to an ordinary tuple.
 Converts `T` to a sequence.
 
 
-<a id="NumberOfComponents--SetCart_PadExact"></a><a id="NumberOfComponents"></a>
+<a id="NumberOfComponents"></a><a id="NumberOfComponents--SetCart_PadExact"></a>
 > **NumberOfComponents** (C :: *SetCart_PadExact*)
 > 
 > -> *RngIntElt*
@@ -98,7 +98,7 @@ Converts `T` to a sequence.
 The number of components of `C`.
 
 
-<a id="@--RngIntElt--etc"></a><a id="@--RngIntElt--SetCart_PadExact"></a><a id="@"></a>
+<a id="@"></a><a id="@--RngIntElt--etc"></a><a id="@--RngIntElt--SetCart_PadExact"></a>
 > **\'@\'** (i :: *RngIntElt*, C :: *SetCart_PadExact*)
 > 
 > -> *StrPadExact*
@@ -118,7 +118,7 @@ The `i`th component of `C`.
 The number of elements of `T`.
 
 
-<a id="@--RngIntElt--etc-2"></a><a id="@-2"></a><a id="@--RngIntElt--Tup_PadExact"></a>
+<a id="@-2"></a><a id="@--RngIntElt--etc-2"></a><a id="@--RngIntElt--Tup_PadExact"></a>
 > **\'@\'** (i :: *RngIntElt*, T :: *Tup_PadExact*)
 > 
 > -> *PadExactElt*
@@ -128,7 +128,7 @@ The number of elements of `T`.
 The `i`th element of `T`.
 
 
-<a id="Format--Tup_PadExact"></a><a id="Format"></a>
+<a id="Format"></a><a id="Format--Tup_PadExact"></a>
 > **Format** (T :: *Tup_PadExact*)
 > 
 > -> *MonStgElt*
