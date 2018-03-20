@@ -20,6 +20,8 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 ```
 
 ### Pending release
+
+### v1.2.0
 ```
 + Adds `RelativeApproximation` and `BaselineApproximation` intrinsics, `_Lazy` versions and `Weak` versions (which are capped by the absolute precision)
 + Adds an implementation of the "OM" factoring algorithm, which is now the default algorithm used by `Factorization` and `Roots`. These are directly accessible as `ExactpAdics_Factorization` and `ExactpAdics_Roots`, with versions for `RngUPolElt[FldPad]` available too. The original behaviour, wrapping Magma's implementation, is available by passing `Alg:="Builtin"`, or calling `Builtin_Factorization` or `Builtin_Roots` directly.
