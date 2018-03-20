@@ -19,8 +19,6 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 - Remove (backwards-incompatible change to user interface, increment major version)
 ```
 
-### Pending release
-
 ### v1.2.0
 ```
 + Adds `RelativeApproximation` and `BaselineApproximation` intrinsics, `_Lazy` versions and `Weak` versions (which are capped by the absolute precision)
