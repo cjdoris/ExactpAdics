@@ -79,11 +79,104 @@ CERT := recformat<E, F, Pi, Rho, IdealGen1, IdealGen2, Extension>;
 /// It is only possible to factorize squarefree polynomials, so `multiplicity` is always 1. The factors are monic; also returns the leading coefficient of `f`.
 /// 
 ///param Strategy The precision strategy.
+///param Alg:="OM" The algorithm to use, either "Builtin" to use Magma's bulitin algorithm or "OM" to use our implementation.
+///param Certificates When `true`, also returns a corresponding sequence of certificates including fields `F`, `E`, `Rho` and `Pi`.
+///param Extensions When `true` implies `Certificates` and also includes `Extension` in each certificate.
+intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Alg:="OM", Certificates:=false, Extensions:=false) -> [], FldPadElt, []
+  {The factorization of f.}
+  case Alg:
+  when "Builtin":
+    return Builtin_Factorization(f : Strategy:=Strategy, Certificates:=Certificates, Extensions:=Extensions);
+  when "OM":
+    return ExactpAdics_Factorization(f : Strategy:=Strategy, Certificates:=Certificates, Extensions:=Extensions);
+  else
+    require false: "Alg must be Builtin or OM";
+  end case;
+end intrinsic;
+
+intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default", Alg:="OM") -> []
+  {The roots of f.}
+  case Alg:
+  when "Builtin":
+    return Builtin_Roots(f : Strategy:=Strategy);
+  when "OM":
+    return ExactpAdics_Roots(f : Strategy:=Strategy);
+  else
+    require false: "Alg must be Builtin or OM";
+  end case;
+end intrinsic;
+
+/// The factorization of `f` according to its Newton polygon, as a sequence of factors.
+///
+///param Residual:=false When `true` then further factorizes according to the factorization of each residual polynomial.
+intrinsic NewtonPolygonFactorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Residual:=false) -> []
+  {The factorization of `f` along its Newton polygon, that is, one factor per face of the Newton polygon. If `Residual` is true, then further factorizes according to the coprime factorization of each residual polynomial.}
+  if not assigned f`npfactorization then
+    f`npfactorization := AssociativeArray();
+  end if;
+  if not IsDefined(f`npfactorization, Residual) then
+    R := Parent(f);
+    K := BaseRing(f);
+    facs := [R|];
+    np := NewtonPolygon(f : Strategy:=Strategy, Support:=<1,WeakDegree(f)>);
+    vs := ChangeUniverse(Vertices(np), car<Z,Z>);
+    for i in [1..#vs] do
+      if i eq 1 then
+        if vs[1][1] eq 0 then
+          continue;
+        else
+          assert vs[1][1] eq 1;
+          v1 := vs[1][2];
+          v0 := Valuation(Coefficient(f`approximation, 0));
+          if v0 eq OO then
+            fac := R![0,1];
+          else
+            ok, fac := IsHenselLiftable(f, R![0,1] : Strategy:=Strategy, Slope:=v1-v0, fShift:=v0, gShift:=v0-v1);
+            assert ok;
+          end if;
+          Append(~facs, fac);
+        end if;
+      else
+        x0,v0 := Explode(vs[i-1]);
+        x1,v1 := Explode(vs[i]);
+        w := x1 - x0;
+        slope := (v1-v0) / w;
+        h := Numerator(-slope);
+        e := Denominator(-slope);
+        ok, d := IsDivisibleBy(w, e);
+        assert ok;
+        resfld, resmap := ResidueClassField(K);
+        respol := Polynomial([ShiftValuation(Coefficient(f, x0+i*e), i*h-v0)@resmap : i in [0..d]]);
+        assert Degree(respol) eq d;
+        assert Coefficient(respol, d) ne 0;
+        assert Coefficient(respol, 0) ne 0;
+        if Residual then
+          resfacs := [x[1]^x[2] : x in Factorization(respol)];
+        else
+          resfacs := [respol / Coefficient(respol, d)];
+        end if;
+        for resfac in resfacs do
+          d2 := Degree(resfac);
+          xfac := R![K| ok select ShiftValuation(WeakApproximation(Coefficient(resfac, j)@@resmap), d2*h-j*h) else 0 where ok,j:=IsDivisibleBy(i,e) : i in [0..e*d2]];
+          ok, fac := IsHenselLiftable(f, xfac : Strategy:=Strategy, Slope:=slope, fShift:=v0-slope*x0, gShift:=d2*h);
+          assert ok;
+          Append(~facs, fac);
+        end for;
+      end if;
+    end for;
+    f`npfactorization[Residual] := facs;
+  end if;
+  return f`npfactorization[Residual];
+end intrinsic;
+
+/// Called internally by `Factorization` with `Alg:="Builtin"`.
+/// 
+///param Strategy The precision strategy.
 ///param Certificates When `true`, also returns a corresponding sequence of certificates including fields `F`, `E`, `Rho` and `Pi`.
 ///param Extensions When `true` implies `Certificates` and also includes `Extension` in each certificate.
 ///param Ideals When `true` implies `Certificates` and also includes `IdealGen1` and `IdealGen2` in each certificate.
-///param UseNP:=false When `true`, factorizes `f` first by its Newton polygon. This can be a significant performance improvement for large degree polynomials with several faces.
-intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certificates:=false, Extensions:=false, Ideals:=false, UseNP:=false) -> [], FldPadElt, []
+///param UseNP:=true When `true`, factorizes `f` first by its Newton polygon. This can be a significant performance improvement for large degree polynomials with several faces.
+intrinsic Builtin_Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certificates:=false, Extensions:=false, Ideals:=false, UseNP:=true) -> [], FldPadElt, []
   {The factorization of f.}
   Certificates or:= Extensions or Ideals;
   // factor by Newton polygons first
@@ -280,12 +373,11 @@ intrinsic Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Certi
   end if;
 end intrinsic;
 
-/// The roots of `f` as a sequence of `<root, multiplicity>` pairs.
-/// 
-/// `f` must not have repeated roots, and hence `multiplicity` will always be 1.
+/// Called internally by `Roots` with `Alg:="Builtin"`.
 /// 
 ///param Strategy The precision strategy.
-intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default", UseNP:=false) -> []
+///param UseNP:=true When `true`, factorizes `f` first by its Newton polygon.
+intrinsic Builtin_Roots(f :: RngUPolElt_FldPadExact : Strategy:="default", UseNP:=true) -> []
   {The roots of f.}
   if not assigned f`roots then
     if UseNP then
@@ -355,65 +447,3 @@ intrinsic Roots(f :: RngUPolElt_FldPadExact : Strategy:="default", UseNP:=false)
   return f`roots;
 end intrinsic;
 
-/// The factorization of `f` according to its Newton polygon, as a sequence of factors.
-///
-///param Residual:=false When `true` then further factorizes according to the factorization of each residual polynomial.
-intrinsic NewtonPolygonFactorization(f :: RngUPolElt_FldPadExact : Strategy:="default", Residual:=false) -> []
-  {The factorization of `f` along its Newton polygon, that is, one factor per face of the Newton polygon. If `Residual` is true, then further factorizes according to the coprime factorization of each residual polynomial.}
-  if not assigned f`npfactorization then
-    f`npfactorization := AssociativeArray();
-  end if;
-  if not IsDefined(f`npfactorization, Residual) then
-    R := Parent(f);
-    K := BaseRing(f);
-    facs := [R|];
-    np := NewtonPolygon(f : Strategy:=Strategy, Support:=<1,WeakDegree(f)>);
-    vs := ChangeUniverse(Vertices(np), car<Z,Z>);
-    for i in [1..#vs] do
-      if i eq 1 then
-        if vs[1][1] eq 0 then
-          continue;
-        else
-          assert vs[1][1] eq 1;
-          v1 := vs[1][2];
-          v0 := Valuation(Coefficient(f`approximation, 0));
-          if v0 eq OO then
-            fac := R![0,1];
-          else
-            ok, fac := IsHenselLiftable(f, R![0,1] : Strategy:=Strategy, Slope:=v1-v0, fShift:=v0, gShift:=v0-v1);
-            assert ok;
-          end if;
-          Append(~facs, fac);
-        end if;
-      else
-        x0,v0 := Explode(vs[i-1]);
-        x1,v1 := Explode(vs[i]);
-        w := x1 - x0;
-        slope := (v1-v0) / w;
-        h := Numerator(-slope);
-        e := Denominator(-slope);
-        ok, d := IsDivisibleBy(w, e);
-        assert ok;
-        resfld, resmap := ResidueClassField(K);
-        respol := Polynomial([ShiftValuation(Coefficient(f, x0+i*e), i*h-v0)@resmap : i in [0..d]]);
-        assert Degree(respol) eq d;
-        assert Coefficient(respol, d) ne 0;
-        assert Coefficient(respol, 0) ne 0;
-        if Residual then
-          resfacs := [x[1]^x[2] : x in Factorization(respol)];
-        else
-          resfacs := [respol / Coefficient(respol, d)];
-        end if;
-        for resfac in resfacs do
-          d2 := Degree(resfac);
-          xfac := R![K| ok select ShiftValuation(WeakApproximation(Coefficient(resfac, j)@@resmap), d2*h-j*h) else 0 where ok,j:=IsDivisibleBy(i,e) : i in [0..e*d2]];
-          ok, fac := IsHenselLiftable(f, xfac : Strategy:=Strategy, Slope:=slope, fShift:=v0-slope*x0, gShift:=d2*h);
-          assert ok;
-          Append(~facs, fac);
-        end for;
-      end if;
-    end for;
-    f`npfactorization[Residual] := facs;
-  end if;
-  return f`npfactorization[Residual];
-end intrinsic;
