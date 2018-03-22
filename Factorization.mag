@@ -185,7 +185,7 @@ intrinsic Builtin_Factorization(f :: RngUPolElt_FldPadExact : Strategy:="default
     facs := [];
     certs := [];
     for npfac in npfacs do
-      facs1, _, certs1 := Factorization(npfac : Strategy:=Strategy, Certificates:=Certificates, Extensions:=Extensions, Ideals:=Ideals, UseNP:=false);
+      facs1, _, certs1 := Builtin_Factorization(npfac : Strategy:=Strategy, Certificates:=Certificates, Extensions:=Extensions, Ideals:=Ideals, UseNP:=false);
       facs cat:= facs1;
       if Certificates then
         certs cat:= certs1;
@@ -382,7 +382,7 @@ intrinsic Builtin_Roots(f :: RngUPolElt_FldPadExact : Strategy:="default", UseNP
   if not assigned f`roots then
     if UseNP then
       facs := NewtonPolygonFactorization(f : Strategy:=Strategy);
-      f`roots := &cat[PowerSequence(car<BaseRing(f), Z>) | Roots(fac : Strategy:=Strategy, UseNP:=false) : fac in facs];
+      f`roots := &cat[PowerSequence(car<BaseRing(f), Z>) | Builtin_Roots(fac : Strategy:=Strategy, UseNP:=false) : fac in facs];
     else
       R := Parent(f);
       K := BaseRing(R);

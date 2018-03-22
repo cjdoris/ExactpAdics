@@ -173,7 +173,8 @@ end function;
 
 function mval_make_FldPadElt(x)
   assert Type(x) eq FldPadElt;
-  return mval_make(VAL(x), not (VAL(x) lt OO and WZERO(x)));
+  FUDGE := (e eq 1 select 0 else 2*e) where e := AbsoluteRamificationDegree(Parent(x));
+  return mval_make(VAL(x), VAL(x) le APR(x)-FUDGE-1);
 end function;
 
 function mval_is_exact(v)
@@ -308,7 +309,7 @@ function state_make_exact(f, strategy)
     xpol_get := function (xst)
       ExactpAdics_StepPrecisionStrategy(~ok, ~pr, ~xst);
       if ok then
-        return true, BaselineApproximation(f, pr), xst;
+        return true, BaselineApproximation(f, pr : FixPr), xst;
       else
         return false, _, _;
       end if;
@@ -581,6 +582,7 @@ procedure br_set_xpolx(~br)
 end procedure;
 
 procedure br_set_xpol(~br, xpol : merge:=false)
+  assert Precision(BaseRing(xpol)) lt Infinity();
   if merge then
     assert assigned br`xpol;
     assert Degree(xpol) eq Degree(br`xpol);
@@ -592,8 +594,18 @@ procedure br_set_xpol(~br, xpol : merge:=false)
     new_xpol := new_polring ! xpol;
     assert forall{i : i in [0..Degree(br`xpol)] | AbsolutePrecision(Coefficient(old_xpol, i)) ge AbsolutePrecision(Coefficient(br`xpol, i))};
     assert forall{i : i in [0..Degree(xpol)] | AbsolutePrecision(Coefficient(new_xpol, i)) ge AbsolutePrecision(Coefficient(xpol, i))};
+    assert forall{i : i in [0..Degree(xpol)] | IsWeaklyEqual(Coefficient(new_xpol, i), Coefficient(old_xpol, i))};
     br`xpol := new_polring ! [AbsolutePrecision(c0) gt AbsolutePrecision(c1) select c0 else c1 where c0:=Coefficient(old_xpol,i) where c1:=Coefficient(new_xpol,i) : i in [0..Degree(xpol)]];
   else
+    if assigned br`xpol then
+      assert Precision(BaseRing(xpol)) ge Precision(BaseRing(br`xpol));
+      old_xpol := Parent(xpol) ! br`xpol;
+      assert Degree(old_xpol) eq Degree(br`xpol);
+      assert forall{i : i in [0..Degree(old_xpol)] | AbsolutePrecision(Coefficient(old_xpol, i)) ge AbsolutePrecision(Coefficient(br`xpol, i))};
+      assert Degree(xpol) eq Degree(old_xpol);
+      assert forall{i : i in [0..Degree(xpol)] | AbsolutePrecision(Coefficient(xpol, i)) ge AbsolutePrecision(Coefficient(old_xpol, i))};
+      assert forall{i : i in [0..Degree(xpol)] | IsWeaklyEqual(Coefficient(xpol, i), Coefficient(old_xpol, i))};
+    end if;
     br`xpol := xpol;
   end if;
   if not assigned br`basefield then
@@ -609,11 +621,9 @@ procedure br_set_xpol(~br, xpol : merge:=false)
     old_polring := br`polring;
     br`basefield := BaseRing(br`xpol);
     br`polring := Parent(br`xpol);
-    pr := pol_max_precision(br`xpol);
+    pr := Precision(br`basefield); //pol_max_precision(br`xpol);
     m := map<old_basefield -> br`basefield | x :-> WZERO(x) select br`basefield!0 else CHANGE_APR(br`basefield!x, VAL(x)+pr)>;
     m2 := map<old_polring -> br`polring | f :-> br`polring ! [m(c) : c in Coefficients(f)]>;
-    bm := m;
-    bm2 := m2;
     // basis, xpolx, offset
     old_basis := br`basis;
     br`offset := m(br`offset);
@@ -623,16 +633,17 @@ procedure br_set_xpol(~br, xpol : merge:=false)
     for i in [1..#old_basis] do
       old_b := old_basis[i];
       b := old_b;
-      b`basering := i eq 1 select br`polring else old_basis[i-1]`polring;
+      b`basering := i eq 1 select br`polring else br`basis[i-1]`polring;
       b`polring := PolynomialRing(b`basering);
       b`P := m(old_b`P);
       b`Pinv := m(old_b`Pinv);
+      b`resroot2x := (b`basering ! [0,1])^b`ramdeg * b`Pinv;
       m3 := map<old_b`polring -> b`polring | f :-> b`polring ! [m2(c) : c in Coefficients(f)]>;
       assert Degree(b`respol) eq b`resdeg;
       assert Coefficient(b`respol, b`resdeg) eq 1;
       b`polx := m2(old_b`polx);
       assert Degree(b`polx) eq b`deg;
-      b`pol := bm2(old_b`pol);
+      b`pol := flatten(br, b`polx);// bm2(old_b`pol);
       assert Degree(b`pol) eq b`absdeg;
       // b`pol := evaluate2(b`basering ! [elt_with_residue_class(br, c) : c in Coefficients(b`respol)], (b`basering ! [0,1])^b`ramdeg, b`P);
       Append(~br`basis, b);
@@ -929,8 +940,13 @@ function br_lift(br, xpol)
   while true do
     c0 := Coefficient(br`xpolx, 0);
     c1 := Coefficient(br`xpolx, 1);
+    if not (mval_is_exact(mvaluation(br, c0)) and mval_is_exact(mvaluation(br, c1))) then
+      return br;
+    end if;
     ok, c1inv := mb_has_value(mb_br_invmod(br, c1));
-    if not ok then return br; end if;
+    if not ok then
+      return br;
+    end if;
     off := base_reduce(br, -c0 * c1inv);
     brnew := br;
     do_offset(~brnew, off);
@@ -973,7 +989,10 @@ function mb_approximate_factor(br)
   else
     s0 := - (vertices[k][2] - vertices[k-1][2]) / (vertices[k][1] - vertices[k-1][1]);
   end if;
-  return mb_make(Parent(xfac) ! [i lt deg select CAP_APR(Coefficient(xfac, i), Floor(vlc + br`flatten_errs[i+1] + s0)) else Coefficient(xfac, i) : i in [0..deg]]);
+  FUDGE := (e eq 1 select 0 else 2*e) where e:=AbsoluteRamificationDegree(BaseRing(xfac));
+  prs := [Floor(vlc + err + s0 - FUDGE) : err in br`flatten_errs];
+  fac := Parent(xfac) ! [i lt deg select CAP_APR(Coefficient(xfac, i), prs[i+1]) else Coefficient(xfac, i) : i in [0..deg]];
+  return mb_make(fac);
 end function;
 
 function approximate_factor(br)
@@ -1127,13 +1146,14 @@ intrinsic ExactpAdics_Factorization(f :: RngUPolElt_FldPadExact : Proof:=true, C
           pr := pr0 + pr_base;
           return ExactpAdics_GeneralGetter(pr,
             procedure (~pr, ~dep)
-              dep := Approximation_Lazy(f, WVAL(f) + pr);
+              dep := Approximation_Lazy(f, WVAL(f) + pr : FixPr);
             end procedure,
             procedure (xf, ~pr, ~value)
               br2 := br_lift(br, xf);
               xfac := approximate_factor(br2);
               d := Value(&join(apr - ExactpAdics_APr(xfac)));
               if d gt 0 then
+                assert pr lt 2000;
                 pr +:= d;
               else
                 Update(z, xfac);
@@ -1169,7 +1189,7 @@ intrinsic ExactpAdics_Factorization(f :: RngUPolElt_FldPadExact : Proof:=true, C
             certs[i]`Extension := K;
           else
             ok, _, L := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-              xf := Approximation(f, BaselineValuation(f) + pr);
+              xf := BaselineApproximation(f, pr : FixPr);
               br := br_lift(certs[i]`InternalData, xf);
               ok, epol := mb_has_value(mb_eisenstein_poly(br));
               if ok and forall{c : c in Coefficients(epol) | APR(c) gt 2} and eisensteinPolyDefinesUniqueExtension(epol) then
@@ -1183,8 +1203,14 @@ intrinsic ExactpAdics_Factorization(f :: RngUPolElt_FldPadExact : Proof:=true, C
           end if;
         else
           U := UnramifiedExtension(K, certs[i]`F);
-          certs[i]`Extension := ucerts[1]`Extension where _,_,ucerts:=ExactpAdics_Factorization(ChangeRing(f, U) : Extensions, Strategy:=Strategy);
+          ufacs, _, ucerts := ExactpAdics_Factorization(ChangeRing(facs[i][1], U) : Extensions, Strategy:=Strategy);
+          assert #ufacs eq certs[i]`F;
+          assert forall{c : c in ucerts | c`F eq 1 and c`E eq certs[i]`E};
+          certs[i]`Extension := ucerts[1]`Extension;
         end if;
+        assert Degree(certs[i]`Extension, K) eq Degree(facs[i][1]);
+        assert InertiaDegree(certs[i]`Extension, K) eq certs[i]`F;
+        assert RamificationDegree(certs[i]`Extension, K) eq certs[i]`E;
       end for;
     end if;
     if not InternalData then
@@ -1221,7 +1247,8 @@ intrinsic ExactpAdics_Factorization(f :: RngUPolElt[FldPad] : Proof:=true, Certi
     zero_certs := [];
   end if;
   error if Extensions and Precision(K) eq Infinity(), "Extensions only implemented over bounded precision p-adic fields";
-  st := state_make(f);
+  K2 := Precision(K) eq Infinity() select ChangePrecision(K, pol_max_precision(f)) else K;
+  st := state_make(ChangeRing(f, K2));
   factorize(~st);
   assert #st`brs_todo eq 0;
   lc := LeadingCoefficient(f);
@@ -1273,8 +1300,14 @@ intrinsic ExactpAdics_Factorization(f :: RngUPolElt[FldPad] : Proof:=true, Certi
           end if;
         else
           U := UnramifiedExtension(K, certs[i]`F);
-          certs[i]`Extension := ucerts[1]`Extension where _,_,ucerts:=ExactpAdics_Factorization(ChangeRing(f, U) : Extensions);
+          ufacs, _, ucerts := ExactpAdics_Factorization(ChangeRing(facs[i][1], U) : Extensions);
+          assert #ufacs eq certs[i]`F;
+          assert forall{c : c in ucerts | c`F eq 1 and c`E eq certs[i]`E};
+          certs[i]`Extension := ucerts[1]`Extension;
         end if;
+        assert Degree(certs[i]`Extension, K) eq Degree(facs[i][1]);
+        assert InertiaDegree(certs[i]`Extension, K) eq certs[i]`F;
+        assert RamificationDegree(certs[i]`Extension, K) eq certs[i]`E;
         assert2 #ExactpAdics_Roots(ChangeRing(f, certs[i]`Extension) : Lift:=false) gt 0;
       end for;
     end if;
@@ -1301,7 +1334,7 @@ intrinsic ExactpAdics_Roots(f :: RngUPolElt_FldPadExact : Strategy:="default") -
   factorize(~st : JustRoots);
   error if exists{br : br in st`brs_done | br`done ne "irred"}, "precision error";
   assert forall{br : br in st`brs_done | (absdeg(br) eq 1) and (#br`basis eq 0)};
-  rs := (nzeros eq 0 select [] else [<K!0,nzeros>]) cat [<r, 1> where _,r:=IsHenselLiftable(f, WeakApproximation(K!br`offset)) : br in st`brs_done];
+  rs := (nzeros eq 0 select [] else [<K!0,nzeros>]) cat [<r, 1> where _,r:=IsHenselLiftable(f, WeakApproximation(K!br`offset) : Strategy:=Strategy) : br in st`brs_done];
   return rs;
 end intrinsic;
 
@@ -1313,7 +1346,8 @@ intrinsic ExactpAdics_Roots(f :: RngUPolElt[FldPad] : Lift:=true) -> []
   R := Parent(f);
   K := BaseRing(R);
   f, nzeros := remove_zeros(f);
-  st := state_make(f);
+  K2 := Precision(K) eq Infinity() select ChangePrecision(K, pol_max_precision(f)) else K;
+  st := state_make(ChangeRing(f, K2));
   factorize(~st : JustRoots);
   error if exists{br : br in st`brs_done | br`done ne "irred"}, "precision error";
   assert forall{br : br in st`brs_done | (absdeg(br) eq 1) and (#br`basis eq 0)};
