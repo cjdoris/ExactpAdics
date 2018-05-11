@@ -18,4 +18,7 @@
   LowerBound.mag
   Tuples.mag
   Val_Tup_PadExact.mag
+  common {
+    Factorization_new.mag
+  }
 }
