@@ -63,3 +63,13 @@ Please direct any comments, queries or complaints to [the GitHub issue tracker](
 
 ### v1.0.0
 Initial release
+
+## Developer notes
+
+### Common code
+
+This and the new `ExactpAdics2` share some common code from [the `ExactpAdicsCommon` repository](https://github.com/cjdoris/ExactpAdicsCommon). The code there should be periodically copied into the `common` directory (no fancy git merging currently).
+
+### Documentation
+
+Documentation is generated using [magdoc](https://cjdoris.github.io/magdoc)
