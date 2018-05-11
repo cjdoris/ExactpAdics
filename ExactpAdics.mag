@@ -166,7 +166,7 @@ intrinsic _ExactpAdics_InitUpdater(x :: PadExactElt, u :: BoolElt) -> BoolElt
   return not u;
 end intrinsic;
 
-intrinsic _ExactpAdics_FixPrecision(xx :: FldPadExactElt, pr :: RngIntElt) -> .
+intrinsic _ExactpAdics_FixPrecision(xx :: FldPadElt, pr :: RngIntElt) -> .
   {Coerces xx to a fixed-precision structure.}
   return ChangePrecision(Parent(xx), Max(1,pr)) ! xx;
 end intrinsic;
@@ -613,6 +613,7 @@ declare attributes ExtDataFldPadExact
   , ramification_degree   // RamificationDegree(*)
   , transition_function   // TransitionFunction(*)
   , ramification_polygon  // RamificationPolygon(*)
+  , ramification_filtration // RamificationFiltration(*)
   , primitive_element     // PrimitiveElement(*)
   , flatten               // Flatten(*)
   , is_in_standard_form   // IsInStandardForm(*)
@@ -639,6 +640,7 @@ declare attributes HomFldPadExact
   , generator_images       // REQ: list of images (in E2) of generators of each subfield in E1/F
   , basis_images           // images of the standard basis of E1/F (derived from generator_images)
   , inverse                // Inverse(*) (if invertible)
+  , generators_and_images  // [* gens, imgs *] generators of xdomain and their images
   ;
 
 procedure add_embedding(F, emb)
@@ -1390,21 +1392,24 @@ intrinsic Coefficient(x :: FldPadExactElt, i :: RngIntElt) -> FldPadExactElt
   end if;
   if x`coefficient[i+1] cmpeq false then
     K0 := BaseField(K);
+    FUDGE := (e eq 1 select 0 else 2*e) where e:=AbsoluteRamificationDegree(K);
     case K`type:
     when EISEN:
-      init := CAP_PR(ELTSEQ(Approximation(x))[i+1], 1);
+      init := TRIM_APR(ELTSEQ(Approximation(x))[i+1], FUDGE div d);
+      // init := CAP_PR(ELTSEQ(Approximation(x))[i+1], 1);
       mkupdate := func<z | function (apr)
-        return Approximation_Lazy(x : APr:=apr*d+i) mod function (xx)
-          Update(z, ELTSEQ(xx)[i+1]);
+        return Approximation_Lazy(x, apr*d+i+FUDGE) mod function (xx)
+          Update(z, CAP_APR(ELTSEQ(xx)[i+1], apr));
           return true;
         end function;
       end function>;
       x`coefficient[i+1] := K0 ! <init, mkupdate>;
     when INERT:
-      init := CAP_PR(ELTSEQ(Approximation(x))[i+1], 1);
+      init := TRIM_APR(ELTSEQ(Approximation(x))[i+1], FUDGE);
+      // init := CAP_PR(ELTSEQ(Approximation(x))[i+1], 1);
       mkupdate := func<z | function (apr)
-        return Approximation_Lazy(x : APr:=apr) mod function (xx)
-          Update(z, ELTSEQ(xx)[i+1]);
+        return Approximation_Lazy(x, apr+FUDGE) mod function (xx)
+          Update(z, CAP_APR(ELTSEQ(xx)[i+1], apr));
           return true;
         end function;
       end function>;
@@ -2461,7 +2466,7 @@ intrinsic DescribeExtension(X :: ExtDataFldPadExact : BaseName:="") -> MonStgElt
   if not assigned X`describe_extension then
     case X`type:
     when COMPOUND:
-      d := Join([DescribeExtension(Y) : Y in Reverse(X`list)], " over ");
+      d := Join([DescribeExtension(Y) : Y in Reverse(Flatten(X)`list)], " over ");
     when INERT:
       d := Sprintf("Unramified extension of degree %o", Degree(X));
     when EISEN:
@@ -2819,6 +2824,100 @@ intrinsic RamificationPolygon(x :: ExtDataFldPadExact) -> NwtnPgon
     x`ramification_polygon := rp;
   end if;
   return x`ramification_polygon;
+end intrinsic;
+
+intrinsic RamificationFiltration(E :: FldPadExact, F :: FldPadExact : Strategy:="default") -> []
+  {The ramification filtration of E/F.}
+  ok, x := IsExtensionOf(E, F);
+  require ok: "E must be an extension of F";
+  return RamificationFiltration(x : Strategy:=Strategy);
+end intrinsic;
+
+///hide
+intrinsic RamificationFiltration(x :: ExtDataFldPadExact : Strategy:="default") -> NwtnPgon
+  {The ramification filtration.}
+  if not assigned x`ramification_filtration then
+    x2 := Flatten(x);
+    case #x2`list:
+    when 0:
+      rt := [BaseField(x)];
+    when 1:
+      case x2`list[1]`type:
+      when INERT:
+        rt := [BaseField(x), TopField(x)];
+      when EISEN:
+        E := TopField(x);
+        F := BaseField(x);
+        assert BaseField(E) eq F;
+        f := DefiningPolynomial(E);
+        r := ShiftArgument(f, E.1);
+        rfacs := NewtonPolygonFactorization(r : Strategy:=Strategy);
+        D := Degree(E, F);
+        Ds := [&+[Degree(rfac) : rfac in rfacs[1..i]] : i in [1..#rfacs]];
+        coeffs := [Evaluate(rfac, -E.1) : rfac in rfacs];
+        pis := [&*coeffs[1..i] : i in [1..#coeffs]];
+        rt := [F];
+        F2 := F;
+        E2 := E;
+        EtoE2 := map<E -> E2 | x :-> x>;
+        for i in Reverse([1..#pis-1]) do
+          pi := pis[i];
+          d := Degree(E2, F2) div Ds[i];
+          pi2 := EtoE2(pi);
+          ok, _, data := ExactpAdics_ExecutePrecisionStrategy(function (pr)
+            xpi2 := Approximation(pi2, pr : FixPr);
+            xm := MinimalPolynomial(xpi2);
+            m := WeakApproximation(PolynomialRing(F2) ! xm);
+            if Degree(m) ne d then
+              return false, _;
+            elif not IsEisenstein(m) then
+              return false, _;
+            elif ValuationLe(Evaluate(m, pi2), 2*d) then
+              return false, _;
+            end if;
+            newF2 := ext<F2 | m>;
+            // TODO: the current approach factorizes f over newF2 and selects a factor; a better approach is to take ri=&*[r:r in rfacs[1..i]], fi=ri(x-E.1), fi being the minimal polynomial of E.1 over F(pi), express the coefficients of fi/F(pi) in terms of pi/F (using linear algebra), and use this to find fi/newF2 by mapping pi to newF2.1
+            ffacs, _, certs := ExactpAdics_Factorization(PolynomialRing(newF2) ! f : Strategy:=Strategy, DegreeMle:=Ds[i], DegreeGe:=Ds[i], Limit:=1, Extensions);
+            if #ffacs eq 0 then
+              return false, _;
+            end if;
+            ffac := ffacs[1][1];
+            assert Degree(ffac) eq Ds[i];
+            newE2 := certs[1]`Extension;
+            r := Roots(PolynomialRing(newE2) ! ffac : Strategy:=Strategy)[1][1];
+            newEtoE2 := map<E -> newE2 | x :-> &+[cs[i] * r^(i-1) : i in [1..#cs]] where cs:=Eltseq(x)>;
+            return true, <newF2, newE2, newEtoE2>;
+          end function, Strategy);
+          if not ok then
+            error "precision error";
+          end if;
+          F2, E2, EtoE2 := Explode(data);
+          Append(~rt, F2);
+        end for;
+      else
+        error "only implemented for extensions in standard form";
+      end case;
+    when 2:
+      if x2`list[1]`type eq INERT and x2`list[2]`type eq EISEN then
+        rt := [BaseField(x)] cat RamificationFiltration(x2`list[2]);
+      else
+        error "only implemented for extensions in standard form";
+      end if;
+    else
+      error "only implemented for extensions in standard form";
+    end case;
+    assert rt[1] eq BaseField(x);
+    assert Degree(rt[#rt], rt[1]) eq Degree(x);
+    for i in [1..#rt] do
+      for j in [1..i] do
+        X := rt[i] / rt[j];
+        X`ramification_filtration := rt[j..i];
+      end for;
+    end for;
+    x`ramification_filtration := rt;
+    x2`ramification_filtration := rt;
+  end if;
+  return x`ramification_filtration;
 end intrinsic;
 
 ///## Hasse-Herbrand transition function
@@ -3446,7 +3545,7 @@ intrinsic '*'(h1 :: HomFldPadExact, h2 :: HomFldPadExact) -> HomFldPadExact
   return h;
 end intrinsic;
 
-intrinsic Embeddings(X :: ExtDataFldPadExact, h :: HomFldPadExact) -> []
+intrinsic Embeddings(X :: ExtDataFldPadExact, h :: HomFldPadExact : Strategy:="default") -> []
   {The embeddings of TopField(X) into Codomain(h) extending h:BaseField(X)->Codomain(h).}
   require BaseField(X) eq Domain(h): "Base field of argument 1 must equal domain of argument 2";
   case X`type:
@@ -3460,8 +3559,7 @@ intrinsic Embeddings(X :: ExtDataFldPadExact, h :: HomFldPadExact) -> []
     f := DefiningPolynomial(TopField(X));
     hf := Polynomial([c@h : c in Coefficients(f)]);
     hs := [];
-    // TODO: what strategy to give to Roots?
-    for r in Roots(hf) do
+    for r in Roots(hf : Strategy:=Strategy) do
       h1 := New(HomFldPadExact);
       h1`xdomain := X / h`xdomain;
       h1`xcodomain := h`xcodomain;
@@ -3474,20 +3572,161 @@ intrinsic Embeddings(X :: ExtDataFldPadExact, h :: HomFldPadExact) -> []
   end case;
 end intrinsic;
 
-intrinsic Embeddings(X1 :: ExtDataFldPadExact, X2 :: ExtDataFldPadExact, h0 :: HomFldPadExact) -> []
+intrinsic Embeddings(X1 :: ExtDataFldPadExact, X2 :: ExtDataFldPadExact, h0 :: HomFldPadExact : Strategy:="default") -> []
   {The embeddings of TopField(X1) into TopField(X2) extending h0:BaseField(X1)->BaseField(X2).}
   require BaseField(X1) eq Domain(h0): "Base field of argument 1 must equal domain of argument 3";
   require BaseField(X2) eq Codomain(h0): "Base field of argument 2 must equal codomain of argument 3";
-  return Embeddings(X1, h0 * TrivialEmbedding(X2));
+  return Embeddings(X1, h0 * TrivialEmbedding(X2) : Strategy:=Strategy);
 end intrinsic;
 
-intrinsic Embeddings(X1 :: ExtDataFldPadExact, X2 :: ExtDataFldPadExact) -> []
+intrinsic Embeddings(X1 :: ExtDataFldPadExact, X2 :: ExtDataFldPadExact : Strategy:="default") -> []
   {The embeddings of TopField(X1) into TopField(X2) fixing BaseField(X1)=BaseField(X2).}
   require BaseField(X1) eq BaseField(X2): "Base field of argument 1 must equal base field of argument 2";
-  return Embeddings(X1, TrivialEmbedding(X2));
+  return Embeddings(X1, TrivialEmbedding(X2) : Strategy:=Strategy);
 end intrinsic;
 
+intrinsic NumberOfIsomorphisms(E1 :: FldPadExact, E2 :: FldPadExact, F :: FldPadExact : Strategy:="default") -> RngIntElt
+  {The isomorphisms of E1 to E2 fixing F.}
+  ok, X1 := IsExtensionOf(E1, F);
+  require ok: "E1 must be an extension of F";
+  ok, X2 := IsExtensionOf(E2, F);
+  require ok: "E2 must be an extension of F";
+  return NumberOfIsomorphisms(X1, X2 : Strategy:=Strategy);
+end intrinsic;
 
+intrinsic IsIsomorphic(E1 :: FldPadExact, E2 :: FldPadExact, F :: FldPadExact : Strategy:="default") -> BoolElt
+  {True if E1 and E2 are F-isomorphic.}
+  ok, X1 := IsExtensionOf(E1, F);
+  require ok: "E1 must be an extension of F";
+  ok, X2 := IsExtensionOf(E2, F);
+  require ok: "E2 must be an extension of F";
+  return IsIsomorphic(X1, X2 : Strategy:=Strategy);
+end intrinsic;
+
+intrinsic Isomorphisms(E1 :: FldPadExact, E2 :: FldPadExact, F :: FldPadExact : Strategy:="default", Limit:=Infinity()) -> []
+  {The isomorphisms of E1 to E2 fixing F.}
+  ok, X1 := IsExtensionOf(E1, F);
+  require ok: "E1 must be an extension of F";
+  ok, X2 := IsExtensionOf(E2, F);
+  require ok: "E2 must be an extension of F";
+  return Isomorphisms(X1, X2 : Strategy:=Strategy, Limit:=Limit);
+end intrinsic;
+
+intrinsic HasIsomorphism(E1 :: FldPadExact, E2 :: FldPadExact, F :: FldPadExact : Strategy:="default") -> BoolElt, HomFldPadExact
+  {True if there exists an isomorphism of E1 to E2 fixing F.}
+  ok, X1 := IsExtensionOf(E1, F);
+  require ok: "E1 must be an extension of F";
+  ok, X2 := IsExtensionOf(E2, F);
+  require ok: "E2 must be an extension of F";
+  return HasIsomorphism(X1, X2 : Strategy:=Strategy);
+end intrinsic;
+
+intrinsic NumberOfIsomorphisms(X1 :: ExtDataFldPadExact, X2 :: ExtDataFldPadExact : Strategy:="default") -> RngIntElt, []
+  {The number of isomorphisms X1 to X2.}
+  require BaseField(X1) eq BaseField(X2): "X1 and X2 must have the same base field";
+  if Degree(X1) ne Degree(X2)
+  or RamificationDegree(X1) ne RamificationDegree(X2)
+  or TransitionFunction(X1) ne TransitionFunction(X2)
+  then
+    return 0, [];
+  end if;
+  embs12 := Embeddings(X1, X2 : Strategy:=Strategy);
+  return #embs12, embs12;
+end intrinsic;
+
+intrinsic IsIsomorphic(X1 :: ExtDataFldPadExact, X2 :: ExtDataFldPadExact : Strategy:="default") -> BoolElt
+  {True if X1 and X2 are isomorphic.}
+  return NumberOfIsomorphisms(X1, X2 : Strategy:=Strategy) gt 0;
+end intrinsic;
+
+intrinsic Isomorphisms(X1 :: ExtDataFldPadExact, X2 :: ExtDataFldPadExact : Strategy:="Default", Limit:=Infinity()) -> []
+  {Isomorphisms X1 to X2.}
+  n, embs12 := NumberOfIsomorphisms(X1, X2 : Strategy:=Strategy);
+  assert #embs12 eq n;
+  if n eq 0 then
+    return [];
+  end if;
+  embs21 := Embeddings(X2, X1 : Strategy:=Strategy);
+  if #embs21 eq 0 then
+    return [];
+  end if;
+  assert n eq #embs21;
+  L1 := TopField(X1);
+  L2 := TopField(X2);
+  // pairwise search to find <i,j> such that (genimgs = gens @ embs12[i]) @ embs21[j] = gens
+  js := [];
+  num := Min(n,Limit);
+  for i in [1..num] do
+    e12 := embs12[i];
+    gens, genimgs := GeneratorsAndImages(e12);
+    mgenss := [[x @ e21 : x in genimgs] : e21 in embs21];
+    candjs := [1..n];
+    st := ExactpAdics_StartPrecisionStrategy(Strategy);
+    while true do
+      candjs := [j : j in candjs | forall{k : k in [1..#gens] | IsWeaklyEqual(gens[k], mgenss[j][k])}];
+      assert #candjs ne 0;
+      if #candjs eq 1 then
+        js[i] := candjs[1];
+        continue i;
+      end if;
+      ExactpAdics_StepPrecisionStrategy(~ok, ~pr, ~st);
+      if ok then
+        _ := Evaluate(&cat[&cat([IncreaseAbsolutePrecision_Lazy(gens[k], apr)] cat [IncreaseAbsolutePrecision_Lazy(mgenss[j][k], apr) : j in candjs]) where apr:=BPR(gens[k])+pr : k in [1..#gens]]);
+      else
+        error "precision error";
+      end if;
+    end while;
+  end for;
+  for i in [1..num] do
+    j := js[i];
+    embs12[i]`inverse := embs21[j];
+    embs21[j]`inverse := embs12[i];
+  end for;
+  return embs12[1..num];
+end intrinsic;
+
+intrinsic HasIsomorphism(X1 :: ExtDataFldPadExact, X2 :: ExtDataFldPadExact : Strategy:="default") -> BoolElt, HomFldPadExact
+  {"}
+  isoms := Isomorphisms(X1, X2 : Strategy:=Strategy, Limit:=1);
+  if #isoms eq 0 then
+    return false, _;
+  else
+    return true, isoms[1];
+  end if;
+end intrinsic;
+
+intrinsic GeneratorsAndImages(h :: HomFldPadExact) -> [], []
+  {Sequence of generators of Domain(h)/BaseField(h), and corresponding sequence of images.}
+  if not assigned h`generators_and_images then
+    Xs := Reverse(Flatten(h`xdomain)`list);
+    gens := [Domain(h)|];
+    imgs := [Codomain(h)|];
+    for i in [1..#Xs] do
+      X := Xs[i];
+      gen := Generator(TopField(X));
+      if i le #h`generator_images then
+        gimg := h`generator_images[i];
+        case Type(gimg):
+        when FldPadExactElt:
+          img := gimg;
+        when UserProgram:
+          img := gen @ gimg;
+        else
+          assert false;
+        end case;
+      else
+        assert assigned gimg and Type(gimg) eq UserProgram;
+        img := gen @ gimg;
+      end if;
+      Append(~gens, gen);
+      Append(~imgs, img);
+    end for;
+    assert #gens eq #Xs;
+    assert #imgs eq #Xs;
+    h`generators_and_images := [* gens, imgs *];
+  end if;
+  return Explode(h`generators_and_images);
+end intrinsic;
 
 ///## Temporary field (incomplete feature)
 
@@ -3924,6 +4163,11 @@ end intrinsic;
 intrinsic IncreaseBaselinePrecision(x :: FldPadExactElt, n)
   {Increases the baseline precision.}
   INC_APR(x, BVAL(x) + n);
+end intrinsic;
+
+intrinsic IncreaseBaselinePrecision_Lazy(x :: FldPadExactElt, n) -> ExactpAdics_Gettr
+  {"}
+  INC_APR_Z(x, BVAL(x) + n);
 end intrinsic;
 
 intrinsic WeakApproximation(x :: FldPadExactElt) -> FldPadExactElt
@@ -5063,12 +5307,14 @@ intrinsic ShiftArgument(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> Rng
   elif WeakDegree(f) le 0 then
     return f;
   end if;
+  // just use Evaluate (the code below seems to be buggy)
+  return Evaluate(f, R![K|x,1]);
   // main case
-  xf := Approximation(f, CAPR(f));
-  xx := Approximation(x, CAPR(x));
-  init := Evaluate(xf, Parent(xf).1 + xx);
   e := AbsoluteRamificationDegree(K);
   FUDGE := e eq 1 select 0 else 2*e;
+  xf := Approximation(f, CAPR(f));
+  xx := Approximation(x, CAPR(x));
+  init := Parent(xf) ! [TRIM_APR(c, FUDGE) : c in Coefficients(Evaluate(xf, Parent(xf).1 + xx))];
   df := WeakDegree(f);
   p := Prime(K);
   binvals := [[Valuation(Binomial(i,j),p)*e : i in [j..df]] : j in [0..df]];
@@ -5084,8 +5330,8 @@ intrinsic ShiftArgument(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> Rng
     vx := WVAL(x);
     pr := [[apr(j) - (vf(i) + binvals[j+1][i-j+1] + vx*(i-j)) : i in [j..df]] : j in [0..df]];
     prx := &join &cat pr;
-    aprx := vx + prx;
-    aprf := [<i, vf(i) + &join[pr[j+1][i-j+1] join 0 : j in [0..i]]> : i in [0..df]];
+    aprx := vx + prx + FUDGE;
+    aprf := [<i, vf(i) + &join[pr[j+1][i-j+1] join 0 : j in [0..i]] + FUDGE> : i in [0..df]];
     return [Approximation_Lazy(f, aprf), Approximation_Lazy(x, aprx)] mod function (xf, xx)
       loc_z := z;
       loc_aprx := aprx;
@@ -5093,7 +5339,7 @@ intrinsic ShiftArgument(f :: RngUPolElt_FldPadExact, x :: FldPadExactElt) -> Rng
       loc_pr := pr;
       xK := Parent(xx);
       xK`DefaultPrecision := IntegerValue(prx);
-      Update(z, Evaluate(xf, Parent(xf) ! [xK| xx, 1]));
+      Update(z, Parent(xf)![CAP_APR(cs[i], apr(i-1)) : i in [1..#cs]] where cs:=Coefficients(Evaluate(xf, Parent(xf) ! [xK| xx, 1])));
       // Update(z, Parent(xf)![&+[Coefficient(xf,i) * Binomial(i,j) * xx^(i-j) : i in [j..df]] : j in [0..df]]);
       return true;
     end function;
@@ -5794,29 +6040,19 @@ end intrinsic;
 
 intrinsic WeakApproximation(f :: RngUPolElt_FldPadExact) -> RngUPolElt_FldPadExact
   {An element weakly equal to x.}
-  R := f`parent;
+  R := Parent(f);
   if WZERO(f) then
     return R ! 0;
   else
-    g := New(RngUPolElt_FldPadExact);
-    g`id := NEXTID();
-    g`parent := R;
-    g`approximation := f`approximation;
-    g`update := function (apr)
+    init := f`approximation;
+    mkupdate := func<g | function (apr)
       pr := _ExactpAdics_PrecisionRequired(g, apr);
-      // dg := WeakDegree(g);
-      // xg := g`approximation;
-      // pr := Max([(WZERO(c) or v eq OO select 0 else aprs[i+1]-v)
-      //   where v := Valuation(c)
-      //   where c := Coefficient(xg, i)
-      //   : i in [0..dg]
-      // ]);
       return IncreaseAbsolutePrecision_Lazy(R, pr) mod function (ig)
         Update(g, CHANGE_APR(g`approximation, apr join APR(g)));
         return true;
       end function;
-    end function;
-    return g;
+    end function>;
+    return R ! <init, mkupdate>;
   end if;
 end intrinsic;
 
