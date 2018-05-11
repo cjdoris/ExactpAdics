@@ -1,4 +1,5 @@
 {
+  Version.mag
   State.mag
   Generics.mag
   ExactpAdics.mag
