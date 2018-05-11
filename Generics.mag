@@ -149,7 +149,7 @@ intrinsic Approximation_Lazy(x :: PadExactElt, apr : Quick:=false, FixPr:=false)
         y := CAP_APR(y, apr);
       end if;
       if FixPr then
-        y := _ExactpAdics_FixPrecision(y, pr);
+        y := _ExactpAdics_FixPrecision(y, _ExactpAdics_PrecisionRequired(Parent(x), y, apr));
       end if;
       apr2 := ExactpAdics_APr(y);
       assert apr2 ge apr;
