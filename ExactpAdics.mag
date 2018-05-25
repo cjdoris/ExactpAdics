@@ -3219,7 +3219,7 @@ intrinsic IsDefinitelyPrimitive(x, X :: ExtDataFldPadExact : Strategy:="default"
   end if;
   // general case
   require not IsWeaklyZero(x : Strategy:=Strategy): "x is weakly zero";
-  vx := Valuation(x);
+  vx := IntegerValue(Valuation(x));
   e := RamificationDegree(X);
   s := vx div e;
   y := ShiftValuation(X`base_field ! 1, s);
@@ -3241,7 +3241,7 @@ intrinsic IsDefinitelyPrimitive(x, X :: ExtDataFldPadExact : Strategy:="default"
     Strategy := 1;
   end if;
   ok, _, m := ExactpAdics_ExecutePrecisionStrategy(function (pr)
-    xx := Approximation(x2 : APr:=pr);
+    xx := Approximation(x2, pr);
     M := Matrix([vector(xx^i, X) : i in [0..d-1]]);
     dM := Determinant(M);
     if WZERO(dM) then
@@ -3255,7 +3255,7 @@ intrinsic IsDefinitelyPrimitive(x, X :: ExtDataFldPadExact : Strategy:="default"
     xm := CHANGE_APR(xm, [s-t : i in [0..d-1]] cat [1]);
     mkupdate := func<z | function (aprs)
       apr := Max(aprs);
-      return Approximation_Lazy(x2 : APr:=e*(apr+t)) mod function (xx)
+      return Approximation_Lazy(x2, e*(apr+t)) mod function (xx)
         M := Matrix([vector(xx^i, X) : i in [0..d-1]]);
         dM := Determinant(M);
         assert not WZERO(dM);
