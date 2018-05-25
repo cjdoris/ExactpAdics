@@ -620,6 +620,7 @@ declare attributes ExtDataFldPadExact
   , standard_form         // StandardForm(*)
   , discriminant_valuation // DiscriminantValuation(*)
   , describe_extension    // DescribeExtension(*)
+  , defining_polynomial   // DefiningPolynomial(*)
   ;
 
 declare type TmpFldPadExact[TmpFldPadExactElt];
@@ -2111,6 +2112,34 @@ intrinsic DefiningPolynomial(K :: FldPadExact) -> RngUPolElt_FldPadExact
     assert IsPrimeField(K);
     error "K is a prime field";
   end if;
+end intrinsic;
+
+intrinsic DefiningPolynomial(L :: FldPadExact, K :: FldPadExact) -> RngUPolElt_FldPadExact
+  {A defining polynomial for L/K.}
+  ok, x := IsExtensionOf(L, K);
+  require ok: "L must be an extension of K";
+  return DefiningPolynomial(x);
+end intrinsic;
+
+///hide
+intrinsic DefiningPolynomial(x :: ExtDataFldPadExact) -> RngUPolElt_FldPadExact
+  {A defining polynomial for x.}
+  if not assigned x`defining_polynomial then
+    x2 := Flatten(x);
+    case #x2`list:
+    when 0:
+      f := PolynomialRing(BaseField(x)) ! [0, 1];
+    when 1:
+      f := DefiningPolynomial(TopField(x));
+    else
+      f := MinimalPolynomial(PrimitiveElement(x), x);
+    end case;
+    assert BaseRing(f) eq BaseField(x);
+    assert Degree(f) eq Degree(x);
+    x`defining_polynomial := f;
+    x2`defining_polynomial := f;
+  end if;
+  return x`defining_polynomial;
 end intrinsic;
 
 intrinsic AssignNames(~F :: FldPadExact, names :: [MonStgElt])
