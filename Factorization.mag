@@ -1,3 +1,20 @@
+// This file is part of ExactpAdics
+// Copyright (C) 2018 Christopher Doris
+//
+// ExactpAdics is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// ExactpAdics is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with ExactpAdics.  If not, see <http://www.gnu.org/licenses/>.
+
+
 // Suppose we have f(x), g(x), Pi(x), Rho(x) such that g(x) approximates an irreducible factor of f(x) uniquely, and Pi(x) is a uniformizer of and Rho(x) generates the residue class field of the extension defined by the factor. Can we prove that g(x) is close to an irreducible factor? Can we (Hensel) lift it to be closer to the factor? Consider f mod g in the basis {Rho^i * Pi^j mod g : i<F, j<E}, we should be able to Hensel-lift this directly.
 
 ///# Univariate polynomials

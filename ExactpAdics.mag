@@ -1,3 +1,20 @@
+// This file is part of ExactpAdics
+// Copyright (C) 2018 Christopher Doris
+//
+// ExactpAdics is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// ExactpAdics is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with ExactpAdics.  If not, see <http://www.gnu.org/licenses/>.
+
+
 /*
 A exact p-adic field is represented by either a prime number (for prime fields) or a polynomial (for extensions). At all times it has a precision (a positive integer) which can only increase and a FldPad which is an approximation to the field to this precision. When an approximation to a field element is made, it is always made in the current approximation field (which may be made more precise first, if necessary). If the approximation field is made more precise, then approximated field elements are out of date, but can easily be case into the current field at any time.
 

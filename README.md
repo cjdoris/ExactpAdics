@@ -72,4 +72,25 @@ This and the new `ExactpAdics2` share some common code from [the `ExactpAdicsCom
 
 ### Documentation
 
-Documentation is generated using [magdoc](https://cjdoris.github.io/magdoc)
+Documentation is generated using [magdoc](https://cjdoris.github.io/magdoc) with the following command:
+
+```
+magdoc.py -o docs Generics.mag Getter.mag ExactpAdics.mag Factorization.mag Factorization_new.mag Val_FldPadElt.mag Val_RngUPolElt_FldPad.mag Val_RngMPolElt_FldPad.mag Val_Tup_PadExact.mag PrecisionStrategy.mag Tuples.mag DefaultAssociativeArray.mag State.mag Promotion.mag LowerBound.mag MultivariatePolynomials.mag
+```
+
+## License
+
+Copyright (C) 2018 Christopher Doris
+
+ExactpAdicsCommon is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+ExactpAdicsCommon is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with ExactpAdicsCommon.  If not, see http://www.gnu.org/licenses/.

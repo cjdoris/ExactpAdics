@@ -1,3 +1,20 @@
+// This file is part of ExactpAdics
+// Copyright (C) 2018 Christopher Doris
+//
+// ExactpAdics is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// ExactpAdics is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with ExactpAdics.  If not, see <http://www.gnu.org/licenses/>.
+
+
 ///# Precision strategies
 ///
 /// All intrinsics in `ExactpAdics` either return the correct value or raise an error if this is not possible. In particular, some p-adic computations are not possible unless the inputs are known to sufficient precision, and if this occurs then we raise a *precision error*. Precision strategies are how we tell these computation how much we are willing to increase certain precisions before giving up.
