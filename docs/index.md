@@ -7,7 +7,7 @@ This is the user manual for the `ExactpAdics` package for the [Magma computer al
 
 This has been re-implemented as [the `ExactpAdics2` package](https://cjdoris.github.io/ExactpAdics2) and for most users **we currently recommend `ExactpAdics2` over `ExactpAdics`**.
 
-The rationale for the design of the package, an overview of the internal structure, and a comparison with `ExactpAdics2` can be found in [this article]().
+The rationale for the design of the package, an overview of the internal structure, and a comparison with `ExactpAdics2` can be found in [this article](https://arxiv.org/abs/1805.09794).
 
 **If you find this software useful, please cite the above paper in any publications.**
 
