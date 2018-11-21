@@ -4,7 +4,7 @@ A package for exact p-adic computation for the [Magma computer algebra system](h
 
 The aim of this package is to provide the user with a higher-level interface to computing with p-adics, making it easier to perform everyday computations and coding more complex algorithms.
 
-See the [user manual](https://cjdoris.github.io/ExactpAdics). The rationale for the design of the package and an overview of the internal structure can be found in [this article](http://arxiv.org/my-article).
+See the [user manual](https://cjdoris.github.io/ExactpAdics). The rationale for the design of the package and an overview of the internal structure can be found in [this article](https://arxiv.org/abs/1805.09794).
 
 The package is [hosted here on GitHub](https://github.com/cjdoris/ExactpAdics) and can be [downloaded from here](https://github.com/cjdoris/ExactpAdics/releases/latest). The [user manual is here](https://cjdoris.github.io/ExactpAdics).
 
